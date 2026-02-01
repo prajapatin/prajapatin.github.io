@@ -1,170 +1,231 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Operationalizing the Machine Learning model inferencing with an engineering approach</title>
-<meta name="description" content="What is a machine learning model inferencing?">
+  <title>Operationalizing the Machine Learning model inferencing with an engineering approach</title>
+  <meta name="description" content="What is a machine learning model inferencing?">
 
-<link rel="stylesheet" href="/css/main.css">
-<link rel="canonical" href="https://nileshprajapati.net/blog/2020/Operationalizing-ML-Model-Inferencing-with-an-engineering-approach/">
-<link rel="alternate" type="application/rss+xml" title="Nilesh Prajapati" href="https://nileshprajapati.net/feed.xml" />
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical"
+    href="https://nileshprajapati.net/blog/2020/Operationalizing-ML-Model-Inferencing-with-an-engineering-approach/">
+  <link rel="alternate" type="application/rss+xml" title="Nilesh Prajapati"
+    href="https://nileshprajapati.net/feed.xml" />
 
-<script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  <script>
+    (function (i, s, o, g, r, a, m) {
+      i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+        (i[r].q = i[r].q || []).push(arguments)
+      }, i[r].l = 1 * new Date(); a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
 
-  ga('create', 'UA-52446115-1', 'auto');
-  ga('send', 'pageview');
-</script>
+    ga('create', 'UA-52446115-1', 'auto');
+    ga('send', 'pageview');
+  </script>
 
 
 </head>
+
 <body>
   <header class="site-header">
-  <div class="container">
-    <input type="checkbox" id="toggleNavbar">
-    <h1 class="logo"><a href="/">Nilesh<span>Prajapati</span></a></h1>
-    <label for="toggleNavbar" role="button" class="toggle-navbar-button">
-      <i class="icon icon-menu"></i>
-      <i class="icon icon-cross"></i>
-    </label>
-    <nav class="navbar">
-      <ul>
-        <li><a href="/" title="Home">Home</a></li>
-        
+    <div class="container">
+      <input type="checkbox" id="toggleNavbar">
+      <h1 class="logo"><a href="/">Nilesh<span>Prajapati</span></a></h1>
+      <label for="toggleNavbar" role="button" class="toggle-navbar-button">
+        <i class="icon icon-menu"></i>
+        <i class="icon icon-cross"></i>
+      </label>
+      <nav class="navbar">
+        <ul>
+          <li><a href="/" title="Home">Home</a></li>
+
           <li><a href="/about" title="About">About</a></li>
-        
+
           <li><a href="/blog" title="Blog">Blog</a></li>
-        
-        <li><a href="/feed.xml" target="_blank"><i class="icon icon-rss"></i></a></li>
+
+          <li><a href="/feed.xml" target="_blank"><i class="icon icon-rss"></i></a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+
+  <main class="main-container">
+    <div class="container">
+      <article role="article" class="post">
+
+        <div class="card">
+          <header class="post-header">
+            <h1 class="post-title">Operationalizing the Machine Learning model inferencing with an engineering approach
+            </h1>
+            <em class="post-meta">
+              <time>Aug 17, 2020</time>
+            </em>
+          </header>
+          <div class="post-categories">
+
+
+            <a href="/categories/#Architecture" class="post-tag">Architecture</a>
+            &nbsp;
+
+            <a href="/categories/#Data Analytics" class="post-tag">Data Analytics</a>
+
+
+          </div>
+          <div class="post-content">
+
+            <figure class="post-thumbnail ">
+              <img src="/images/OperationalizeMLModel.png"
+                alt="Operationalizing the Machine Learning model inferencing with an engineering approach">
+            </figure>
+
+            <h3>What is a machine learning model inferencing?</h3>
+
+            <p>Once you train a machine learning model to solve specific business problems, you need to think about how
+              you would be consuming that model in production. The machine learning model inferencing is to generate the
+              score and predict the output using the machine learning model. While the machine learning (ML) training
+              environment is used to train the ML Model, the ML inference environment is where you operationalize your
+              model to generate the score from your ML model.</p>
+
+            <h3>Challenges faced in machine learning model inferencing</h3>
+
+            <p>There are various challenges that require an engineering approach to come up with production-grade
+              solutions, following is the brief on those challenges.</p>
+
+            <p><strong><em>A plethora of Machine Learning Tools/Libraries/Frameworks</em></strong></p>
+
+            <p>Data Scientists use various libraries like SKLearn, Keras, Pytorch, etc. to train machine learning models
+              which in turn need different inferencing environments. If the ML model is trained using the SKLearn
+              library then to generate score using that model requires the SKLearn runtime environment. The challenge
+              here is about lock-in with one framework/tool ecosystem and it becomes difficult to create a common
+              inference environment.</p>
+
+            <p><strong><em>The requirement of different ML inferencing environments</em></strong></p>
+
+            <p>The use cases of AI/ML have been wide-spread in various industries &amp; domains having different
+              requirements for ML model deployment and operations. The IIoT industry has a different demand to deploy
+              the machine learning model because the ML model inferencing has to happen in a low configuration device or
+              some time in embedded devices. Some use cases demand hosting models in the cloud environments with high
+              scalability requirements while many use cases demand running inferencing environment on the edge server.
+              The challenge here is that you need to prepare your runtime environment for such different targets by
+              keeping in mind scalability and performance. The challenge is also about dependency on specific
+              tools/libraries which were used to train the model because the runtime environment (i.e. embedded device)
+              may not be able to support those tools and libraries.</p>
+
+            <p><strong><em>Dynamic Scalability requirement in ML Inferencing</em></strong></p>
+
+            <p>In certain situations, the ML model inferencing demands very high performance and scalability so the
+              runtime environment must be capable of utilizing hardware acceleration or should be able to run in a low
+              memory footprint. So preparing inference runtime with dynamic scalability and performance is another
+              challenge, particularly to support various inference runtime targets mentioned in the above paragraph.</p>
+
+            <p><strong><em>MLOps Pipeline Complexities</em></strong></p>
+
+            <p>The model training and re-training pipeline builds the model and prepares all dependencies required
+              during inferencing. In common scenarios, MLOps pipelines build docker images to package the ML model for
+              inferencing, which increases complexities in image storage in the container registry along with the model
+              stored in the model registry.</p>
+
+            <h3>Operationalizing ML Models using ONNX</h3>
+
+            <p>To overcome the challenges mentioned above, there needs to be a common ML inference environment without
+              needing library/tool specific dependencies. To have such common inference runtime, there needs to be a
+              common format for the machine learning model so that models trained using various libraries can be
+              converted to a common format and can be used for scoring using common inference environment. There is such
+              an open format for the machine learning model, which is called <a href="https://onnx.ai/">ONNX</a>.</p>
+
+            <p><strong>What is ONNX?</strong></p>
+
+            <p>ONNX is an open format for machine learning models, it defines a common set of operators, file format so
+              that ML models trained using different libraries can be converted to a common format.</p>
+
+            <p><strong>What is ONNX Runtime?</strong></p>
+
+            <p>The <a href="https://microsoft.github.io/onnxruntime/">ONNX Runtime</a> is an opensource inference
+              runtime that understands ONNX formated ML model and provides model scoring runtime. It has a support for a
+              variety of frameworks, operating systems and hardware platforms and built-in optimizations that deliver
+              faster inferencing.</p>
+
+            <h4>Proposed Architecture</h4>
+
+            <image src="/images/OperationalizeMLModel.png"></image>
+
+            <p>The proposed architecture recommends converting machine learning models trained using various
+              libraries/frameworks into ONNX format. There are many open-source plug-ins available to convert models
+              trained using Keras, SKLearn, Pytorch, Matlab etc. to common ONNX format so that only dependency for
+              inference environment would be ONNX Runtime and nothing else. It helps Machine Learning engineers/Data
+              Scientists to use the preferred framework without worrying about downstream inferencing implications. To
+              manage the versioning of ML Models, it is recommended to use the model registry provided by another
+              opensource component called <a href="https://www.mlflow.org/docs/latest/model-registry.html">MLFlow Model
+                Registry</a>. The core component in the proposed architecture is the ONNX inference runtime which is
+              available in various languages targeting different technology platforms so that it can be plugged into
+              existing technology stack. The MLFlow model registry needs to be integrated with ONNX Runtime such a way
+              that runtime can load the ML Model from model registry based on inferencing request where the request can
+              specify specific model and version to be used for inferenecing. The architecture does not cover security
+              and access rights mechanism as it would be specific to enterprise AI strategy. The MLOps pipelines can
+              train the model, convert the model into ONNX format, and then store it to MLFlow model registry with
+              specific version information. With this architecture approach, lots of complexities go away from MLOps
+              pipelines as we are not building any docker images, not preparing any conda environment for dependencies,
+              or not worrying about the target inferencing environment. The availability of ONNX Inference Runtime in
+              various language platforms helps operationalize the same models in different hardware and software
+              requirements.</p>
+
+            <p>There is a need to bring in many more such engineering approaches to operationalize ML/AI and make
+              enterprise AI successful.</p>
+
+          </div>
+
+
+          <hr>
+
+          <aside id="comments" class="disqus">
+            <h3><i class="icon icon-comments-o"></i> Comments</h3>
+            <div id="disqus_thread"></div>
+            <script>
+              var disqus_config = function () {
+                this.page.url = 'https://nileshprajapati.net/blog/2020/Operationalizing-ML-Model-Inferencing-with-an-engineering-approach/';
+                this.page.identifier = '/blog/2020/Operationalizing-ML-Model-Inferencing-with-an-engineering-approach';
+              };
+              (function () {
+                var d = document,
+                  s = d.createElement('script');
+                s.src = '//nileshprajapati.disqus.com/embed.js';
+                s.setAttribute('data-timestamp', +new Date());
+                (d.head || d.body).appendChild(s);
+              })();
+            </script>
+            <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript"
+                rel="nofollow">comments powered by Disqus.</a></noscript>
+          </aside>
+
+
+        </div>
+
+      </article>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <ul class="social">
+        <li><a href="https://github.com/prajapatin" target="_blank"><i class="icon icon-github"></i></a></li>
+        <li><a href="https://twitter.com/nilesh_be_it" target="_blank"><i class="icon icon-twitter"></i></a></li>
+        <li><a href="https://facebook.com/nilesh.be.it" target="_blank"><i class="icon icon-facebook"></i></a></li>
+        <li><a href="https://linkedin.com/in/nileshprajapati" target="_blank"><i class="icon icon-linkedin"></i></a>
+        </li>
       </ul>
-    </nav>
-  </div>
-</header>
-
-
-<main class="main-container">
-  <div class="container">
-    <article role="article" class="post">
-
-  <div class="card">
-    <header class="post-header">
-      <h1 class="post-title">Operationalizing the Machine Learning model inferencing with an engineering approach</h1>
-      <em class="post-meta">
-        <time>Aug 17, 2020</time>
-      </em>
-    </header>
-    <div class="post-categories">
-      
-      
-      <a href="/categories/#Architecture" class="post-tag">Architecture</a>
-      &nbsp;
-      
-      <a href="/categories/#Data Analytics" class="post-tag">Data Analytics</a>
-      
-      
+      <p class="txt-medium-gray">
+        <small>&copy;2026</small>
+      </p>
     </div>
-    <div class="post-content">
-      
-        <figure class="post-thumbnail ">
-          <img src="/images/OperationalizeMLModel.png" alt="Operationalizing the Machine Learning model inferencing with an engineering approach">
-        </figure>
-      
-      <h3>What is a machine learning model inferencing?</h3>
-
-<p>Once you train a machine learning model to solve specific business problems, you need to think about how you would be consuming that model in production. The machine learning model inferencing is to generate the score and predict the output using the machine learning model. While the machine learning (ML) training environment is used to train the ML Model, the ML inference environment is where you operationalize your model to generate the score from your ML model.</p>
-
-<h3>Challenges faced in machine learning model inferencing</h3>
-
-<p>There are various challenges that require an engineering approach to come up with production-grade solutions, following is the brief on those challenges.</p>
-
-<p><strong><em>A plethora of Machine Learning Tools/Libraries/Frameworks</em></strong></p>
-
-<p>Data Scientists use various libraries like SKLearn, Keras, Pytorch, etc. to train machine learning models which in turn need different inferencing environments. If the ML model is trained using the SKLearn library then to generate score using that model requires the SKLearn runtime environment. The challenge here is about lock-in with one framework/tool ecosystem and it becomes difficult to create a common inference environment.</p>
-
-<p><strong><em>The requirement of different ML inferencing environments</em></strong></p>
-
-<p>The use cases of AI/ML have been wide-spread in various industries &amp; domains having different requirements for ML model deployment and operations. The IIoT industry has a different demand to deploy the machine learning model because the ML model inferencing has to happen in a low configuration device or some time in embedded devices. Some use cases demand hosting models in the cloud environments with high scalability requirements while many use cases demand running inferencing environment on the edge server. The challenge here is that you need to prepare your runtime environment for such different targets by keeping in mind scalability and performance. The challenge is also about dependency on specific tools/libraries which were used to train the model because the runtime environment (i.e. embedded device) may not be able to support those tools and libraries.</p>
-
-<p><strong><em>Dynamic Scalability requirement in ML Inferencing</em></strong></p>
-
-<p>In certain situations, the ML model inferencing demands very high performance and scalability so the runtime environment must be capable of utilizing hardware acceleration or should be able to run in a low memory footprint. So preparing inference runtime with dynamic scalability and performance is another challenge, particularly to support various inference runtime targets mentioned in the above paragraph.</p>
-
-<p><strong><em>MLOps Pipeline Complexities</em></strong></p>
-
-<p>The model training and re-training pipeline builds the model and prepares all dependencies required during inferencing. In common scenarios, MLOps pipelines build docker images to package the ML model for inferencing, which increases complexities in image storage in the container registry along with the model stored in the model registry.</p>
-
-<h3>Operationalizing ML Models using ONNX</h3>
-
-<p>To overcome the challenges mentioned above, there needs to be a common ML inference environment without needing library/tool specific dependencies. To have such common inference runtime, there needs to be a common format for the machine learning model so that models trained using various libraries can be converted to a common format and can be used for scoring using common inference environment. There is such an open format for the machine learning model, which is called <a href="https://onnx.ai/">ONNX</a>.</p>
-
-<p><strong>What is ONNX?</strong></p>
-
-<p>ONNX is an open format for machine learning models, it defines a common set of operators, file format so that ML models trained using different libraries can be converted to a common format.</p>
-
-<p><strong>What is ONNX Runtime?</strong></p>
-
-<p>The <a href="https://microsoft.github.io/onnxruntime/">ONNX Runtime</a> is an opensource inference runtime that understands ONNX formated ML model and provides model scoring runtime. It has a support for a variety of frameworks, operating systems and hardware platforms and built-in optimizations that deliver faster inferencing.</p>
-
-<h4>Proposed Architecture</h4>
-
-<image src="/images/OperationalizeMLModel.png"></image>
-
-<p>The proposed architecture recommends converting machine learning models trained using various libraries/frameworks into ONNX format. There are many open-source plug-ins available to convert models trained using Keras, SKLearn, Pytorch, Matlab etc. to common ONNX format so that only dependency for inference environment would be ONNX Runtime and nothing else. It helps Machine Learning engineers/Data Scientists to use the preferred framework without worrying about downstream inferencing implications. To manage the versioning of ML Models, it is recommended to use the model registry provided by another opensource component called <a href="https://www.mlflow.org/docs/latest/model-registry.html">MLFlow Model Registry</a>. The core component in the proposed architecture is the ONNX inference runtime which is available in various languages targeting different technology platforms so that it can be plugged into existing technology stack. The MLFlow model registry needs to be integrated with ONNX Runtime such a way that runtime can load the ML Model from model registry based on inferencing request where the request can specify specific model and version to be used for inferenecing. The architecture does not cover security and access rights mechanism as it would be specific to enterprise AI strategy. The MLOps pipelines can train the model, convert the model into ONNX format, and then store it to MLFlow model registry with specific version information. With this architecture approach, lots of complexities go away from MLOps pipelines as we are not building any docker images, not preparing any conda environment for dependencies, or not worrying about the target inferencing environment. The availability of ONNX Inference Runtime in various language platforms helps operationalize the same models in different hardware and software requirements.</p>
-
-<p>There is a need to bring in many more such engineering approaches to operationalize ML/AI and make enterprise AI successful.</p>
-
-    </div>
-
-    
-<hr>
-
-<aside id="comments" class="disqus">
-  <h3><i class="icon icon-comments-o"></i> Comments</h3>
-  <div id="disqus_thread"></div>
-  <script>
-    var disqus_config = function() {
-      this.page.url = 'https://nileshprajapati.net/blog/2020/Operationalizing-ML-Model-Inferencing-with-an-engineering-approach/';
-      this.page.identifier = '/blog/2020/Operationalizing-ML-Model-Inferencing-with-an-engineering-approach';
-    };
-    (function() {
-      var d = document,
-      s = d.createElement('script');
-      s.src = '//nileshprajapati.disqus.com/embed.js';
-      s.setAttribute('data-timestamp', +new Date());
-      (d.head || d.body).appendChild(s);
-    })();
-  </script>
-  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
-</aside>
-
-
-  </div>
-
-</article>
-
-  </div>
-</main>
-
-<footer class="site-footer">
-  <div class="container">
-    <ul class="social">
-  <li><a href="https://github.com/prajapatin" target="_blank"><i class="icon icon-github"></i></a></li>
-  <li><a href="https://twitter.com/nilesh_be_it" target="_blank"><i class="icon icon-twitter"></i></a></li>
-  <li><a href="https://facebook.com/nilesh.be.it" target="_blank"><i class="icon icon-facebook"></i></a></li>
-  <li><a href="https://linkedin.com/in/nileshprajapati" target="_blank"><i class="icon icon-linkedin"></i></a></li>
-</ul>
-    <p class="txt-medium-gray">
-      <small>&copy;2020</small>
-    </p>
-  </div>
-</footer>
+  </footer>
 
 
 </body>
+
 </html>

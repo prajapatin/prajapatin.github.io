@@ -1,173 +1,250 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Windows Service as a Container on Azure Service Fabric</title>
-<meta name="description" content="What is Docker and Container?">
+  <title>Windows Service as a Container on Azure Service Fabric</title>
+  <meta name="description" content="What is Docker and Container?">
 
-<link rel="stylesheet" href="/css/main.css">
-<link rel="canonical" href="https://nileshprajapati.net/blog/2017/windows-service-as-a-container-on-service-fabric/">
-<link rel="alternate" type="application/rss+xml" title="Nilesh Prajapati" href="https://nileshprajapati.net/feed.xml" />
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="https://nileshprajapati.net/blog/2017/windows-service-as-a-container-on-service-fabric/">
+  <link rel="alternate" type="application/rss+xml" title="Nilesh Prajapati"
+    href="https://nileshprajapati.net/feed.xml" />
 
-<script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  <script>
+    (function (i, s, o, g, r, a, m) {
+      i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+        (i[r].q = i[r].q || []).push(arguments)
+      }, i[r].l = 1 * new Date(); a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
 
-  ga('create', 'UA-52446115-1', 'auto');
-  ga('send', 'pageview');
-</script>
+    ga('create', 'UA-52446115-1', 'auto');
+    ga('send', 'pageview');
+  </script>
 
 
 </head>
+
 <body>
   <header class="site-header">
-  <div class="container">
-    <input type="checkbox" id="toggleNavbar">
-    <h1 class="logo"><a href="/">Nilesh<span>Prajapati</span></a></h1>
-    <label for="toggleNavbar" role="button" class="toggle-navbar-button">
-      <i class="icon icon-menu"></i>
-      <i class="icon icon-cross"></i>
-    </label>
-    <nav class="navbar">
-      <ul>
-        <li><a href="/" title="Home">Home</a></li>
-        
+    <div class="container">
+      <input type="checkbox" id="toggleNavbar">
+      <h1 class="logo"><a href="/">Nilesh<span>Prajapati</span></a></h1>
+      <label for="toggleNavbar" role="button" class="toggle-navbar-button">
+        <i class="icon icon-menu"></i>
+        <i class="icon icon-cross"></i>
+      </label>
+      <nav class="navbar">
+        <ul>
+          <li><a href="/" title="Home">Home</a></li>
+
           <li><a href="/about" title="About">About</a></li>
-        
+
           <li><a href="/blog" title="Blog">Blog</a></li>
-        
-        <li><a href="/feed.xml" target="_blank"><i class="icon icon-rss"></i></a></li>
-      </ul>
-    </nav>
-  </div>
-</header>
 
-
-<main class="main-container">
-  <div class="container">
-    <article role="article" class="post">
-
-  <div class="card">
-    <header class="post-header">
-      <h1 class="post-title">Windows Service as a Container on Azure Service Fabric</h1>
-      <em class="post-meta">
-        <time>Sep 5, 2017</time>
-      </em>
-    </header>
-    <div class="post-categories">
-      
-      
-      <a href="/categories/#Cloud" class="post-tag">Cloud</a>
-      &nbsp;
-      
-      <a href="/categories/#Microservices" class="post-tag">Microservices</a>
-      &nbsp;
-      
-      <a href="/categories/#Docker Container" class="post-tag">Docker Container</a>
-      
-      
+          <li><a href="/feed.xml" target="_blank"><i class="icon icon-rss"></i></a></li>
+        </ul>
+      </nav>
     </div>
-    <div class="post-content">
-      
-        <figure class="post-thumbnail ">
-          <img src="/images/docker.png" alt="Windows Service as a Container on Azure Service Fabric">
-        </figure>
-      
-      <h3>What is Docker and Container?</h3>
+  </header>
 
-<p>The <a href="https://www.docker.com/what-docker">Docker</a> is a container platform using which you can create software containers. The container is a packaged software which shares the host operating system and contains all dependencies (System files, third-party software, settings or anything which is needed to run your containerized app) needed to run your software application.</p>
 
-<p>Containers are used to ship software faster and developers need not to be worried about whether the containerized app will run on specific machine or not. They are very light weight and share host operating system where you are running them and you can run multiple sandboxed containerized apps on specific VM or physical machine. There are many software product companies around the world which are using containers to release software on daily basis and saying multiple times in a day is also not wrong.</p>
+  <main class="main-container">
+    <div class="container">
+      <article role="article" class="post">
 
-<p>We are going to use Docker for Windows for this demo application and you will need to install <a href="https://store.docker.com/editions/community/docker-ce-desktop-windows">Docker for Windows</a> on Windows 10 (Anniversary edition) or Windows Server 2016. Also you will have to enable hardware virtualization through BIOS to install Docker runtime.</p>
+        <div class="card">
+          <header class="post-header">
+            <h1 class="post-title">Windows Service as a Container on Azure Service Fabric</h1>
+            <em class="post-meta">
+              <time>Sep 5, 2017</time>
+            </em>
+          </header>
+          <div class="post-categories">
 
-<h3>What is our sample app?</h3>
 
-<p>I have chosen windows service as an app to containerize because there are not many online references on containerizing custom windows service app in container. The source code is available <a href="https://github.com/prajapatin/WindowsServiceContainerOnASF">here</a> and it contains very simple windows service hosting OWIN based web api (RESTful service). It also contains Service Fabric project using which you can host container in Azure Cloud as a microservice. You will not be able to host containers in local service fabric cluster unless you have a Windows Server 2016 so you will have to spawn Service Fabric Cluster on Azure if you would want to test it on cloud. If you are not going to host container in cloud then I am going to show you how you can create Docker image and run locally.</p>
+            <a href="/categories/#Cloud" class="post-tag">Cloud</a>
+            &nbsp;
 
-<h3>Containerizing and running sample app</h3>
+            <a href="/categories/#Microservices" class="post-tag">Microservices</a>
+            &nbsp;
 
-<p>As a first step, make sure that Docker is properly installed on your machine and Docker runtime is up and running. Now once you take the sample code from above mentioned github repository, build the solution. You will notice dockerfile (Docker template file to build the Docker image) &amp; init.ps1(PowerShell script to be executed) files in release/debug within bin folder based on build configuration you have chosen, we are going to use these two files for building and running our Docker container.</p>
+            <a href="/categories/#Docker Container" class="post-tag">Docker Container</a>
 
-<p>First we will try to understand dockerfile template.</p>
 
-<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell"><span class="k">FROM </span>microsoft/dotnet-framework:4.7
-RUN mkdir C:\installation
-ADD <span class="nb">.</span> /installation
-RUN <span class="nb">sc </span>create WebAPIHostService <span class="nb">start</span><span class="o">=</span>auto <span class="nv">binpath</span><span class="o">=</span><span class="s2">"C:\installation\HostService.exe"</span>
-CMD powershell C:\installation\init.ps1
-EXPOSE 9000</code></pre></figure>
+          </div>
+          <div class="post-content">
 
-<p>To run the Docker build command, you will need to open PowerShell command prompt in administartor mode and then set your directory to bin/debug(or release) folder of the windows service project you have built as per above instructions. The above Docker template says that create the Docker image by taking microsoft/dotnet-framework:4.7 as a base image and create the installation folder in c directory in Docker image. The third line says that add whatever current directory content to created folder. In the fourth line we are instructing Docker runtime to create windows service from provided exe. The line prefixed with CMD instructs Docker runtime to run specified powershell script when we would be running Docker container from Docker image. The last line exposes port 9000, on which we can access REST api hosted in windows service.</p>
+            <figure class="post-thumbnail ">
+              <img src="/images/docker.png" alt="Windows Service as a Container on Azure Service Fabric">
+            </figure>
 
-<p>Now you have understood dockerfile, we will run following command in PowerShell, which will create Docker image.</p>
+            <h3>What is Docker and Container?</h3>
 
-<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell">docker build -t webapiservice .</code></pre></figure>
+            <p>The <a href="https://www.docker.com/what-docker">Docker</a> is a container platform using which you can
+              create software containers. The container is a packaged software which shares the host operating system
+              and contains all dependencies (System files, third-party software, settings or anything which is needed to
+              run your containerized app) needed to run your software application.</p>
 
-<p>The command will take quite a bit of time as it will download base windows image with .Net Framework from the Docker hub, it will download the image only first time and thereafter if you build any Docker image from the mentioned base image; it will use local image from your machine. Once the image creation is successful, you can verify that your image is created using below PowerShell command.</p>
+            <p>Containers are used to ship software faster and developers need not to be worried about whether the
+              containerized app will run on specific machine or not. They are very light weight and share host operating
+              system where you are running them and you can run multiple sandboxed containerized apps on specific VM or
+              physical machine. There are many software product companies around the world which are using containers to
+              release software on daily basis and saying multiple times in a day is also not wrong.</p>
 
-<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell">docker images</code></pre></figure>
+            <p>We are going to use Docker for Windows for this demo application and you will need to install <a
+                href="https://store.docker.com/editions/community/docker-ce-desktop-windows">Docker for Windows</a> on
+              Windows 10 (Anniversary edition) or Windows Server 2016. Also you will have to enable hardware
+              virtualization through BIOS to install Docker runtime.</p>
 
-<p>We now have a Docker image and we want to run container using that image so we need to run following command.</p>
+            <h3>What is our sample app?</h3>
 
-<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell">docker run --name webapiservice -d -p 9000:9000 webapiservice</code></pre></figure>
+            <p>I have chosen windows service as an app to containerize because there are not many online references on
+              containerizing custom windows service app in container. The source code is available <a
+                href="https://github.com/prajapatin/WindowsServiceContainerOnASF">here</a> and it contains very simple
+              windows service hosting OWIN based web api (RESTful service). It also contains Service Fabric project
+              using which you can host container in Azure Cloud as a microservice. You will not be able to host
+              containers in local service fabric cluster unless you have a Windows Server 2016 so you will have to spawn
+              Service Fabric Cluster on Azure if you would want to test it on cloud. If you are not going to host
+              container in cloud then I am going to show you how you can create Docker image and run locally.</p>
 
-<p>The above command runs Docker container with name as a ‘webapiservice’ and maps container port 9000 with host port 9000. Once you run the command, The Docker runtime will start the container and it will use PowerShell script provided in template as a CMD. Let us try to understand that init.ps1 file, here we are starting windows service as soon as container starts. We are also making sure that we are making http call to our REST service and flushing out logs if any so that we can verify those logs running ‘Docker logs {nameofcontainer}’ PowerShell command.</p>
+            <h3>Containerizing and running sample app</h3>
 
-<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell"><span class="nb">Write-Output</span> <span class="s1">'Starting Web API Host Server'</span>
-<span class="nb">Start-Service </span>WebAPIHostService
+            <p>As a first step, make sure that Docker is properly installed on your machine and Docker runtime is up and
+              running. Now once you take the sample code from above mentioned github repository, build the solution. You
+              will notice dockerfile (Docker template file to build the Docker image) &amp; init.ps1(PowerShell script
+              to be executed) files in release/debug within bin folder based on build configuration you have chosen, we
+              are going to use these two files for building and running our Docker container.</p>
+
+            <p>First we will try to understand dockerfile template.</p>
+
+            <figure class="highlight">
+              <pre><code class="language-powershell" data-lang="powershell"><span class="kr">FROM</span><span class="w"> </span><span class="n">microsoft/dotnet-framework:4.7</span><span class="w">
+</span><span class="nx">RUN</span><span class="w"> </span><span class="nx">mkdir</span><span class="w"> </span><span class="nx">C:\installation</span><span class="w">
+</span><span class="n">ADD</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="nx">/installation</span><span class="w">
+</span><span class="n">RUN</span><span class="w"> </span><span class="nx">sc</span><span class="w"> </span><span class="nx">create</span><span class="w"> </span><span class="nx">WebAPIHostService</span><span class="w"> </span><span class="nx">start</span><span class="o">=</span><span class="n">auto</span><span class="w"> </span><span class="nx">binpath</span><span class="o">=</span><span class="s2">"C:\installation\HostService.exe"</span><span class="w">
+</span><span class="n">CMD</span><span class="w"> </span><span class="nx">powershell</span><span class="w"> </span><span class="nx">C:\installation\init.ps1</span><span class="w">
+</span><span class="n">EXPOSE</span><span class="w"> </span><span class="nx">9000</span></code></pre>
+            </figure>
+
+            <p>To run the Docker build command, you will need to open PowerShell command prompt in administartor mode
+              and then set your directory to bin/debug(or release) folder of the windows service project you have built
+              as per above instructions. The above Docker template says that create the Docker image by taking
+              microsoft/dotnet-framework:4.7 as a base image and create the installation folder in c directory in Docker
+              image. The third line says that add whatever current directory content to created folder. In the fourth
+              line we are instructing Docker runtime to create windows service from provided exe. The line prefixed with
+              CMD instructs Docker runtime to run specified powershell script when we would be running Docker container
+              from Docker image. The last line exposes port 9000, on which we can access REST api hosted in windows
+              service.</p>
+
+            <p>Now you have understood dockerfile, we will run following command in PowerShell, which will create Docker
+              image.</p>
+
+            <figure class="highlight">
+              <pre><code class="language-powershell" data-lang="powershell"><span class="n">docker</span><span class="w"> </span><span class="nx">build</span><span class="w"> </span><span class="nt">-t</span><span class="w"> </span><span class="nx">webapiservice</span><span class="w"> </span><span class="o">.</span></code></pre>
+            </figure>
+
+            <p>The command will take quite a bit of time as it will download base windows image with .Net Framework from
+              the Docker hub, it will download the image only first time and thereafter if you build any Docker image
+              from the mentioned base image; it will use local image from your machine. Once the image creation is
+              successful, you can verify that your image is created using below PowerShell command.</p>
+
+            <figure class="highlight">
+              <pre><code class="language-powershell" data-lang="powershell"><span class="n">docker</span><span class="w"> </span><span class="nx">images</span></code></pre>
+            </figure>
+
+            <p>We now have a Docker image and we want to run container using that image so we need to run following
+              command.</p>
+
+            <figure class="highlight">
+              <pre><code class="language-powershell" data-lang="powershell"><span class="n">docker</span><span class="w"> </span><span class="nx">run</span><span class="w"> </span><span class="nt">--name</span><span class="w"> </span><span class="nx">webapiservice</span><span class="w"> </span><span class="nt">-d</span><span class="w"> </span><span class="nt">-p</span><span class="w"> </span><span class="nx">9000:9000</span><span class="w"> </span><span class="nx">webapiservice</span></code></pre>
+            </figure>
+
+            <p>The above command runs Docker container with name as a ‘webapiservice’ and maps container port 9000 with
+              host port 9000. Once you run the command, The Docker runtime will start the container and it will use
+              PowerShell script provided in template as a CMD. Let us try to understand that init.ps1 file, here we are
+              starting windows service as soon as container starts. We are also making sure that we are making http call
+              to our REST service and flushing out logs if any so that we can verify those logs running ‘Docker logs
+              {nameofcontainer}’ PowerShell command.</p>
+
+            <figure class="highlight">
+              <pre><code class="language-powershell" data-lang="powershell"><span class="n">Write-Output</span><span class="w"> </span><span class="s1">'Starting Web API Host Server'</span><span class="w">
+</span><span class="n">Start-Service</span><span class="w"> </span><span class="nx">WebAPIHostService</span><span class="w">
     
-<span class="nb">Write-Output</span> <span class="s1">'Making HTTP GET call'</span>
-<span class="nb">Invoke-WebRequest </span>http://localhost:9000/api/welcome -UseBasicParsing | Out-Null
+</span><span class="n">Write-Output</span><span class="w"> </span><span class="s1">'Making HTTP GET call'</span><span class="w">
+</span><span class="n">Invoke-WebRequest</span><span class="w"> </span><span class="nx">http://localhost:9000/api/welcome</span><span class="w"> </span><span class="nt">-UseBasicParsing</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Out-Null</span><span class="w">
 
-<span class="nb">Write-Output</span> <span class="s1">'Flushing log file'</span>
-netsh http flush logbuffer | Out-Null
+</span><span class="n">Write-Output</span><span class="w"> </span><span class="s1">'Flushing log file'</span><span class="w">
+</span><span class="n">netsh</span><span class="w"> </span><span class="nx">http</span><span class="w"> </span><span class="nx">flush</span><span class="w"> </span><span class="nx">logbuffer</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Out-Null</span><span class="w">
 
-<span class="nb">Write-Output</span> <span class="s1">'Tailing log file'</span>
-<span class="nb">Get-Content</span> -path <span class="s1">'C:\installation\service.log'</span> -Tail 1 -Wait</code></pre></figure>
+</span><span class="n">Write-Output</span><span class="w"> </span><span class="s1">'Tailing log file'</span><span class="w">
+</span><span class="n">Get-Content</span><span class="w"> </span><span class="nt">-path</span><span class="w"> </span><span class="s1">'C:\installation\service.log'</span><span class="w"> </span><span class="nt">-Tail</span><span class="w"> </span><span class="nx">1</span><span class="w"> </span><span class="nt">-Wait</span></code></pre>
+            </figure>
 
-<p>Once command runs successfully, we can verify that your container is running by below command.</p>
+            <p>Once command runs successfully, we can verify that your container is running by below command.</p>
 
-<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell">docker <span class="nb">ps</span></code></pre></figure>
+            <figure class="highlight">
+              <pre><code class="language-powershell" data-lang="powershell"><span class="n">docker</span><span class="w"> </span><span class="nx">ps</span></code></pre>
+            </figure>
 
-<p>If you want to verify that your windows service is running successfully, you will need to get IP address of container using below command.</p>
+            <p>If you want to verify that your windows service is running successfully, you will need to get IP address
+              of container using below command.</p>
 
-<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell">docker inspect --format<span class="o">=</span><span class="s2">"{ {.NetworkSettings.Networks.nat.IPAddress} }"</span> webapiservice</code></pre></figure>
+            <figure class="highlight">
+              <pre><code class="language-powershell" data-lang="powershell"><span class="n">docker</span><span class="w"> </span><span class="nx">inspect</span><span class="w"> </span><span class="nt">--format</span><span class="o">=</span><span class="s2">"{ {.NetworkSettings.Networks.nat.IPAddress} }"</span><span class="w"> </span><span class="n">webapiservice</span></code></pre>
+            </figure>
 
-<p>Once you get an IP address of running container, you can browse through {IP Address}:9000/api/welcome and verify that your API is up and running. You can also try to browse through another method {IP Address}:9000/api/welcome/detail. We now have windows service running in container so we can quickly look at how we can run container on Azure Service Fabric.</p>
+            <p>Once you get an IP address of running container, you can browse through {IP Address}:9000/api/welcome and
+              verify that your API is up and running. You can also try to browse through another method {IP
+              Address}:9000/api/welcome/detail. We now have windows service running in container so we can quickly look
+              at how we can run container on Azure Service Fabric.</p>
 
-<h3>Hosting windows service container on Azure Service Fabric</h3>
+            <h3>Hosting windows service container on Azure Service Fabric</h3>
 
-<p>In the sample solution, you will find ServiceFabricHost project and following content explains the detail about hosting container on service fabric. My <a href="/blog/2017/signalr-based-app-on-service-fabric/">previous article</a> explains about installing Service Fabric SDK, which is prerequisite to host this application on Azure Service Fabric.</p>
+            <p>In the sample solution, you will find ServiceFabricHost project and following content explains the detail
+              about hosting container on service fabric. My <a
+                href="/blog/2017/signalr-based-app-on-service-fabric/">previous article</a> explains about installing
+              Service Fabric SDK, which is prerequisite to host this application on Azure Service Fabric.</p>
 
-<p>Following portion of ServiceManifest.xml file should have an Azure Container Registry path of your container registry and how to store/manage container images in Azure Container Registry is explained <a href="https://docs.microsoft.com/en-us/azure/container-registry/container-registry-get-started-docker-cli">here</a>. For your image URL, you will have to use full path including your container registry URL.</p>
+            <p>Following portion of ServiceManifest.xml file should have an Azure Container Registry path of your
+              container registry and how to store/manage container images in Azure Container Registry is explained <a
+                href="https://docs.microsoft.com/en-us/azure/container-registry/container-registry-get-started-docker-cli">here</a>.
+              For your image URL, you will have to use full path including your container registry URL.</p>
 
-<figure class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;EntryPoint&gt;</span>
+            <figure class="highlight">
+              <pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;EntryPoint&gt;</span>
     <span class="c">&lt;!-- Follow this link for more information about deploying Windows containers to Service Fabric: https://aka.ms/sfguestcontainers --&gt;</span>
     <span class="nt">&lt;ContainerHost&gt;</span>
         <span class="nt">&lt;ImageName&gt;</span>[Your container image URL]<span class="nt">&lt;/ImageName&gt;</span>
     <span class="nt">&lt;/ContainerHost&gt;</span>
-<span class="nt">&lt;/EntryPoint&gt;</span></code></pre></figure>
+<span class="nt">&lt;/EntryPoint&gt;</span></code></pre>
+            </figure>
 
-<p>Also you will need to understand following portion from the same file, where we are creating endpoint for our microservice.</p>
+            <p>Also you will need to understand following portion from the same file, where we are creating endpoint for
+              our microservice.</p>
 
-<figure class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;Resources&gt;</span>
+            <figure class="highlight">
+              <pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;Resources&gt;</span>
     <span class="nt">&lt;Endpoints&gt;</span>
        <span class="c">&lt;!-- This endpoint is used by the communication listener to obtain the port on which to 
             listen. Please note that if your service is partitioned, this port is shared with 
             replicas of different partitions that are placed in your code. --&gt;</span>
        <span class="nt">&lt;Endpoint</span> <span class="na">Name=</span><span class="s">"WebAPIHostServiceTypeEndpoint"</span> <span class="na">Protocol=</span><span class="s">"http"</span> <span class="na">Port=</span><span class="s">"9000"</span> <span class="nt">/&gt;</span>
     <span class="nt">&lt;/Endpoints&gt;</span>
-<span class="nt">&lt;/Resources&gt;</span></code></pre></figure>
+<span class="nt">&lt;/Resources&gt;</span></code></pre>
+            </figure>
 
-<p>The another file ApplicationMenifest.xml is also very important to understand as it explains port mapping between Container and host and credential to connect with Azure Container Registry so that Service Fabric can download the docker image. We need to know another very important detail about endpoint reference in port mapping, it is a same endpoint name we have provided in ServiceManifest.xml.</p>
+            <p>The another file ApplicationMenifest.xml is also very important to understand as it explains port mapping
+              between Container and host and credential to connect with Azure Container Registry so that Service Fabric
+              can download the docker image. We need to know another very important detail about endpoint reference in
+              port mapping, it is a same endpoint name we have provided in ServiceManifest.xml.</p>
 
-<figure class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;ServiceManifestImport&gt;</span>
+            <figure class="highlight">
+              <pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;ServiceManifestImport&gt;</span>
     <span class="nt">&lt;ServiceManifestRef</span> <span class="na">ServiceManifestName=</span><span class="s">"WebAPIHostServicePkg"</span> <span class="na">ServiceManifestVersion=</span><span class="s">"1.0.0"</span> <span class="nt">/&gt;</span>
     <span class="nt">&lt;ConfigOverrides</span> <span class="nt">/&gt;</span>
     <span class="nt">&lt;Policies&gt;</span>
@@ -176,57 +253,62 @@ netsh http flush logbuffer | Out-Null
             <span class="nt">&lt;PortBinding</span> <span class="na">ContainerPort=</span><span class="s">"9000"</span> <span class="na">EndpointRef=</span><span class="s">"WebAPIHostServiceTypeEndpoint"</span><span class="nt">/&gt;</span>
         <span class="nt">&lt;/ContainerHostPolicies&gt;</span>
     <span class="nt">&lt;/Policies&gt;</span>
-<span class="nt">&lt;/ServiceManifestImport&gt;</span></code></pre></figure>
+<span class="nt">&lt;/ServiceManifestImport&gt;</span></code></pre>
+            </figure>
 
-<p>So once you understand and provide your detail in configuration, you are ready to publish service fabric application.</p>
+            <p>So once you understand and provide your detail in configuration, you are ready to publish service fabric
+              application.</p>
 
+
+          </div>
+
+
+          <hr>
+
+          <aside id="comments" class="disqus">
+            <h3><i class="icon icon-comments-o"></i> Comments</h3>
+            <div id="disqus_thread"></div>
+            <script>
+              var disqus_config = function () {
+                this.page.url = 'https://nileshprajapati.net/blog/2017/windows-service-as-a-container-on-service-fabric/';
+                this.page.identifier = '/blog/2017/windows-service-as-a-container-on-service-fabric';
+              };
+              (function () {
+                var d = document,
+                  s = d.createElement('script');
+                s.src = '//nileshprajapati.disqus.com/embed.js';
+                s.setAttribute('data-timestamp', +new Date());
+                (d.head || d.body).appendChild(s);
+              })();
+            </script>
+            <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript"
+                rel="nofollow">comments powered by Disqus.</a></noscript>
+          </aside>
+
+
+        </div>
+
+      </article>
 
     </div>
+  </main>
 
-    
-<hr>
-
-<aside id="comments" class="disqus">
-  <h3><i class="icon icon-comments-o"></i> Comments</h3>
-  <div id="disqus_thread"></div>
-  <script>
-    var disqus_config = function() {
-      this.page.url = 'https://nileshprajapati.net/blog/2017/windows-service-as-a-container-on-service-fabric/';
-      this.page.identifier = '/blog/2017/windows-service-as-a-container-on-service-fabric';
-    };
-    (function() {
-      var d = document,
-      s = d.createElement('script');
-      s.src = '//nileshprajapati.disqus.com/embed.js';
-      s.setAttribute('data-timestamp', +new Date());
-      (d.head || d.body).appendChild(s);
-    })();
-  </script>
-  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
-</aside>
-
-
-  </div>
-
-</article>
-
-  </div>
-</main>
-
-<footer class="site-footer">
-  <div class="container">
-    <ul class="social">
-  <li><a href="https://github.com/prajapatin" target="_blank"><i class="icon icon-github"></i></a></li>
-  <li><a href="https://twitter.com/nilesh_be_it" target="_blank"><i class="icon icon-twitter"></i></a></li>
-  <li><a href="https://facebook.com/nilesh.be.it" target="_blank"><i class="icon icon-facebook"></i></a></li>
-  <li><a href="https://linkedin.com/in/nileshprajapati" target="_blank"><i class="icon icon-linkedin"></i></a></li>
-</ul>
-    <p class="txt-medium-gray">
-      <small>&copy;2020</small>
-    </p>
-  </div>
-</footer>
+  <footer class="site-footer">
+    <div class="container">
+      <ul class="social">
+        <li><a href="https://github.com/prajapatin" target="_blank"><i class="icon icon-github"></i></a></li>
+        <li><a href="https://twitter.com/nilesh_be_it" target="_blank"><i class="icon icon-twitter"></i></a></li>
+        <li><a href="https://facebook.com/nilesh.be.it" target="_blank"><i class="icon icon-facebook"></i></a></li>
+        <li><a href="https://linkedin.com/in/nileshprajapati" target="_blank"><i class="icon icon-linkedin"></i></a>
+        </li>
+      </ul>
+      <p class="txt-medium-gray">
+        <small>&copy;2026</small>
+      </p>
+    </div>
+  </footer>
 
 
 </body>
+
 </html>

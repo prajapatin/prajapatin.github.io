@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Building an LLM-powered Data Analyst cum Data Scientist</title>
+<meta name="description" content="If you have ever wished you could talk to your pandas DataFrame in natural language, create_pandas_dataframe_agent from langchain_experimental.agents.agent_t...">
+
+<link rel="stylesheet" href="/css/main.css">
+<link rel="canonical" href="https://nileshprajapati.net/blog/2026/building-LLM-powered-data-analyst/">
+<link rel="alternate" type="application/rss+xml" title="Nilesh Prajapati" href="https://nileshprajapati.net/feed.xml" />
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-52446115-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+</head>
+<body>
+  <header class="site-header">
+  <div class="container">
+    <input type="checkbox" id="toggleNavbar">
+    <h1 class="logo"><a href="/">Nilesh<span>Prajapati</span></a></h1>
+    <label for="toggleNavbar" role="button" class="toggle-navbar-button">
+      <i class="icon icon-menu"></i>
+      <i class="icon icon-cross"></i>
+    </label>
+    <nav class="navbar">
+      <ul>
+        <li><a href="/" title="Home">Home</a></li>
+        
+          <li><a href="/about" title="About">About</a></li>
+        
+          <li><a href="/blog" title="Blog">Blog</a></li>
+        
+        <li><a href="/feed.xml" target="_blank"><i class="icon icon-rss"></i></a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+
+<main class="main-container">
+  <div class="container">
+    <article role="article" class="post">
+
+  <div class="card">
+    <header class="post-header">
+      <h1 class="post-title">Building an LLM-powered Data Analyst cum Data Scientist</h1>
+      <em class="post-meta">
+        <time>Feb 1, 2026</time>
+      </em>
+    </header>
+    <div class="post-categories">
+      
+      
+      <a href="/categories/#AI" class="post-tag">AI</a>
+      &nbsp;
+      
+      <a href="/categories/#LLM" class="post-tag">LLM</a>
+      &nbsp;
+      
+      <a href="/categories/#Data Science" class="post-tag">Data Science</a>
+      &nbsp;
+      
+      <a href="/categories/#Python" class="post-tag">Python</a>
+      
+      
+    </div>
+    <div class="post-content">
+      
+        <figure class="post-thumbnail ">
+          <img src="/images/LLM-Powered_Data_Analyst.png" alt="Building an LLM-powered Data Analyst cum Data Scientist">
+        </figure>
+      
+      <p>If you have ever wished you could talk to your pandas DataFrame in natural language, <code class="language-plaintext highlighter-rouge">create_pandas_dataframe_agent</code> from <code class="language-plaintext highlighter-rouge">langchain_experimental.agents.agent_toolkits.pandas.base</code> is exactly what you need. In this post we will build an end‑to‑end “LLM data analyst/scientist” that explores a real‑world dataset, creates visualizations, trains multiple machine learning models, and selects the best one based on evaluation metrics.</p>
+
+<p>We will use a <a href="https://web.stanford.edu/class/archive/cs/cs109/cs109.1166/stuff/titanic.csv">public dataset</a> (the classic Titanic survival data) and see how far we can go with just prompts plus a thin layer of Python glue around the agent. For free experimentation, we will use ChatGroq with the <a href="https://groq.com/pricing">free plan</a> of Groq API instead of paid APIs.</p>
+
+<h3 id="what-is-create_pandas_dataframe_agent">What is <code class="language-plaintext highlighter-rouge">create_pandas_dataframe_agent</code>?</h3>
+
+<p><code class="language-plaintext highlighter-rouge">create_pandas_dataframe_agent</code> constructs an AgentExecutor that has access to:</p>
+<ul>
+  <li>Your LLM (e.g., <code class="language-plaintext highlighter-rouge">ChatGroq</code> or <code class="language-plaintext highlighter-rouge">ChatOpenAI</code>)</li>
+  <li>One or more pandas DataFrames</li>
+  <li>A Python REPL tool that lets the LLM write and execute Python code against those DataFrames</li>
+</ul>
+
+<p>The function signature (simplified) looks like this:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">langchain_experimental.agents.agent_toolkits.pandas.base</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">create_pandas_dataframe_agent</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">agent</span> <span class="o">=</span> <span class="nf">create_pandas_dataframe_agent</span><span class="p">(</span>
+    <span class="n">llm</span><span class="p">,</span>
+    <span class="n">df</span><span class="p">,</span>                       
+    <span class="n">agent_type</span><span class="o">=</span><span class="sh">"</span><span class="s">tool-calling</span><span class="sh">"</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">include_df_in_prompt</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">number_of_head_rows</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">allow_dangerous_code</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">extra_tools</span><span class="o">=</span><span class="p">()</span>
+<span class="p">)</span>
+</code></pre></div></div>
+
+<p>Under the hood, LangChain wires up an agent that can inspect the DataFrame, call pandas, generate plots, and even import scikit‑learn and it is all orchestrated by natural language instructions you send to <code class="language-plaintext highlighter-rouge">agent.invoke({"input": "..."})</code>.</p>
+
+<blockquote>
+  <p><strong>Security note:</strong> the agent uses a Python REPL that can execute arbitrary code; you must run this in a sandboxed environment in production.</p>
+</blockquote>
+
+<h3 id="setup-and-dataset">Setup and Dataset</h3>
+
+<p>We will use the <a href="https://web.stanford.edu/class/archive/cs/cs109/cs109.1166/stuff/titanic.csv">Titanic dataset</a> because it is small, tabular, and has a clear prediction task: “Will this passenger survive?”</p>
+
+<h4 id="install-dependencies">Install dependencies</h4>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip <span class="nb">install </span>langchain langchain-experimental langchain-groq pandas scikit-learn matplotlib seaborn
+</code></pre></div></div>
+<p>You will need a <strong>free Groq API key</strong> (sign up at console.groq.com and set  GROQ_API_KEY  as an environment variable). Groq’s free tier gives generous rate limits for models like Llama 3.1, making it perfect for prototyping without costs.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">####Load the dataset and create the agent
+</span><span class="kn">import</span> <span class="n">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+<span class="kn">from</span> <span class="n">langchain_groq</span> <span class="kn">import</span> <span class="n">ChatGroq</span>  <span class="c1"># Free, fast inference!
+</span><span class="kn">from</span> <span class="n">langchain_experimental.agents</span> <span class="kn">import</span> <span class="n">create_pandas_dataframe_agent</span>
+
+<span class="c1"># 1. Load Titanic data
+</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nf">read_csv</span><span class="p">(</span><span class="sh">"</span><span class="s">https://web.stanford.edu/class/archive/cs/cs109/cs109.1166/stuff/titanic.csv</span><span class="sh">"</span><span class="p">)</span>  <span class="c1"># any titanic-like CSV with Survived, Pclass, Age, etc.
+</span>
+<span class="c1"># 2. Initialize LLM (free Groq model)
+</span>
+<span class="n">llm</span> <span class="o">=</span> <span class="nc">ChatGroq</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="sh">"</span><span class="s">llama-3.1-8b-instant</span><span class="sh">"</span><span class="p">,</span>  
+    <span class="n">temperature</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># 3. Create the pandas agent
+</span>
+<span class="n">agent</span> <span class="o">=</span> <span class="nf">create_pandas_dataframe_agent</span><span class="p">(</span>
+    <span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span>
+    <span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+    <span class="n">agent_type</span><span class="o">=</span><span class="sh">"</span><span class="s">tool-calling</span><span class="sh">"</span><span class="p">,</span>  
+    <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">include_df_in_prompt</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">number_of_head_rows</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">allow_dangerous_code</span><span class="o">=</span><span class="bp">True</span>
+<span class="p">)</span>
+</code></pre></div></div>
+
+<p>Groq models are blazing fast and fully compatible with LangChain agents, you get the same conversational power as OpenAI but for free during development.
+We set <code class="language-plaintext highlighter-rouge">number_of_head_rows</code> to a small value so the prompt includes just the head of the DataFrame, keeping context size manageable.</p>
+
+<h3 id="conversational-exploratory-data-analysis">Conversational Exploratory Data Analysis</h3>
+
+<p>Once the agent is ready, we can start doing EDA using plain English. Behind the scenes, the LLM writes pandas code, executes it, and returns a natural‑language summary plus any textual outputs.</p>
+
+<h4 id="basic-summary-statistics">Basic summary statistics</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">response</span> <span class="o">=</span> <span class="n">agent</span><span class="p">.</span><span class="nf">invoke</span><span class="p">({</span>
+    <span class="sh">"</span><span class="s">input</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">Give me a concise summary of the dataset: row count, column count, </span><span class="sh">"</span>
+             <span class="sh">"</span><span class="s">missing values per column, and descriptive stats for numeric columns.</span><span class="sh">"</span>
+<span class="p">})</span>
+<span class="nf">print</span><span class="p">(</span><span class="n">response</span><span class="p">[</span><span class="sh">"</span><span class="s">output</span><span class="sh">"</span><span class="p">])</span>
+</code></pre></div></div>
+
+<p>Typical things the agent will do:</p>
+<ul>
+  <li>Call <code class="language-plaintext highlighter-rouge">df.shape</code>  for rows/columns</li>
+  <li>Use  <code class="language-plaintext highlighter-rouge">df.isna().sum()</code>  for missing values</li>
+  <li>Use  <code class="language-plaintext highlighter-rouge">df.describe()</code>  for numeric features</li>
+</ul>
+
+<p>Because the agent has a Python REPL tool bound to the DataFrame, it can chain these calls without you writing the code explicitly.</p>
+
+<h4 id="ask-about-specific-columns">Ask about specific columns</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">response</span> <span class="o">=</span> <span class="n">agent</span><span class="p">.</span><span class="nf">invoke</span><span class="p">({</span>
+    <span class="sh">"</span><span class="s">input</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">What is the average age of passengers?</span><span class="sh">"</span>
+<span class="p">})</span>
+<span class="nf">print</span><span class="p">(</span><span class="n">response</span><span class="p">[</span><span class="sh">"</span><span class="s">output</span><span class="sh">"</span><span class="p">])</span>
+</code></pre></div></div>
+<h4 id="target-distribution-and-feature-insights">Target distribution and feature insights</h4>
+
+<p>You can ask progressively richer questions, for example:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">agent</span><span class="p">.</span><span class="nf">invoke</span><span class="p">({</span>
+    <span class="sh">"</span><span class="s">input</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">What percentage of passengers survived vs did not survive? </span><span class="sh">"</span>
+             <span class="sh">"</span><span class="s">Show the counts and percentages.</span><span class="sh">"</span>
+<span class="p">})</span>
+
+<span class="n">agent</span><span class="p">.</span><span class="nf">invoke</span><span class="p">({</span>
+    <span class="sh">"</span><span class="s">input</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">Which features seem most correlated with survival? </span><span class="sh">"</span>
+             <span class="sh">"</span><span class="s">Give a short ranking based on simple statistics.</span><span class="sh">"</span>
+<span class="p">})</span>
+
+</code></pre></div></div>
+<p>Internally, the agent will compute group‑bys like <code class="language-plaintext highlighter-rouge">df.groupby("Survived")["Age"].mean()</code> or correlations via <code class="language-plaintext highlighter-rouge">df.corr(numeric_only=True)</code>. You get a narrative answer, but you can always inspect <code class="language-plaintext highlighter-rouge">verbose=True</code> logs to see the Python code it generated.</p>
+
+<h3 id="visualization-capabilities">Visualization Capabilities</h3>
+
+<p>Because the agent has access to a Python REPL, it can import <code class="language-plaintext highlighter-rouge">matplotlib</code> or <code class="language-plaintext highlighter-rouge">seaborn</code> and build plots. You just need to ensure your environment can display or save figures.</p>
+
+<h4 id="example-survival-rate-by-passenger-class">Example: Survival rate by passenger class</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">plot_code</span> <span class="o">=</span> <span class="sh">"""</span><span class="s">
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+plt.figure(figsize=(6, 4))
+sns.barplot(data=df, x=</span><span class="sh">'</span><span class="s">Pclass</span><span class="sh">'</span><span class="s">, y=</span><span class="sh">'</span><span class="s">Survived</span><span class="sh">'</span><span class="s">, estimator=lambda x: sum(x)/len(x))
+plt.title(</span><span class="sh">'</span><span class="s">Survival Rate by Passenger Class</span><span class="sh">'</span><span class="s">)
+plt.ylabel(</span><span class="sh">'</span><span class="s">Survival Rate</span><span class="sh">'</span><span class="s">)
+plt.xlabel(</span><span class="sh">'</span><span class="s">Passenger Class</span><span class="sh">'</span><span class="s">)
+plt.tight_layout()
+plt.savefig(</span><span class="sh">'</span><span class="s">survival_by_class.png</span><span class="sh">'</span><span class="s">)
+</span><span class="sh">'</span><span class="s">Plot saved to survival_by_class.png</span><span class="sh">'</span><span class="s">
+</span><span class="sh">"""</span>
+
+<span class="n">agent</span><span class="p">.</span><span class="nf">invoke</span><span class="p">({</span>
+    <span class="sh">"</span><span class="s">input</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">Execute the following code to visualize survival rate by class and </span><span class="sh">"</span>
+             <span class="sh">"</span><span class="s">save it as a PNG file:</span><span class="se">\n</span><span class="sh">"</span> <span class="o">+</span> <span class="n">plot_code</span>
+<span class="p">})</span>
+</code></pre></div></div>
+<p>Here we explicitly pass code to keep things deterministic, but you can also delegate more of it to the agent:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">agent</span><span class="p">.</span><span class="nf">invoke</span><span class="p">({</span>
+    <span class="sh">"</span><span class="s">input</span><span class="sh">"</span><span class="p">:</span> <span class="p">(</span>
+        <span class="sh">"</span><span class="s">Create a bar chart of survival rate by passenger class using seaborn. </span><span class="sh">"</span>
+        <span class="sh">"</span><span class="s">Save it as </span><span class="sh">'</span><span class="s">survival_by_class_auto.png</span><span class="sh">'</span><span class="s"> and return a short textual summary.</span><span class="sh">"</span>
+    <span class="p">)</span>
+<span class="p">})</span>
+</code></pre></div></div>
+<p>The agent will then:</p>
+<ul>
+  <li>Import <code class="language-plaintext highlighter-rouge">matplotlib.pyplot</code> and <code class="language-plaintext highlighter-rouge">seaborn</code></li>
+  <li>Compute aggregated survival rates</li>
+  <li>Save the figure to disk and synthesize a description</li>
+</ul>
+
+<p>You can repeat this pattern for:</p>
+<ul>
+  <li>distribution by survival</li>
+  <li>Fare distribution with outliers</li>
+  <li>Heatmap of feature correlations</li>
+</ul>
+
+<h3 id="turning-the-agent-into-an-auto-ml-helper">Turning the Agent into an Auto-ML Helper</h3>
+
+<p>Next, we will ask the agent to help us build and evaluate multiple ML models. We will use scikit‑learn for model training and metrics, but the LLM will generate most of the boilerplate code.</p>
+
+<h4 id="step-1-data-preprocessing">Step 1: Data preprocessing</h4>
+
+<p>We want to:</p>
+<ul>
+  <li>Drop columns that are not useful (e.g., names, ticket numbers)</li>
+  <li>Handle missing values</li>
+  <li>Encode categorical variables</li>
+  <li>Split into train/test sets</li>
+</ul>
+
+<p>You can prompt the agent:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">preprocess_prompt</span> <span class="o">=</span> <span class="sh">"""</span><span class="s">
+Prepare the Titanic dataset for a binary classification task predicting Survived.
+
+Requirements:
+- Drop identifier-like columns such as PassengerId, Name, Ticket, Cabin.
+- Use reasonable imputations for missing values (median for numeric, mode for categorical).
+- One-hot encode categorical features.
+- Split the data into train and test sets with test_size=0.2 and random_state=42.
+- Name the resulting arrays X_train, X_test, y_train, y_test.
+- Use scikit-learn where appropriate.
+Return only a short textual confirmation and the shapes of each split.
+</span><span class="sh">"""</span>
+
+<span class="n">agent</span><span class="p">.</span><span class="nf">invoke</span><span class="p">({</span><span class="sh">"</span><span class="s">input</span><span class="sh">"</span><span class="p">:</span> <span class="n">preprocess_prompt</span><span class="p">})</span>
+</code></pre></div></div>
+<p>The agent will likely generate code along the lines of:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">from sklearn.model_selection import train_test_split</code></li>
+  <li><code class="language-plaintext highlighter-rouge">from sklearn.impute import SimpleImputer</code></li>
+  <li><code class="language-plaintext highlighter-rouge">from sklearn.compose import ColumnTransformer</code></li>
+  <li><code class="language-plaintext highlighter-rouge">from sklearn.preprocessing import OneHotEncoder</code></li>
+</ul>
+
+<p>and then run it in the REPL against your df.</p>
+
+<h4 id="step-2-train-multiple-models">Step 2: Train multiple models</h4>
+
+<p>Now ask it to train a few standard classifiers:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">train_models_prompt</span> <span class="o">=</span> <span class="sh">"""</span><span class="s">
+Using X_train, X_test, y_train, y_test that you have already created:
+
+- Train the following classifiers with mostly default hyperparameters:
+  - LogisticRegression
+  - RandomForestClassifier
+  - GradientBoostingClassifier
+- Evaluate each model on the test set using:
+  - Accuracy
+  - Precision
+  - Recall
+  - F1-score
+- Print a compact table of metrics for all models.
+</span><span class="sh">"""</span>
+
+<span class="n">agent</span><span class="p">.</span><span class="nf">invoke</span><span class="p">({</span><span class="sh">"</span><span class="s">input</span><span class="sh">"</span><span class="p">:</span> <span class="n">train_models_prompt</span><span class="p">})</span>
+</code></pre></div></div>
+
+<p>The LLM will typically import from <code class="language-plaintext highlighter-rouge">sklearn.linear_model</code>, <code class="language-plaintext highlighter-rouge">sklearn.ensemble</code>, and <code class="language-plaintext highlighter-rouge">sklearn.metrics</code>, then compute and print a table of metrics.
+You now have a simple, conversational Auto‑ML loop powered by <code class="language-plaintext highlighter-rouge">create_pandas_dataframe_agent</code>.</p>
+
+<h3 id="selecting-the-best-model-programmatically">Selecting the Best Model Programmatically</h3>
+
+<p>Once all metrics are available, we can ask the agent to “rank and select” the best model based on a chosen metric.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">select_model_prompt</span> <span class="o">=</span> <span class="sh">"""</span><span class="s">
+From the models you trained (LogisticRegression, RandomForestClassifier, GradientBoostingClassifier):
+
+- Recompute or reuse the metrics (accuracy, precision, recall, F1).
+- Select the best model based primarily on F1-score.
+- Print:
+  - The chosen model name.
+  - Its full metric set.
+  - A one-paragraph explanation of why it is preferred.
+</span><span class="sh">"""</span>
+
+<span class="n">agent</span><span class="p">.</span><span class="nf">invoke</span><span class="p">({</span><span class="sh">"</span><span class="s">input</span><span class="sh">"</span><span class="p">:</span> <span class="n">select_model_prompt</span><span class="p">})</span>
+</code></pre></div></div>
+
+<p>To make downstream usage easier, you can ask the agent to also expose the best model as a variable in the REPL:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">persist_best_model_prompt</span> <span class="o">=</span> <span class="sh">"""</span><span class="s">
+Assume you have variables for each trained model (e.g., log_reg, rf_clf, gb_clf).
+
+- Identify the model with the highest F1-score on the test set.
+- Assign that model instance to a variable named best_model.
+- Print the chosen model name and its F1-score only.
+</span><span class="sh">"""</span>
+
+<span class="n">agent</span><span class="p">.</span><span class="nf">invoke</span><span class="p">({</span><span class="sh">"</span><span class="s">input</span><span class="sh">"</span><span class="p">:</span> <span class="n">persist_best_model_prompt</span><span class="p">})</span>
+</code></pre></div></div>
+<p>Now you can manually import joblib in your notebook and persist the selected model:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="n">joblib</span>
+<span class="n">joblib</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="n">best_model</span><span class="p">,</span> <span class="sh">"</span><span class="s">best_titanic_model.joblib</span><span class="sh">"</span><span class="p">)</span>
+</code></pre></div></div>
+<p>The key point: you did not hand‑write the majority of the ML pipeline; instead, you orchestrated it via natural‑language prompts through the pandas agent.</p>
+
+<h3 id="customizing-prompts-and-multi-agent-patterns">Customizing Prompts and Multi-Agent Patterns</h3>
+
+<p>If you want more control over how the agent reasons about the DataFrame, you can customize the underlying prompt using the  prefix  and  suffix  parameters.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">langchain.agents.types</span> <span class="kn">import</span> <span class="n">AgentType</span>
+
+<span class="n">custom_prefix</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="sh">"</span><span class="s">You are a senior data scientist specializing in tabular data analysis. </span><span class="sh">"</span>
+    <span class="sh">"</span><span class="s">You are working with the Titanic passenger dataset. </span><span class="sh">"</span>
+<span class="p">)</span>
+<span class="n">custom_suffix</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="sh">"</span><span class="s">Always prefer concise, tabular outputs, and avoid excessive prose. </span><span class="sh">"</span>
+    <span class="sh">"</span><span class="s">If you train models, clearly state assumptions and limitations.</span><span class="sh">"</span>
+<span class="p">)</span>
+
+<span class="n">agent</span> <span class="o">=</span> <span class="nf">create_pandas_dataframe_agent</span><span class="p">(</span>
+    <span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span>  <span class="c1"># Your ChatGroq instance
+</span>    <span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+    <span class="n">agent_type</span><span class="o">=</span><span class="n">AgentType</span><span class="p">.</span><span class="n">ZERO_SHOT_REACT_DESCRIPTION</span><span class="p">,</span>  <span class="c1"># classic ReAct-style agent[web:19]
+</span>    <span class="n">prefix</span><span class="o">=</span><span class="n">custom_prefix</span><span class="p">,</span>
+    <span class="n">suffix</span><span class="o">=</span><span class="n">custom_suffix</span><span class="p">,</span>
+    <span class="n">include_df_in_prompt</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">number_of_head_rows</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div></div>
+<p>You can also plug this pandas agent into a larger multi‑agent system, for example having one agent responsible for data ingestion and another for analysis, then passing the DataFrame between them. This lets you build richer “LLM apps” where one agent fetches data and another performs deep analysis.</p>
+
+<h3 id="practical-tips-and-gotchas">Practical Tips and Gotchas</h3>
+<p>A few things I have found useful when working with <code class="language-plaintext highlighter-rouge">create_pandas_dataframe_agent</code> in realistic projects:</p>
+<ul>
+  <li><strong>Manage context size:</strong> Keep <code class="language-plaintext highlighter-rouge">number_of_head_rows</code> small and add column descriptions via custom prefix instead of dumping the whole DataFrame into the prompt.</li>
+  <li><strong>Sandbox aggressively:</strong> Because <code class="language-plaintext highlighter-rouge">allow_dangerous_code=True</code> is often required for plotting and ML, run this in a container or other isolated environment.</li>
+  <li><strong>Be explicit with objectives:</strong> Tell the agent exactly what to compute, what to name variables, and what format to use for outputs (e.g., “print a markdown table”).</li>
+  <li><strong>Use verbose=True in development:</strong> Inspecting the generated Python helps you debug and refine prompts.</li>
+  <li><strong>Groq-specific tips:</strong> Start with <code class="language-plaintext highlighter-rouge">llama-3.1-8b-instant</code> for speed; upgrade to larger models if needed. Monitor free tier limits via the Groq console.</li>
+  <li><strong>Promote successful code to first‑class functions:</strong> Once the agent generates a good preprocessing or modeling pipeline, copy it into your codebase and treat it as normal, reviewed code.</li>
+</ul>
+
+<p>With just a few dozen lines of glue code and some carefully crafted prompts, <code class="language-plaintext highlighter-rouge">create_pandas_dataframe_agent</code> turns your LLM into a conversational data scientist sitting on top of pandas, matplotlib, and scikit-learn. ChatGroq makes it free and fast to iterate, perfect for turning data exploration into a chat conversation.</p>
+
+
+    </div>
+
+    
+<hr>
+
+<aside id="comments" class="disqus">
+  <h3><i class="icon icon-comments-o"></i> Comments</h3>
+  <div id="disqus_thread"></div>
+  <script>
+    var disqus_config = function() {
+      this.page.url = 'https://nileshprajapati.net/blog/2026/building-LLM-powered-data-analyst/';
+      this.page.identifier = '/blog/2026/building-LLM-powered-data-analyst';
+    };
+    (function() {
+      var d = document,
+      s = d.createElement('script');
+      s.src = '//nileshprajapati.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+</aside>
+
+
+  </div>
+
+</article>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <ul class="social">
+  <li><a href="https://github.com/prajapatin" target="_blank"><i class="icon icon-github"></i></a></li>
+  <li><a href="https://twitter.com/nilesh_be_it" target="_blank"><i class="icon icon-twitter"></i></a></li>
+  <li><a href="https://facebook.com/nilesh.be.it" target="_blank"><i class="icon icon-facebook"></i></a></li>
+  <li><a href="https://linkedin.com/in/nileshprajapati" target="_blank"><i class="icon icon-linkedin"></i></a></li>
+</ul>
+    <p class="txt-medium-gray">
+      <small>&copy;2026</small>
+    </p>
+  </div>
+</footer>
+
+
+</body>
+</html>
