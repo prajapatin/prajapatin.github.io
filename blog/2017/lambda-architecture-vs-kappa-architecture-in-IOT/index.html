@@ -1,202 +1,161 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Lambda Architecture Vs Kappa Architecture in IoT</title>
-  <meta name="description" content="Lambda Architecture &amp; Kappa Architecture use case in IoT">
+<title>Lambda Architecture Vs Kappa Architecture in IoT</title>
+<meta name="description" content="Lambda Architecture &amp; Kappa Architecture use case in IoT">
 
-  <link rel="stylesheet" href="/css/main.css">
-  <link rel="canonical" href="https://nileshprajapati.net/blog/2017/lambda-architecture-vs-kappa-architecture-in-IOT/">
-  <link rel="alternate" type="application/rss+xml" title="Nilesh Prajapati"
-    href="https://nileshprajapati.net/feed.xml" />
+<link rel="stylesheet" href="/css/main.css">
+<link rel="canonical" href="https://nileshprajapati.net/blog/2017/lambda-architecture-vs-kappa-architecture-in-IOT/">
+<link rel="alternate" type="application/rss+xml" title="Nilesh Prajapati" href="https://nileshprajapati.net/feed.xml" />
 
-  <script>
-    (function (i, s, o, g, r, a, m) {
-      i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
-        (i[r].q = i[r].q || []).push(arguments)
-      }, i[r].l = 1 * new Date(); a = s.createElement(o),
-        m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
-    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-    ga('create', 'UA-52446115-1', 'auto');
-    ga('send', 'pageview');
-  </script>
+  ga('create', 'UA-52446115-1', 'auto');
+  ga('send', 'pageview');
+</script>
 
 
 </head>
-
 <body>
   <header class="site-header">
-    <div class="container">
-      <input type="checkbox" id="toggleNavbar">
-      <h1 class="logo"><a href="/">Nilesh<span>Prajapati</span></a></h1>
-      <label for="toggleNavbar" role="button" class="toggle-navbar-button">
-        <i class="icon icon-menu"></i>
-        <i class="icon icon-cross"></i>
-      </label>
-      <nav class="navbar">
-        <ul>
-          <li><a href="/" title="Home">Home</a></li>
-
+  <div class="container">
+    <input type="checkbox" id="toggleNavbar">
+    <h1 class="logo"><a href="/">Nilesh<span>Prajapati</span></a></h1>
+    <label for="toggleNavbar" role="button" class="toggle-navbar-button">
+      <i class="icon icon-menu"></i>
+      <i class="icon icon-cross"></i>
+    </label>
+    <nav class="navbar">
+      <ul>
+        <li><a href="/" title="Home">Home</a></li>
+        
           <li><a href="/about" title="About">About</a></li>
-
+        
           <li><a href="/blog" title="Blog">Blog</a></li>
-
-          <li><a href="/feed.xml" target="_blank"><i class="icon icon-rss"></i></a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
-
-
-  <main class="main-container">
-    <div class="container">
-      <article role="article" class="post">
-
-        <div class="card">
-          <header class="post-header">
-            <h1 class="post-title">Lambda Architecture Vs Kappa Architecture in IoT</h1>
-            <em class="post-meta">
-              <time>Sep 13, 2017</time>
-            </em>
-          </header>
-          <div class="post-categories">
-
-
-            <a href="/categories/#Architecture" class="post-tag">Architecture</a>
-            &nbsp;
-
-            <a href="/categories/#IoT" class="post-tag">IoT</a>
-            &nbsp;
-
-            <a href="/categories/#Data Analytics" class="post-tag">Data Analytics</a>
-
-
-          </div>
-          <div class="post-content">
-
-            <figure class="post-thumbnail ">
-              <img src="/images/LambdaVsKappa.png" alt="Lambda Architecture Vs Kappa Architecture in IoT">
-            </figure>
-
-            <h3>Lambda Architecture &amp; Kappa Architecture use case in IoT</h3>
-
-            <p>In IoT world, the large amount of data from devices is pushed towards processing engine (in cloud or
-              on-premise); which is called data ingestion. The scenario is not different from other analytics &amp; data
-              domain where you want to process high/low latency data. The data ingestion and processing is called
-              pipeline architecture and it has two flavours as explained below. I have provided diagrams for both type
-              of architectures, which I have created using <a href="https://creately.com">Creately</a>. The Creately is
-              an online diagraming tool, which you can utilize for your diagramming needs.</p>
-
-            <h3>Lambda Architecture</h3>
-
-            <p>In Lambda Architecture, there are two data paths as mentioned below</p>
-
-            <ol>
-              <li><b>The ‘hot’ path:</b> In this pipeline, high latency data flows for rapid consumption by analytics
-                client. The event/trigger data from IoT devices is a good use case in IoT domain.</li>
-              <li><b>The ‘cold’ path:</b> In this pipeline, data goes and processed in batches and usually data can
-                tolerate latency. The data gets processed and stored for a longer duration for different type of
-                analytics like Predictive analytics.</li>
-            </ol>
-
-            <image src="/images/LambdaArchitecture.png"></image>
-
-            <p>In ‘cold’ path, data usually would be immutable so any changes in data must be stored with a new value
-              along with timestamp. Now you can imagine that any type of data along with it’s history will have many use
-              cases for IoT domain. You can look for a data in specific time frame and predict the maintenance of
-              machines/devices or any use cases where you need to be as accurate as possible and you have a freedom to
-              take time to process the data. While in ‘hot’ path, the data would be mutable and can be changed in place
-              when data is moving in pipeline from one process to another. The result of processing should be in real
-              time or near real time so you may have restriction on types of calculation you can do in this pipeline.
-              You can get some kind of parameter (e.g. temperature) anomalies in this processing where you have a little
-              freedom in accuracy and you can run different types of algorithms which can provide approximation in
-              values.</p>
-
-            <p>The ‘hot’ and ‘cold’ paths ultimately converges at the client application and client decides how to
-              consume specific type of data. Clients can choose to use less accurate but most recent data through hot
-              path or can go ahead with less timely and more accurate data through cold path of the Lambda Architecture.
-              The Lambda Architecture is resilient to the system failure as there is always original data available to
-              recompute to come up with desired output.</p>
-
-            <h3>Kappa Architecture</h3>
-
-            <p>The Kappa Architecture suggests to remove cold path from the Lambda Architecture and allow processing in
-              always near real-time. The Kappa Architecture is a brain child of Linkedin’s engineering team, they came
-              up with this solution to avoid code sharing between two different paths (hot and cold). Usually in Lambda
-              architecture, we need to keep hot and cold pipelines in sync as we need to run same computation in cold
-              path later as we run in hot path. The data in pipeline called events and good example of event is the
-              change in temperature so new temperature value from specific device will become new value of the datum
-              without changing the previous datum.</p>
-
-            <image src="/images/KappaArchitecture.png"></image>
-
-            <p>The unified data/logs Queue would be fault tolerant and would be distributed in nature (e.g. Apache
-              Kafka, Azure Service Bus etc.). To support fault tolerance, the data would be persisted to some kind of
-              fault tolerant &amp; distributed permanent storage. The Kappa architecture is similar to CQRS (command
-              query responsibility segregation) pattern so if you are aware of it, you will find quite similarity with
-              it.</p>
-
-            <h3>Which architecture pattern to choose when?</h3>
-
-            <p>There are many arguments against each other while choosing one of the patterns and it is very tough to
-              come to conclusion on which one is better. The decision to choose one among two should be completely
-              dependent on use case, needs and choice.</p>
-
-
-          </div>
-
-
-          <hr>
-
-          <aside id="comments" class="disqus">
-            <h3><i class="icon icon-comments-o"></i> Comments</h3>
-            <div id="disqus_thread"></div>
-            <script>
-              var disqus_config = function () {
-                this.page.url = 'https://nileshprajapati.net/blog/2017/lambda-architecture-vs-kappa-architecture-in-IOT/';
-                this.page.identifier = '/blog/2017/lambda-architecture-vs-kappa-architecture-in-IOT';
-              };
-              (function () {
-                var d = document,
-                  s = d.createElement('script');
-                s.src = '//nileshprajapati.disqus.com/embed.js';
-                s.setAttribute('data-timestamp', +new Date());
-                (d.head || d.body).appendChild(s);
-              })();
-            </script>
-            <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript"
-                rel="nofollow">comments powered by Disqus.</a></noscript>
-          </aside>
-
-
-        </div>
-
-      </article>
-
-    </div>
-  </main>
-
-  <footer class="site-footer">
-    <div class="container">
-      <ul class="social">
-        <li><a href="https://github.com/prajapatin" target="_blank"><i class="icon icon-github"></i></a></li>
-        <li><a href="https://twitter.com/nilesh_be_it" target="_blank"><i class="icon icon-twitter"></i></a></li>
-        <li><a href="https://facebook.com/nilesh.be.it" target="_blank"><i class="icon icon-facebook"></i></a></li>
-        <li><a href="https://linkedin.com/in/nileshprajapati" target="_blank"><i class="icon icon-linkedin"></i></a>
-        </li>
+        
+        <li><a href="/feed.xml" target="_blank"><i class="icon icon-rss"></i></a></li>
       </ul>
-      <p class="txt-medium-gray">
-        <small>&copy;2026</small>
-      </p>
+    </nav>
+  </div>
+</header>
+
+
+<main class="main-container">
+  <div class="container">
+    <article role="article" class="post">
+
+  <div class="card">
+    <header class="post-header">
+      <h1 class="post-title">Lambda Architecture Vs Kappa Architecture in IoT</h1>
+      <em class="post-meta">
+        <time>Sep 14, 2017</time>
+      </em>
+    </header>
+    <div class="post-categories">
+      
+      
+      <a href="/categories/#Architecture" class="post-tag">Architecture</a>
+      &nbsp;
+      
+      <a href="/categories/#IoT" class="post-tag">IoT</a>
+      &nbsp;
+      
+      <a href="/categories/#Data Analytics" class="post-tag">Data Analytics</a>
+      
+      
     </div>
-  </footer>
+    <div class="post-content">
+      
+        <figure class="post-thumbnail ">
+          <img src="/images/LambdaVsKappa.png" alt="Lambda Architecture Vs Kappa Architecture in IoT">
+        </figure>
+      
+      <h3>Lambda Architecture &amp; Kappa Architecture use case in IoT</h3>
+
+<p>In IoT world, the large amount of data from devices is pushed towards processing engine (in cloud or on-premise); which is called data ingestion. The scenario is not different from other analytics &amp; data domain where you want to process high/low latency data. The data ingestion and processing is called pipeline architecture and it has two flavours as explained below. I have provided diagrams for both type of architectures, which I have created using <a href="https://creately.com">Creately</a>. The Creately is an online diagraming tool, which you can utilize for your diagramming needs.</p>
+
+<h3>Lambda Architecture</h3>
+
+<p>In Lambda Architecture, there are two data paths as mentioned below</p>
+
+<ol>
+  <li><b>The ‘hot’ path:</b> In this pipeline, high latency data flows for rapid consumption by analytics client.     The event/trigger data from IoT devices is a good use case in IoT domain.</li>
+  <li><b>The ‘cold’ path:</b> In this pipeline, data goes and processed in batches and usually data can tolerate      latency. The data gets processed and stored for a longer duration for different type of analytics like          Predictive analytics.</li>
+</ol>
+
+<image src="/images/LambdaArchitecture.png"></image>
+
+<p>In ‘cold’ path, data usually would be immutable so any changes in data must be stored with a new value along with timestamp. Now you can imagine that any type of data along with it’s history will have many use cases for IoT domain. You can look for a data in specific time frame and predict the maintenance of machines/devices or any use cases where you need to be as accurate as possible and you have a freedom to take time to process the data. While in ‘hot’ path, the data would be mutable and can be changed in place when data is moving in pipeline from one process to another. The result of processing should be in real time or near real time so you may have restriction on types of calculation you can do in this pipeline. You can get some kind of parameter (e.g. temperature) anomalies in this processing where you have a little freedom in accuracy and you can run different types of algorithms which can provide approximation in values.</p>
+
+<p>The ‘hot’ and ‘cold’ paths ultimately converges at the client application and client decides how to consume specific type of data. Clients can choose to use less accurate but most recent data through hot path or can go ahead with less timely and more accurate data through cold path of the Lambda Architecture. The Lambda Architecture is resilient to the system failure as there is always original data available to recompute to come up with desired output.</p>
+
+<h3>Kappa Architecture</h3>
+
+<p>The Kappa Architecture suggests to remove cold path from the Lambda Architecture and allow processing in always near real-time. The Kappa Architecture is a brain child of Linkedin’s engineering team, they came up with this solution to avoid code sharing between two different paths (hot and cold). Usually in Lambda architecture, we need to keep hot and cold pipelines in sync as we need to run same computation in cold path later as we run in hot path. The data in pipeline called events and good example of event is the change in temperature so new temperature value from specific device will become new value of the datum without changing the previous datum.</p>
+
+<image src="/images/KappaArchitecture.png"></image>
+
+<p>The unified data/logs Queue would be fault tolerant and would be distributed in nature (e.g. Apache Kafka, Azure Service Bus etc.). To support fault tolerance, the data would be persisted to some kind of fault tolerant &amp; distributed permanent storage. The Kappa architecture is similar to CQRS (command query responsibility segregation) pattern so if you are aware of it, you will find quite similarity with it.</p>
+
+<h3>Which architecture pattern to choose when?</h3>
+
+<p>There are many arguments against each other while choosing one of the patterns and it is very tough to come to conclusion on which one is better. The decision to choose one among two should be completely dependent on use case, needs and choice.</p>
+
+
+    </div>
+
+    
+<hr>
+
+<aside id="comments" class="disqus">
+  <h3><i class="icon icon-comments-o"></i> Comments</h3>
+  <div id="disqus_thread"></div>
+  <script>
+    var disqus_config = function() {
+      this.page.url = 'https://nileshprajapati.net/blog/2017/lambda-architecture-vs-kappa-architecture-in-IOT/';
+      this.page.identifier = '/blog/2017/lambda-architecture-vs-kappa-architecture-in-IOT';
+    };
+    (function() {
+      var d = document,
+      s = d.createElement('script');
+      s.src = '//nileshprajapati.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+</aside>
+
+
+  </div>
+
+</article>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <ul class="social">
+  <li><a href="https://github.com/prajapatin" target="_blank"><i class="icon icon-github"></i></a></li>
+  <li><a href="https://twitter.com/nilesh_be_it" target="_blank"><i class="icon icon-twitter"></i></a></li>
+  <li><a href="https://facebook.com/nilesh.be.it" target="_blank"><i class="icon icon-facebook"></i></a></li>
+  <li><a href="https://linkedin.com/in/nileshprajapati" target="_blank"><i class="icon icon-linkedin"></i></a></li>
+</ul>
+    <p class="txt-medium-gray">
+      <small>&copy;2026</small>
+    </p>
+  </div>
+</footer>
 
 
 </body>
-
 </html>

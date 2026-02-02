@@ -1,129 +1,94 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Simple Microservices application on Azure Kubernetes cluster</title>
-  <meta name="description" content="Background of sample application &amp; technologies/tools used for the development">
+<title>Simple Microservices application on Azure Kubernetes cluster</title>
+<meta name="description" content="Background of sample application &amp; technologies/tools used for the development">
 
-  <link rel="stylesheet" href="/css/main.css">
-  <link rel="canonical" href="https://nileshprajapati.net/blog/2017/simple-microservices-app-on-azure-kubernetes/">
-  <link rel="alternate" type="application/rss+xml" title="Nilesh Prajapati"
-    href="https://nileshprajapati.net/feed.xml" />
+<link rel="stylesheet" href="/css/main.css">
+<link rel="canonical" href="https://nileshprajapati.net/blog/2017/simple-microservices-app-on-azure-kubernetes/">
+<link rel="alternate" type="application/rss+xml" title="Nilesh Prajapati" href="https://nileshprajapati.net/feed.xml" />
 
-  <script>
-    (function (i, s, o, g, r, a, m) {
-      i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
-        (i[r].q = i[r].q || []).push(arguments)
-      }, i[r].l = 1 * new Date(); a = s.createElement(o),
-        m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
-    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-    ga('create', 'UA-52446115-1', 'auto');
-    ga('send', 'pageview');
-  </script>
+  ga('create', 'UA-52446115-1', 'auto');
+  ga('send', 'pageview');
+</script>
 
 
 </head>
-
 <body>
   <header class="site-header">
-    <div class="container">
-      <input type="checkbox" id="toggleNavbar">
-      <h1 class="logo"><a href="/">Nilesh<span>Prajapati</span></a></h1>
-      <label for="toggleNavbar" role="button" class="toggle-navbar-button">
-        <i class="icon icon-menu"></i>
-        <i class="icon icon-cross"></i>
-      </label>
-      <nav class="navbar">
-        <ul>
-          <li><a href="/" title="Home">Home</a></li>
-
+  <div class="container">
+    <input type="checkbox" id="toggleNavbar">
+    <h1 class="logo"><a href="/">Nilesh<span>Prajapati</span></a></h1>
+    <label for="toggleNavbar" role="button" class="toggle-navbar-button">
+      <i class="icon icon-menu"></i>
+      <i class="icon icon-cross"></i>
+    </label>
+    <nav class="navbar">
+      <ul>
+        <li><a href="/" title="Home">Home</a></li>
+        
           <li><a href="/about" title="About">About</a></li>
-
+        
           <li><a href="/blog" title="Blog">Blog</a></li>
+        
+        <li><a href="/feed.xml" target="_blank"><i class="icon icon-rss"></i></a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
 
-          <li><a href="/feed.xml" target="_blank"><i class="icon icon-rss"></i></a></li>
-        </ul>
-      </nav>
+
+<main class="main-container">
+  <div class="container">
+    <article role="article" class="post">
+
+  <div class="card">
+    <header class="post-header">
+      <h1 class="post-title">Simple Microservices application on Azure Kubernetes cluster</h1>
+      <em class="post-meta">
+        <time>Nov 4, 2017</time>
+      </em>
+    </header>
+    <div class="post-categories">
+      
+      
+      <a href="/categories/#Cloud" class="post-tag">Cloud</a>
+      &nbsp;
+      
+      <a href="/categories/#Microservices" class="post-tag">Microservices</a>
+      &nbsp;
+      
+      <a href="/categories/#Kubernetes" class="post-tag">Kubernetes</a>
+      
+      
     </div>
-  </header>
+    <div class="post-content">
+      
+        <figure class="post-thumbnail ">
+          <img src="/images/microservices-kubernetes.png" alt="Simple Microservices application on Azure Kubernetes cluster">
+        </figure>
+      
+      <h3>Background of sample application &amp; technologies/tools used for the development</h3>
 
+<p>Previously I have written <a href="/blog/2017/what-is-micro-services-architecture/">introductory post</a> about microservices application and also written about Azure Service Fabric based microservices application <a href="/blog/2017/signalr-based-app-on-service-fabric/">here</a> and <a href="/blog/2017/actor-model-programming-paradigm-with-azure-service-fabric/">here</a>. What I would like to write about in this post is developing microservices app without using any PaaS based microservices platform. The content is going to be little longer so you may have to spend some extra time reading this post and the reason is that I wanted to write about each and every step for the development and provide resource reference for each step/topic. If you have gone through above mentioned introductory post, you would have noticed that there are multiple characteristics of microservices and we may not cover each and every characteristic in our sample application.</p>
 
-  <main class="main-container">
-    <div class="container">
-      <article role="article" class="post">
+<p>We are going to create two micro services making one application and host each micro service in docker container. The container service we have chosen is Azure Container Service and <a href="https://kubernetes.io/">Kubernetes</a> as a orchestration platform. The microservices application might need multiple version upgrade in a day/week and each service has to be updated/versioned independently, scaled up/down independently and orchestration platform provides all these functionalities. The Kubernetes cluster can be deployed on AWS as well without making any changes. Following is the detail about each micro service and we have chosen NodeJS as a frontend service and .Net Core (on Linux) as a back-end service, that is the beauty of containers (you can mix any technology components to make your application). I have explained in one of my <a href="/blog/2017/windows-service-as-a-container-on-service-fabric/">previous</a> articles about how to install docker on Windows machine, we can build both Linux and windows based images using docker. For this sample application, we are using Linux based images. I will add one more micro service written using Java when I get some time but for now we will stick with two services. You can download the source code from <a href="https://github.com/prajapatin/SampleMicroservicesApp">here</a> so that you can play with it while I describe each part, you will need Visual Studio 2017(Community version or any other editions).</p>
 
-        <div class="card">
-          <header class="post-header">
-            <h1 class="post-title">Simple Microservices application on Azure Kubernetes cluster</h1>
-            <em class="post-meta">
-              <time>Nov 3, 2017</time>
-            </em>
-          </header>
-          <div class="post-categories">
+<h3>Messaging Client - Frontend</h3>
 
+<p>This is a simple NodeJS-ExpressJs frontend application, where we are showing notification messages. We are using Socket-io library to push notification from server to browser. The NodeJS server is getting messages from Azure Service Bus topic and pushing those messages to client/browser using Socket-io library. We need to create docker image from this application and push it to public repository so that when we deploy kubernetes, it can pull image from the repository. Below I have explained some NodeJS code and docker file and also how to build docker image &amp; push to the server.</p>
 
-            <a href="/categories/#Cloud" class="post-tag">Cloud</a>
-            &nbsp;
-
-            <a href="/categories/#Microservices" class="post-tag">Microservices</a>
-            &nbsp;
-
-            <a href="/categories/#Kubernetes" class="post-tag">Kubernetes</a>
-
-
-          </div>
-          <div class="post-content">
-
-            <figure class="post-thumbnail ">
-              <img src="/images/microservices-kubernetes.png"
-                alt="Simple Microservices application on Azure Kubernetes cluster">
-            </figure>
-
-            <h3>Background of sample application &amp; technologies/tools used for the development</h3>
-
-            <p>Previously I have written <a href="/blog/2017/what-is-micro-services-architecture/">introductory post</a>
-              about microservices application and also written about Azure Service Fabric based microservices
-              application <a href="/blog/2017/signalr-based-app-on-service-fabric/">here</a> and <a
-                href="/blog/2017/actor-model-programming-paradigm-with-azure-service-fabric/">here</a>. What I would
-              like to write about in this post is developing microservices app without using any PaaS based
-              microservices platform. The content is going to be little longer so you may have to spend some extra time
-              reading this post and the reason is that I wanted to write about each and every step for the development
-              and provide resource reference for each step/topic. If you have gone through above mentioned introductory
-              post, you would have noticed that there are multiple characteristics of microservices and we may not cover
-              each and every characteristic in our sample application.</p>
-
-            <p>We are going to create two micro services making one application and host each micro service in docker
-              container. The container service we have chosen is Azure Container Service and <a
-                href="https://kubernetes.io/">Kubernetes</a> as a orchestration platform. The microservices application
-              might need multiple version upgrade in a day/week and each service has to be updated/versioned
-              independently, scaled up/down independently and orchestration platform provides all these functionalities.
-              The Kubernetes cluster can be deployed on AWS as well without making any changes. Following is the detail
-              about each micro service and we have chosen NodeJS as a frontend service and .Net Core (on Linux) as a
-              back-end service, that is the beauty of containers (you can mix any technology components to make your
-              application). I have explained in one of my <a
-                href="/blog/2017/windows-service-as-a-container-on-service-fabric/">previous</a> articles about how to
-              install docker on Windows machine, we can build both Linux and windows based images using docker. For this
-              sample application, we are using Linux based images. I will add one more micro service written using Java
-              when I get some time but for now we will stick with two services. You can download the source code from <a
-                href="https://github.com/prajapatin/SampleMicroservicesApp">here</a> so that you can play with it while
-              I describe each part, you will need Visual Studio 2017(Community version or any other editions).</p>
-
-            <h3>Messaging Client - Frontend</h3>
-
-            <p>This is a simple NodeJS-ExpressJs frontend application, where we are showing notification messages. We
-              are using Socket-io library to push notification from server to browser. The NodeJS server is getting
-              messages from Azure Service Bus topic and pushing those messages to client/browser using Socket-io
-              library. We need to create docker image from this application and push it to public repository so that
-              when we deploy kubernetes, it can pull image from the repository. Below I have explained some NodeJS code
-              and docker file and also how to build docker image &amp; push to the server.</p>
-
-            <figure class="highlight">
-              <pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">io</span> <span class="o">=</span> <span class="nf">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">socket.io</span><span class="dl">'</span><span class="p">)(</span><span class="nx">server</span><span class="p">);</span>
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">io</span> <span class="o">=</span> <span class="nf">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">socket.io</span><span class="dl">'</span><span class="p">)(</span><span class="nx">server</span><span class="p">);</span>
 <span class="kd">var</span> <span class="nx">allConnections</span> <span class="o">=</span> <span class="p">[];</span>
 <span class="kd">var</span> <span class="nx">timerInstance</span><span class="p">;</span>
 <span class="nx">io</span><span class="p">.</span><span class="nx">sockets</span><span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="dl">'</span><span class="s1">connection</span><span class="dl">'</span><span class="p">,</span> <span class="nf">function </span><span class="p">(</span><span class="nx">socket</span><span class="p">)</span> <span class="p">{</span>
@@ -151,25 +116,13 @@
             <span class="nx">allConnections</span><span class="p">.</span><span class="nf">splice</span><span class="p">(</span><span class="nx">socketIndex</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
         <span class="p">}</span>
      <span class="p">});</span>
-<span class="p">});</span></code></pre>
-            </figure>
+<span class="p">});</span></code></pre></figure>
 
-            <p>I am highlighting above code in the post because here we are using two interesting libraries. The first
-              one is azure npm library, it is JavaScript library to work with many Microsoft Azure services. We are
-              using azure library to subscribe to Azure Service Bus topic, from where we would be able to receive
-              messages. Currently there is no way through this library to continuously listen to topic so I have added
-              timer and it is not recommended way for production. I am concentrating here more on explaining
-              microservices but if you really need an AMQP based library then you should look for library like <a
-                href="https://www.npmjs.com/package/amqp10">this</a> for production. The other library is Socket-io,
-              using which we are pushing messages to all connected browsers as and when we receive message from Azure
-              Service Bus. We are also using environment variables for different type of settings so that when we run
-              docker image as a container, we can pass those environment variables.</p>
+<p>I am highlighting above code in the post because here we are using two interesting libraries. The first one is azure npm library, it is JavaScript library to work with many Microsoft Azure services. We are using azure library to subscribe to Azure Service Bus topic, from where we would be able to receive messages. Currently there is no way through this library to continuously listen to topic so I have added timer and it is not recommended way for production. I am concentrating here more on explaining microservices but if you really need an AMQP based library then you should look for library like <a href="https://www.npmjs.com/package/amqp10">this</a> for production. The other library is Socket-io, using which we are pushing messages to all connected browsers as and when we receive message from Azure Service Bus. We are also using environment variables for different type of settings so that when we run docker image as a container, we can pass those environment variables.</p>
 
-            <p>Below is what we are using to build docker image for client service, you will find dockerfile in
-              MessagingClient folder.</p>
+<p>Below is what we are using to build docker image for client service, you will find dockerfile in MessagingClient folder.</p>
 
-            <figure class="highlight">
-              <pre><code class="language-powershell" data-lang="powershell"><span class="kr">FROM</span><span class="w"> </span><span class="n">node:7</span><span class="w">
+<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell"><span class="kr">FROM</span><span class="w"> </span><span class="n">node:7</span><span class="w">
 </span><span class="nx">WORKDIR</span><span class="w"> </span><span class="nx">/app</span><span class="w">
 </span><span class="n">COPY</span><span class="w"> </span><span class="nx">package.json</span><span class="w"> </span><span class="nx">/app</span><span class="w">
 </span><span class="n">RUN</span><span class="w"> </span><span class="nx">npm</span><span class="w"> </span><span class="nx">install</span><span class="w">
@@ -179,103 +132,59 @@
 </span><span class="n">COPY</span><span class="w"> </span><span class="nx">app.js</span><span class="w"> </span><span class="nx">/app</span><span class="w">
 </span><span class="n">CMD</span><span class="w"> </span><span class="nx">node</span><span class="w"> </span><span class="nx">app.js</span><span class="w">
 </span><span class="n">EXPOSE</span><span class="w"> </span><span class="nx">80</span><span class="w">
-</span><span class="n">EXPOSE</span><span class="w"> </span><span class="nx">5671</span></code></pre>
-            </figure>
+</span><span class="n">EXPOSE</span><span class="w"> </span><span class="nx">5671</span></code></pre></figure>
 
-            <p>The above dockerfile will take node base image from docker hub and copy required folder/files along with
-              packages.json file, using which npm install command will pull required libraries in working directory. It
-              also exposes required ports and CMD line will be executed when we run the container.</p>
+<p>The above dockerfile will take node base image from docker hub and copy required folder/files along with packages.json file, using which npm install command will pull required libraries in working directory. It also exposes required ports and CMD line will be executed when we run the container.</p>
 
-            <figure class="highlight">
-              <pre><code class="language-powershell" data-lang="powershell"><span class="err">$</span><span class="w"> </span><span class="n">docker</span><span class="w"> </span><span class="nx">build</span><span class="w"> </span><span class="nt">-t</span><span class="w"> </span><span class="nx">messagingclient</span><span class="w"> </span><span class="o">.</span></code></pre>
-            </figure>
+<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell"><span class="err">$</span><span class="w"> </span><span class="n">docker</span><span class="w"> </span><span class="nx">build</span><span class="w"> </span><span class="nt">-t</span><span class="w"> </span><span class="nx">messagingclient</span><span class="w"> </span><span class="o">.</span></code></pre></figure>
 
-            <p>The above command will build the docker image and you need to make sure that your command prompt is
-              pointing to directory where your application and dockerfile is residing.</p>
+<p>The above command will build the docker image and you need to make sure that your command prompt is pointing to directory where your application and dockerfile is residing.</p>
 
-            <h3>Messaging Api - backend</h3>
+<h3>Messaging Api - backend</h3>
 
-            <p>This is a simple web api project targeted to .Net Core 2.0 so that the web api code is portable and can
-              run on linux. We are using .Net Standard API, which is a kind of wrapper API to target different variants
-              of platform. In some scenarios, we would not know whether certain APIs will work on Mono or specific
-              variant of Xamarin so .Net standard APIs simplifies those scenarios and if API is available in Standard
-              interface then you are sure that your app will work across. In this project, we are building docker image
-              differently. We are using docker compose and Visual Studio has a docker compose project to build the
-              docker image from the C# project. We are exposing messages API from this project, which will accept the
-              message and push to the Azure Service Bus topic. The NodeJS client will call this API to post the message
-              but you can utilize tool like <a href="https://www.getpostman.com/">Postman</a> to post the message, which
-              will be delivered back to NodeJS client using Azure Service Bus topic subscription.</p>
+<p>This is a simple web api project targeted to .Net Core 2.0 so that the web api code is portable and can run on linux. We are using .Net Standard API, which is a kind of wrapper API to target different variants of platform. In some scenarios, we would not know whether certain APIs will work on Mono or specific variant of Xamarin  so .Net standard APIs simplifies those scenarios and if API is available in Standard interface then you are sure that your app will work across. In this project, we are building docker image differently. We are using docker compose and Visual Studio has a docker compose project to build the docker image from the C# project. We are exposing messages API from this project, which will accept the message and push to the Azure Service Bus topic. The NodeJS client will call this API to post the message but you can utilize tool like <a href="https://www.getpostman.com/">Postman</a> to post the message, which will be delivered back to NodeJS client using Azure Service Bus topic subscription.</p>
 
-            <p>The dockerfile is available in project, which would be used by docker compose to build the image.</p>
+<p>The dockerfile is available in project, which would be used by docker compose to build the image.</p>
 
-            <figure class="highlight">
-              <pre><code class="language-powershell" data-lang="powershell"><span class="kr">FROM</span><span class="w"> </span><span class="n">microsoft/aspnetcore:2.0</span><span class="w">
+<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell"><span class="kr">FROM</span><span class="w"> </span><span class="n">microsoft/aspnetcore:2.0</span><span class="w">
 </span><span class="nx">ARG</span><span class="w"> </span><span class="nx">source</span><span class="w">
 </span><span class="n">WORKDIR</span><span class="w"> </span><span class="nx">/app</span><span class="w">
 </span><span class="n">ENV</span><span class="w"> </span><span class="nx">ASPNETCORE_URLS</span><span class="w"> </span><span class="nx">http://</span><span class="o">+</span><span class="p">:</span><span class="nx">3000</span><span class="w">
 </span><span class="n">EXPOSE</span><span class="w"> </span><span class="nx">3000</span><span class="w">
 </span><span class="n">EXPOSE</span><span class="w"> </span><span class="nx">5671</span><span class="w">
 </span><span class="n">COPY</span><span class="w"> </span><span class="nv">${source:-obj/Docker/publish}</span><span class="w"> </span><span class="o">.</span><span class="w">
-</span><span class="n">ENTRYPOINT</span><span class="w"> </span><span class="p">[</span><span class="s2">"dotnet"</span><span class="p">,</span><span class="w"> </span><span class="s2">"MessagingAPI.dll"</span><span class="p">]</span></code></pre>
-            </figure>
+</span><span class="n">ENTRYPOINT</span><span class="w"> </span><span class="p">[</span><span class="s2">"dotnet"</span><span class="p">,</span><span class="w"> </span><span class="s2">"MessagingAPI.dll"</span><span class="p">]</span></code></pre></figure>
 
-            <p>The above dockerfile instructs docker runtime to pull asp.net core portable image from docker hub and
-              provide the entry point to host/run Web API project.</p>
+<p>The above dockerfile instructs docker runtime to pull asp.net core portable image from docker hub and provide the entry point to host/run Web API project.</p>
 
-            <h3>Hosting microservices using Kubernetes cluster on Microsoft Azure</h3>
+<h3>Hosting microservices using Kubernetes cluster on Microsoft Azure</h3>
 
-            <p>I would like to explain more about YAML config file to deploy the Kubernetes services instead of
-              explaining about Azure Kubernetes Service. If you want to quickly read about Azure Kubernetes Service, I
-              would recommend <a href="https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough">this</a>
-              article. The article explains about installing aks CLI and also you will need kubectl CLI to work with
-              deployed kubernetes cluster. To use docker images we created above, we will have to push those images to
-              docker hub so that kubernetes can pull those images.</p>
+<p>I would like to explain more about YAML config file to deploy the Kubernetes services instead of explaining about Azure Kubernetes Service. If you want to quickly read about Azure Kubernetes Service, I would recommend <a href="https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough">this</a> article. The article explains about installing aks CLI and also you will need kubectl CLI to work with deployed kubernetes cluster. To use docker images we created above, we will have to push those images to docker hub so that kubernetes can pull those images.</p>
 
-            <h4>How to push docker images from local machine to docker hub?</h4>
+<h4>How to push docker images from local machine to docker hub?</h4>
 
-            <p>You will have to login to docker using following command.</p>
+<p>You will have to login to docker using following command.</p>
 
-            <figure class="highlight">
-              <pre><code class="language-powershell" data-lang="powershell"><span class="n">docker</span><span class="w"> </span><span class="nx">login</span></code></pre>
-            </figure>
+<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell"><span class="n">docker</span><span class="w"> </span><span class="nx">login</span></code></pre></figure>
 
-            <p>The command prompt will ask you for the docker credentials, which you can provide and then look at below
-              commands.</p>
+<p>The command prompt will ask you for the docker credentials, which you can provide and then look at below commands.</p>
 
-            <figure class="highlight">
-              <pre><code class="language-powershell" data-lang="powershell"><span class="n">docker</span><span class="w"> </span><span class="nx">tag</span><span class="w"> </span><span class="p">{</span><span class="n">NameofYourLocalImage</span><span class="p">}</span><span class="w"> </span><span class="p">{</span><span class="n">TagForYourLocalImage</span><span class="p">}</span><span class="w">
-</span><span class="n">docker</span><span class="w"> </span><span class="nx">push</span><span class="w"> </span><span class="p">{</span><span class="n">TagForYourLocalImage</span><span class="p">}</span></code></pre>
-            </figure>
+<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell"><span class="n">docker</span><span class="w"> </span><span class="nx">tag</span><span class="w"> </span><span class="p">{</span><span class="n">NameofYourLocalImage</span><span class="p">}</span><span class="w"> </span><span class="p">{</span><span class="n">TagForYourLocalImage</span><span class="p">}</span><span class="w">
+</span><span class="n">docker</span><span class="w"> </span><span class="nx">push</span><span class="w"> </span><span class="p">{</span><span class="n">TagForYourLocalImage</span><span class="p">}</span></code></pre></figure>
 
-            <p>The first command from above snippet will tag your local image and create tagged image from it which we
-              are pushing it to docker hub into your account. You will have to replace name of your image with curly
-              brackets. We would be using these public docker repositories, we created into our YAML config to deploy
-              kubernetes cluster. As I said previously, you will have to make sure that AKS is installed and you have
-              followed all the commands mentioned in <a
-                href="https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough">Microsoft article</a> I shared
-              so that Kubernetes cluster is ready to use for deployment. I will first introduce you to basic kubectl
-              commands and then we can go into detail of YAML config.</p>
+<p>The first command from above snippet will tag your local image and create tagged image from it which we are pushing it to docker hub into your account. You will have to replace name of your image with curly brackets. We would be using these public docker repositories, we created into our YAML config to deploy kubernetes cluster. As I said previously, you will have to make sure that AKS is installed and you have followed all the commands mentioned in <a href="https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough">Microsoft article</a> I shared so that Kubernetes cluster is ready to use for deployment. I will first introduce you to basic kubectl commands and then we can go into detail of YAML config.</p>
 
-            <h4>Understanding kubernetes deployment</h4>
+<h4>Understanding kubernetes deployment</h4>
 
-            <figure class="highlight">
-              <pre><code class="language-powershell" data-lang="powershell"><span class="n">kubectl</span><span class="w"> </span><span class="nx">get</span><span class="w"> </span><span class="nx">node</span><span class="w">
+<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell"><span class="n">kubectl</span><span class="w"> </span><span class="nx">get</span><span class="w"> </span><span class="nx">node</span><span class="w">
 </span><span class="n">kubectl</span><span class="w"> </span><span class="nx">create</span><span class="w"> </span><span class="nt">-f</span><span class="w"> </span><span class="p">{</span><span class="n">PathToYAMLConfigFile</span><span class="p">}</span><span class="w">
 </span><span class="n">kubectl</span><span class="w"> </span><span class="nx">get</span><span class="w"> </span><span class="nx">service</span><span class="w"> </span><span class="nx">messeging-api</span><span class="w"> </span><span class="nt">--watch</span><span class="w">
 </span><span class="n">kubectl</span><span class="w"> </span><span class="nx">get</span><span class="w"> </span><span class="nx">service</span><span class="w"> </span><span class="nx">messeging-client</span><span class="w"> </span><span class="nt">--watch</span><span class="w">
-</span><span class="n">kubectl</span><span class="w"> </span><span class="nx">describe</span><span class="w"> </span><span class="nx">deployment</span></code></pre>
-            </figure>
+</span><span class="n">kubectl</span><span class="w"> </span><span class="nx">describe</span><span class="w"> </span><span class="nx">deployment</span></code></pre></figure>
 
-            <p>The first command from above snippet will retrieve the number of agent/node running in cluster and second
-              command will actually deploy services as per detail provided in YAML file. The next two commands will help
-              you to retrieve external IP of each service so that you can browse through it. The last command will give
-              you complete deployment detail of full cluster with all services. There are other commands which are
-              useful but you can browse through <a href="https://kubernetes.io/">here</a> to know about all capabilities
-              of Kubernetes Orchestration platform. Below I have explained different portion of YAML configuration,
-              available in aks-app.yml file for kubernetes deployment.</p>
+<p>The first command from above snippet will retrieve the number of agent/node running in cluster and second command will actually deploy services as per detail provided in YAML file. The next two commands will help you to retrieve external IP of each service so that you can browse through it. The last command will give you complete deployment detail of full cluster with all services. There are other commands which are useful but you can browse through <a href="https://kubernetes.io/">here</a> to know about all capabilities of Kubernetes Orchestration platform. Below I have explained different portion of YAML configuration, available in aks-app.yml file for kubernetes deployment.</p>
 
-            <figure class="highlight">
-              <pre><code class="language-javascript" data-lang="javascript"><span class="nx">apiVersion</span><span class="p">:</span> <span class="nx">apps</span><span class="o">/</span><span class="nx">v1beta1</span>
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">apiVersion</span><span class="p">:</span> <span class="nx">apps</span><span class="o">/</span><span class="nx">v1beta1</span>
 <span class="nx">kind</span><span class="p">:</span> <span class="nx">Deployment</span>
 <span class="nx">metadata</span><span class="p">:</span>
   <span class="nx">name</span><span class="p">:</span> <span class="nx">messeging</span><span class="o">-</span><span class="nx">api</span>
@@ -318,28 +227,13 @@
     <span class="nx">name</span><span class="p">:</span> <span class="nx">amqp</span>
   <span class="nx">selector</span><span class="p">:</span>
     <span class="nx">app</span><span class="p">:</span> <span class="nx">messeging</span><span class="o">-</span><span class="nx">api</span>
-<span class="o">---</span></code></pre>
-            </figure>
+<span class="o">---</span></code></pre></figure>
 
-            <p>The first section from above config, defines the kubernetes pod. A pod is a group of one or more
-              containers, with shared storage/network, and a specification for how to run the containers. A pod’s
-              contents are always co-located and co-scheduled, and run in a shared context. We have only one container
-              so that we have only one container for our back-end and the image location is
-              nileshprajapati/messagingapi, which is available as a public image in docker hub. If you have a private
-              repository then it will need credential to pull images from it, which is I am ignoring to explain. You
-              will also notice that there is a env key, that is where we provide all environment variable values. These
-              are the environment variables used by our service and different values can be supplied here for different
-              types of deployments. It also has port information where you will map your container port with target
-              machine/node where your service would be running.</p>
+<p>The first section from above config, defines the kubernetes pod. A pod is a group of one or more containers, with shared storage/network, and a specification for how to run the containers. A pod’s contents are always co-located and co-scheduled, and run in a shared context. We have only one container so that we have only one container for our back-end and the image location is nileshprajapati/messagingapi, which is available as a public image in docker hub. If you have a private repository then it will need credential to pull images from it, which is I am ignoring to explain. You will also notice that there is a env key, that is where we provide all environment variable values. These are the environment variables used by our service and different values can be supplied here for different types of deployments. It also has port information where you will map your container port with target machine/node where your service would be running.</p>
 
-            <p>The second section defines the service where you can specify load balancer as well. When we specify type
-              as load balancer, the kubernetes will use default load balancer provided by cloud vendor where you would
-              be running the cluster. The important key we need to keep in mind is app under selector key, which we
-              would be using to connect our frontend service to it. This was our back-end service, now we will look at
-              the frontend service config.</p>
+<p>The second section defines the service where you can specify load balancer as well. When we specify type as load balancer, the kubernetes will use default load balancer provided by cloud vendor where you would be running the cluster. The important key we need to keep in mind is app under selector key, which we would be using to connect our frontend service to it. This was our back-end service, now we will look at the frontend service config.</p>
 
-            <figure class="highlight">
-              <pre><code class="language-javascript" data-lang="javascript"><span class="nx">apiVersion</span><span class="p">:</span> <span class="nx">apps</span><span class="o">/</span><span class="nx">v1beta1</span>
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">apiVersion</span><span class="p">:</span> <span class="nx">apps</span><span class="o">/</span><span class="nx">v1beta1</span>
 <span class="nx">kind</span><span class="p">:</span> <span class="nx">Deployment</span>
 <span class="nx">metadata</span><span class="p">:</span>
   <span class="nx">name</span><span class="p">:</span> <span class="nx">messeging</span><span class="o">-</span><span class="nx">client</span>
@@ -383,74 +277,59 @@
     <span class="nx">name</span><span class="p">:</span> <span class="nx">amqp</span>
   <span class="nx">selector</span><span class="p">:</span>
     <span class="nx">app</span><span class="p">:</span> <span class="nx">messeging</span><span class="o">-</span><span class="nx">client</span>
-  <span class="nx">sessionAffinity</span><span class="p">:</span> <span class="nx">ClientIP</span></code></pre>
-            </figure>
+  <span class="nx">sessionAffinity</span><span class="p">:</span> <span class="nx">ClientIP</span></code></pre></figure>
 
-            <p>The explanation remains the same for client service as well with couple of points to understand. The
-              first one is that we are setting replicas as a 1 here because we want to run only one instance (one
-              container). Also you will notice that in environment variables, we are giving one value “messeging-api” to
-              messagingAPI key, which is actually our back-send service. You would be wondering then that how our client
-              will connect with service using that simple name as it is not even DNS name. The magic here is that
-              kubernetes will try to connect locally using selector we have specified in back-end service and resolve
-              the call to that service running within a cluster. If we do not get this functionality from kubernetes
-              then you will have to actually supply external IP there and you know that which is not possible in dynamic
-              cloud deployment scenarios. There are few commands to scale-up and scale-down individual service in
-              cluster, which will create/delete additional replicas of the specific service.</p>
+<p>The explanation remains the same for client service as well with couple of points to understand. The first one is that we are setting replicas as a 1 here because we want to run only one instance (one container). Also you will notice that in environment variables, we are giving one value “messeging-api” to messagingAPI key, which is actually our back-send service. You would be wondering then that how our client will connect with service using that simple name as it is not even DNS name. The magic here is that kubernetes will try to connect locally using selector we have specified in back-end service and resolve the call to that service running within a cluster. If we do not get this functionality from kubernetes then you will have to actually supply external IP there and you know that which is not possible in dynamic cloud deployment scenarios. There are few commands to scale-up and scale-down individual service in cluster, which will create/delete additional replicas of the specific service.</p>
 
-            <p>This is a brief introduction about simple microservices app hosted in kubernetes cluster and I know that
-              I could not explain each and every detail but please connect with me if you have any specific queries on
-              any of the service or kubernetes.</p>
+<p>This is a brief introduction about simple microservices app hosted in kubernetes cluster and I know that I could not explain each and every detail but please connect with me if you have any specific queries on any of the service or kubernetes.</p>
 
-
-          </div>
-
-
-          <hr>
-
-          <aside id="comments" class="disqus">
-            <h3><i class="icon icon-comments-o"></i> Comments</h3>
-            <div id="disqus_thread"></div>
-            <script>
-              var disqus_config = function () {
-                this.page.url = 'https://nileshprajapati.net/blog/2017/simple-microservices-app-on-azure-kubernetes/';
-                this.page.identifier = '/blog/2017/simple-microservices-app-on-azure-kubernetes';
-              };
-              (function () {
-                var d = document,
-                  s = d.createElement('script');
-                s.src = '//nileshprajapati.disqus.com/embed.js';
-                s.setAttribute('data-timestamp', +new Date());
-                (d.head || d.body).appendChild(s);
-              })();
-            </script>
-            <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript"
-                rel="nofollow">comments powered by Disqus.</a></noscript>
-          </aside>
-
-
-        </div>
-
-      </article>
 
     </div>
-  </main>
 
-  <footer class="site-footer">
-    <div class="container">
-      <ul class="social">
-        <li><a href="https://github.com/prajapatin" target="_blank"><i class="icon icon-github"></i></a></li>
-        <li><a href="https://twitter.com/nilesh_be_it" target="_blank"><i class="icon icon-twitter"></i></a></li>
-        <li><a href="https://facebook.com/nilesh.be.it" target="_blank"><i class="icon icon-facebook"></i></a></li>
-        <li><a href="https://linkedin.com/in/nileshprajapati" target="_blank"><i class="icon icon-linkedin"></i></a>
-        </li>
-      </ul>
-      <p class="txt-medium-gray">
-        <small>&copy;2026</small>
-      </p>
-    </div>
-  </footer>
+    
+<hr>
+
+<aside id="comments" class="disqus">
+  <h3><i class="icon icon-comments-o"></i> Comments</h3>
+  <div id="disqus_thread"></div>
+  <script>
+    var disqus_config = function() {
+      this.page.url = 'https://nileshprajapati.net/blog/2017/simple-microservices-app-on-azure-kubernetes/';
+      this.page.identifier = '/blog/2017/simple-microservices-app-on-azure-kubernetes';
+    };
+    (function() {
+      var d = document,
+      s = d.createElement('script');
+      s.src = '//nileshprajapati.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+</aside>
+
+
+  </div>
+
+</article>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <ul class="social">
+  <li><a href="https://github.com/prajapatin" target="_blank"><i class="icon icon-github"></i></a></li>
+  <li><a href="https://twitter.com/nilesh_be_it" target="_blank"><i class="icon icon-twitter"></i></a></li>
+  <li><a href="https://facebook.com/nilesh.be.it" target="_blank"><i class="icon icon-facebook"></i></a></li>
+  <li><a href="https://linkedin.com/in/nileshprajapati" target="_blank"><i class="icon icon-linkedin"></i></a></li>
+</ul>
+    <p class="txt-medium-gray">
+      <small>&copy;2026</small>
+    </p>
+  </div>
+</footer>
 
 
 </body>
-
 </html>

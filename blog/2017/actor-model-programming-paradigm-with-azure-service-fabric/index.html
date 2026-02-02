@@ -1,166 +1,119 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Actor Model based programming paradigm with Azure Service Fabric (ASF)</title>
-  <meta name="description" content="What is the Actor Model programming paradigm?">
+<title>Actor Model based programming paradigm with Azure Service Fabric (ASF)</title>
+<meta name="description" content="What is the Actor Model programming paradigm?">
 
-  <link rel="stylesheet" href="/css/main.css">
-  <link rel="canonical"
-    href="https://nileshprajapati.net/blog/2017/actor-model-programming-paradigm-with-azure-service-fabric/">
-  <link rel="alternate" type="application/rss+xml" title="Nilesh Prajapati"
-    href="https://nileshprajapati.net/feed.xml" />
+<link rel="stylesheet" href="/css/main.css">
+<link rel="canonical" href="https://nileshprajapati.net/blog/2017/actor-model-programming-paradigm-with-azure-service-fabric/">
+<link rel="alternate" type="application/rss+xml" title="Nilesh Prajapati" href="https://nileshprajapati.net/feed.xml" />
 
-  <script>
-    (function (i, s, o, g, r, a, m) {
-      i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
-        (i[r].q = i[r].q || []).push(arguments)
-      }, i[r].l = 1 * new Date(); a = s.createElement(o),
-        m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
-    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-    ga('create', 'UA-52446115-1', 'auto');
-    ga('send', 'pageview');
-  </script>
+  ga('create', 'UA-52446115-1', 'auto');
+  ga('send', 'pageview');
+</script>
 
 
 </head>
-
 <body>
   <header class="site-header">
-    <div class="container">
-      <input type="checkbox" id="toggleNavbar">
-      <h1 class="logo"><a href="/">Nilesh<span>Prajapati</span></a></h1>
-      <label for="toggleNavbar" role="button" class="toggle-navbar-button">
-        <i class="icon icon-menu"></i>
-        <i class="icon icon-cross"></i>
-      </label>
-      <nav class="navbar">
-        <ul>
-          <li><a href="/" title="Home">Home</a></li>
-
+  <div class="container">
+    <input type="checkbox" id="toggleNavbar">
+    <h1 class="logo"><a href="/">Nilesh<span>Prajapati</span></a></h1>
+    <label for="toggleNavbar" role="button" class="toggle-navbar-button">
+      <i class="icon icon-menu"></i>
+      <i class="icon icon-cross"></i>
+    </label>
+    <nav class="navbar">
+      <ul>
+        <li><a href="/" title="Home">Home</a></li>
+        
           <li><a href="/about" title="About">About</a></li>
-
+        
           <li><a href="/blog" title="Blog">Blog</a></li>
+        
+        <li><a href="/feed.xml" target="_blank"><i class="icon icon-rss"></i></a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
 
-          <li><a href="/feed.xml" target="_blank"><i class="icon icon-rss"></i></a></li>
-        </ul>
-      </nav>
+
+<main class="main-container">
+  <div class="container">
+    <article role="article" class="post">
+
+  <div class="card">
+    <header class="post-header">
+      <h1 class="post-title">Actor Model based programming paradigm with Azure Service Fabric (ASF)</h1>
+      <em class="post-meta">
+        <time>Sep 23, 2017</time>
+      </em>
+    </header>
+    <div class="post-categories">
+      
+      
+      <a href="/categories/#Microservices" class="post-tag">Microservices</a>
+      &nbsp;
+      
+      <a href="/categories/#Azure Service Fabric" class="post-tag">Azure Service Fabric</a>
+      &nbsp;
+      
+      <a href="/categories/#Design Patterns" class="post-tag">Design Patterns</a>
+      
+      
     </div>
-  </header>
+    <div class="post-content">
+      
+        <figure class="post-thumbnail ">
+          <img src="/images/actormodel.png" alt="Actor Model based programming paradigm with Azure Service Fabric (ASF)">
+        </figure>
+      
+      <h3>What is the Actor Model programming paradigm?</h3>
 
+<p>When we talk about scalability of any software systems/applications, we look at it with two aspects: (1) Whether the system is built with distributed architecture pattern (2) Are we using full capability of the hardware, where the system is hosted?</p>
 
-  <main class="main-container">
-    <div class="container">
-      <article role="article" class="post">
+<p>What normally people do when scalability requirement comes is that they go ahead and put multiple servers and host the application with good load balancing rules, so that immediate requirement will be satisfied. The poorly designed distributed software systems will eat-up more hardware than actually needed because the software system would not have been designed to take advantages of single server/node. If we utilize one server with it’s fullest capabilities, you will need fewer number of servers to satisfy higher demand. The computer processors have certain limit and modern servers having multiple CPU cores need to be managed well in terms of software design. So to take advantage of multiple cores, we design software with multi-threading concepts to run our code concurrently and we know that how difficult is to debug and fix bugs in multi-threading applications.</p>
 
-        <div class="card">
-          <header class="post-header">
-            <h1 class="post-title">Actor Model based programming paradigm with Azure Service Fabric (ASF)</h1>
-            <em class="post-meta">
-              <time>Sep 22, 2017</time>
-            </em>
-          </header>
-          <div class="post-categories">
+<p>Considering concepts from above paragraph, let me explain Actor Model paradigm where smallest of work is being done by an Actor (it uses messages to carry out actions on system or on other actors). The actor model is a conceptual programming model for concurrent execution with specific rules like</p>
 
+<ol>
+  <li>One unit of work is done by one actor</li>
+  <li>Each actor must have mail-box on which other actors or system can send messages</li>
+  <li>Mechanism to restore the state of an actor in case of a failure</li>
+  <li>Actors will act on messages sequentially</li>
+</ol>
 
-            <a href="/categories/#Microservices" class="post-tag">Microservices</a>
-            &nbsp;
+<h4>Actor</h4>
 
-            <a href="/categories/#Azure Service Fabric" class="post-tag">Azure Service Fabric</a>
-            &nbsp;
+<p>The Actor acts on some specific assigned work through messages it receives. In case of a failure, other actors will not be affected, the actor will have it’s own state and some kind of persistent state store so that actor can restart anytime and start it’s work from where it left. The actor will never share memory or state with other actors and can communicate with other actors or system only through messages. Once actor completes its work and no more messages available to work upon, actor must go in some kind of hibernation and not use system resources until new message arrives.</p>
 
-            <a href="/categories/#Design Patterns" class="post-tag">Design Patterns</a>
+<h4>Mailbox</h4>
 
+<p>The mailbox is where the actor will receive messages in sequential order and actor will act upon it in sequential order so at a time actor will do only certain unit of work/computation. If concurrent work is needed then you need multiple actors to act upon same type of messages because one actor will only work on one message.</p>
 
-          </div>
-          <div class="post-content">
+<h4>Implementation options</h4>
 
-            <figure class="post-thumbnail ">
-              <img src="/images/actormodel.png"
-                alt="Actor Model based programming paradigm with Azure Service Fabric (ASF)">
-            </figure>
+<p>There are many options to implement Actor Model in distributed software architecture, the Erlang is the language built using the concept of actor model. There is an <a href="https://akka.io/">Akka</a> framework in Java and .Net port of the same framework as an <a href="http://getakka.net/">Akka.net</a>, which can be used to develop enterprise scale microservices applications. There is a cloud based microservices platform called Azure Service Fabric, about which I have written in <a href="/blog/2017/signalr-based-app-on-service-fabric/">one of my</a> previous articles. I am going to explain very simple Actor Model based microservices application using Azure Service Fabric.</p>
 
-            <h3>What is the Actor Model programming paradigm?</h3>
+<h3>Actor Model Service using Azure Service Fabric</h3>
 
-            <p>When we talk about scalability of any software systems/applications, we look at it with two aspects: (1)
-              Whether the system is built with distributed architecture pattern (2) Are we using full capability of the
-              hardware, where the system is hosted?</p>
+<p>The source code for the sample application can be cloned/downloaded from <a href="https://github.com/prajapatin/ActorPatternOnServiceFabric">here</a>. The application is about setting temperature value through multiple sensor actors and temperature aggregator will collect those values and creates average temperature value. There is no need to spawn cloud cluster for Azure Service Fabric to run this sample application, the local service fabric cluster manager is enough to run and test the application. The information about Azure Service Fabric SDK and local custer manager is available <a href="/blog/2017/signalr-based-app-on-service-fabric/">here</a>.</p>
 
-            <p>What normally people do when scalability requirement comes is that they go ahead and put multiple servers
-              and host the application with good load balancing rules, so that immediate requirement will be satisfied.
-              The poorly designed distributed software systems will eat-up more hardware than actually needed because
-              the software system would not have been designed to take advantages of single server/node. If we utilize
-              one server with it’s fullest capabilities, you will need fewer number of servers to satisfy higher demand.
-              The computer processors have certain limit and modern servers having multiple CPU cores need to be managed
-              well in terms of software design. So to take advantage of multiple cores, we design software with
-              multi-threading concepts to run our code concurrently and we know that how difficult is to debug and fix
-              bugs in multi-threading applications.</p>
+<h4>Sensor Actor</h4>
 
-            <p>Considering concepts from above paragraph, let me explain Actor Model paradigm where smallest of work is
-              being done by an Actor (it uses messages to carry out actions on system or on other actors). The actor
-              model is a conceptual programming model for concurrent execution with specific rules like</p>
+<p>The sensor actor has four methods: (1) To Set the temperature (2) To get the temperature (the aggregator actor will call this method to collect the temperature value) (3) To set the index value for each instance of an actor (4) To get the index value for each instance of an actor. We would be using these methods in test project, which shows how to connect with actor and call specific method. The Service Fabric template simplifies the development of Actor by hiding Message sending/receiving functionality (you can look for auto generated ActorEventSource.cs file in each actor project to understand how the message communication logic is implemented) so that we can concentrate on logic. Following code is important in Sensor Actor project.</p>
 
-            <ol>
-              <li>One unit of work is done by one actor</li>
-              <li>Each actor must have mail-box on which other actors or system can send messages</li>
-              <li>Mechanism to restore the state of an actor in case of a failure</li>
-              <li>Actors will act on messages sequentially</li>
-            </ol>
-
-            <h4>Actor</h4>
-
-            <p>The Actor acts on some specific assigned work through messages it receives. In case of a failure, other
-              actors will not be affected, the actor will have it’s own state and some kind of persistent state store so
-              that actor can restart anytime and start it’s work from where it left. The actor will never share memory
-              or state with other actors and can communicate with other actors or system only through messages. Once
-              actor completes its work and no more messages available to work upon, actor must go in some kind of
-              hibernation and not use system resources until new message arrives.</p>
-
-            <h4>Mailbox</h4>
-
-            <p>The mailbox is where the actor will receive messages in sequential order and actor will act upon it in
-              sequential order so at a time actor will do only certain unit of work/computation. If concurrent work is
-              needed then you need multiple actors to act upon same type of messages because one actor will only work on
-              one message.</p>
-
-            <h4>Implementation options</h4>
-
-            <p>There are many options to implement Actor Model in distributed software architecture, the Erlang is the
-              language built using the concept of actor model. There is an <a href="https://akka.io/">Akka</a> framework
-              in Java and .Net port of the same framework as an <a href="http://getakka.net/">Akka.net</a>, which can be
-              used to develop enterprise scale microservices applications. There is a cloud based microservices platform
-              called Azure Service Fabric, about which I have written in <a
-                href="/blog/2017/signalr-based-app-on-service-fabric/">one of my</a> previous articles. I am going to
-              explain very simple Actor Model based microservices application using Azure Service Fabric.</p>
-
-            <h3>Actor Model Service using Azure Service Fabric</h3>
-
-            <p>The source code for the sample application can be cloned/downloaded from <a
-                href="https://github.com/prajapatin/ActorPatternOnServiceFabric">here</a>. The application is about
-              setting temperature value through multiple sensor actors and temperature aggregator will collect those
-              values and creates average temperature value. There is no need to spawn cloud cluster for Azure Service
-              Fabric to run this sample application, the local service fabric cluster manager is enough to run and test
-              the application. The information about Azure Service Fabric SDK and local custer manager is available <a
-                href="/blog/2017/signalr-based-app-on-service-fabric/">here</a>.</p>
-
-            <h4>Sensor Actor</h4>
-
-            <p>The sensor actor has four methods: (1) To Set the temperature (2) To get the temperature (the aggregator
-              actor will call this method to collect the temperature value) (3) To set the index value for each instance
-              of an actor (4) To get the index value for each instance of an actor. We would be using these methods in
-              test project, which shows how to connect with actor and call specific method. The Service Fabric template
-              simplifies the development of Actor by hiding Message sending/receiving functionality (you can look for
-              auto generated ActorEventSource.cs file in each actor project to understand how the message communication
-              logic is implemented) so that we can concentrate on logic. Following code is important in Sensor Actor
-              project.</p>
-
-            <figure class="highlight">
-              <pre><code class="language-c#" data-lang="c#"><span class="n">Task</span><span class="p">&lt;</span><span class="kt">double</span><span class="p">&gt;</span> <span class="n">ISensorActor</span><span class="p">.</span><span class="nf">GetTemperatureAsync</span><span class="p">()</span>
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="n">Task</span><span class="p">&lt;</span><span class="kt">double</span><span class="p">&gt;</span> <span class="n">ISensorActor</span><span class="p">.</span><span class="nf">GetTemperatureAsync</span><span class="p">()</span>
 <span class="p">{</span>
     <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="n">StateManager</span><span class="p">.</span><span class="n">GetStateAsync</span><span class="p">&lt;</span><span class="n">ActorState</span><span class="p">&gt;(</span><span class="s">"sensorState"</span><span class="p">).</span><span class="nf">ContinueWith</span><span class="p">(</span><span class="n">sensorState</span> <span class="p">=&gt;</span>
     <span class="p">{</span>
@@ -177,20 +130,15 @@
         <span class="k">this</span><span class="p">.</span><span class="n">StateManager</span><span class="p">.</span><span class="n">SetStateAsync</span><span class="p">&lt;</span><span class="n">ActorState</span><span class="p">&gt;(</span><span class="s">"sensorState"</span><span class="p">,</span> <span class="k">new</span> <span class="n">ActorState</span> <span class="p">{</span> <span class="n">Temperature</span> <span class="p">=</span> <span class="n">temperature</span><span class="p">,</span> <span class="n">Index</span> <span class="p">=</span> <span class="n">sensorState</span><span class="p">.</span><span class="n">Result</span><span class="p">.</span><span class="n">Index</span> <span class="p">});</span>
     <span class="p">});</span>
 
-<span class="p">}</span></code></pre>
-            </figure>
+<span class="p">}</span></code></pre></figure>
 
-            <p>In above code we are accessing state manager (it is distributed and provided by service fabric) and
-              retrieving &amp; storing temperature value with specific index. Also we are sending message to current
-              actor through auto generated event/message class.</p>
+<p>In above code we are accessing state manager (it is distributed and provided by service fabric) and retrieving &amp; storing temperature value with specific index. Also we are sending message to current actor through auto generated event/message class.</p>
 
-            <h4>Aggregator Actor</h4>
+<h4>Aggregator Actor</h4>
 
-            <p>Aggregator actor collects all temperature values from all actors and provides average value, here we can
-              see that how easy is to access specific actor from service fabric through Actor APIs provided.</p>
+<p>Aggregator actor collects all temperature values from all actors and provides average value, here we can see that how easy is to access specific actor from service fabric through Actor APIs provided.</p>
 
-            <figure class="highlight">
-              <pre><code class="language-c#" data-lang="c#"><span class="k">public</span> <span class="n">Task</span><span class="p">&lt;</span><span class="kt">double</span><span class="p">&gt;</span> <span class="nf">GetTemperatureAsync</span><span class="p">()</span>
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">public</span> <span class="n">Task</span><span class="p">&lt;</span><span class="kt">double</span><span class="p">&gt;</span> <span class="nf">GetTemperatureAsync</span><span class="p">()</span>
 <span class="p">{</span>
     <span class="n">Task</span><span class="p">&lt;</span><span class="kt">double</span><span class="p">&gt;[]</span> <span class="n">tasks</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Task</span><span class="p">&lt;</span><span class="kt">double</span><span class="p">&gt;[</span><span class="m">1000</span><span class="p">];</span>
     <span class="kt">double</span><span class="p">[]</span> <span class="n">readings</span> <span class="p">=</span> <span class="k">new</span> <span class="kt">double</span><span class="p">[</span><span class="m">1000</span><span class="p">];</span>
@@ -205,69 +153,61 @@
         <span class="n">readings</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">=</span> <span class="n">tasks</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">Result</span><span class="p">;</span>
     <span class="p">});</span>
     <span class="k">return</span> <span class="n">Task</span><span class="p">.</span><span class="nf">FromResult</span><span class="p">(</span><span class="n">readings</span><span class="p">.</span><span class="nf">Average</span><span class="p">());</span>
-<span class="p">}</span></code></pre>
-            </figure>
+<span class="p">}</span></code></pre></figure>
 
-            <p>In above code we can see that we can access specific actor using id from actor proxy using actor
-              interface and fabric name. It is simple logic to access specific method and rest of the complexities
-              hidden inside service fabric API &amp; runtime.</p>
+<p>In above code we can see that we can access specific actor using id from actor proxy using actor interface and fabric name. It is simple logic to access specific method and rest of the complexities hidden inside service fabric API &amp; runtime.</p>
 
-            <h4>Sensor Agrregator Test Project</h4>
+<h4>Sensor Agrregator Test Project</h4>
 
-            <p>This is a console project to test the Actor based microservices application. Once you deploy service
-              fabric project in local cluster, you can run the console application and verify that how you can access
-              actors running inside local service fabric cluster.</p>
+<p>This is a console project to test the Actor based microservices application. Once you deploy service fabric project in local cluster, you can run the console application and verify that how you can access actors running inside local service fabric cluster.</p>
 
-
-          </div>
-
-
-          <hr>
-
-          <aside id="comments" class="disqus">
-            <h3><i class="icon icon-comments-o"></i> Comments</h3>
-            <div id="disqus_thread"></div>
-            <script>
-              var disqus_config = function () {
-                this.page.url = 'https://nileshprajapati.net/blog/2017/actor-model-programming-paradigm-with-azure-service-fabric/';
-                this.page.identifier = '/blog/2017/actor-model-programming-paradigm-with-azure-service-fabric';
-              };
-              (function () {
-                var d = document,
-                  s = d.createElement('script');
-                s.src = '//nileshprajapati.disqus.com/embed.js';
-                s.setAttribute('data-timestamp', +new Date());
-                (d.head || d.body).appendChild(s);
-              })();
-            </script>
-            <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript"
-                rel="nofollow">comments powered by Disqus.</a></noscript>
-          </aside>
-
-
-        </div>
-
-      </article>
 
     </div>
-  </main>
 
-  <footer class="site-footer">
-    <div class="container">
-      <ul class="social">
-        <li><a href="https://github.com/prajapatin" target="_blank"><i class="icon icon-github"></i></a></li>
-        <li><a href="https://twitter.com/nilesh_be_it" target="_blank"><i class="icon icon-twitter"></i></a></li>
-        <li><a href="https://facebook.com/nilesh.be.it" target="_blank"><i class="icon icon-facebook"></i></a></li>
-        <li><a href="https://linkedin.com/in/nileshprajapati" target="_blank"><i class="icon icon-linkedin"></i></a>
-        </li>
-      </ul>
-      <p class="txt-medium-gray">
-        <small>&copy;2026</small>
-      </p>
-    </div>
-  </footer>
+    
+<hr>
+
+<aside id="comments" class="disqus">
+  <h3><i class="icon icon-comments-o"></i> Comments</h3>
+  <div id="disqus_thread"></div>
+  <script>
+    var disqus_config = function() {
+      this.page.url = 'https://nileshprajapati.net/blog/2017/actor-model-programming-paradigm-with-azure-service-fabric/';
+      this.page.identifier = '/blog/2017/actor-model-programming-paradigm-with-azure-service-fabric';
+    };
+    (function() {
+      var d = document,
+      s = d.createElement('script');
+      s.src = '//nileshprajapati.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+</aside>
+
+
+  </div>
+
+</article>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <ul class="social">
+  <li><a href="https://github.com/prajapatin" target="_blank"><i class="icon icon-github"></i></a></li>
+  <li><a href="https://twitter.com/nilesh_be_it" target="_blank"><i class="icon icon-twitter"></i></a></li>
+  <li><a href="https://facebook.com/nilesh.be.it" target="_blank"><i class="icon icon-facebook"></i></a></li>
+  <li><a href="https://linkedin.com/in/nileshprajapati" target="_blank"><i class="icon icon-linkedin"></i></a></li>
+</ul>
+    <p class="txt-medium-gray">
+      <small>&copy;2026</small>
+    </p>
+  </div>
+</footer>
 
 
 </body>
-
 </html>

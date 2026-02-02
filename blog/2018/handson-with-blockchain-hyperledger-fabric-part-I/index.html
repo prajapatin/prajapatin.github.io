@@ -1,352 +1,241 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Hands-on with blockchain - Hyperledger Fabric Part-I</title>
-  <meta name="description"
-    content="About this articleThis is the first part of the HyperLedger Fabric Hands-on where I am going to cover brief introduction of HyperLedger Fabric and setting-up...">
+<title>Hands-on with blockchain - Hyperledger Fabric Part-I</title>
+<meta name="description" content="About this articleThis is the first part of the HyperLedger Fabric Hands-on where I am going to cover brief introduction of HyperLedger Fabric and setting-up...">
 
-  <link rel="stylesheet" href="/css/main.css">
-  <link rel="canonical" href="https://nileshprajapati.net/blog/2018/handson-with-blockchain-hyperledger-fabric-part-I/">
-  <link rel="alternate" type="application/rss+xml" title="Nilesh Prajapati"
-    href="https://nileshprajapati.net/feed.xml" />
+<link rel="stylesheet" href="/css/main.css">
+<link rel="canonical" href="https://nileshprajapati.net/blog/2018/handson-with-blockchain-hyperledger-fabric-part-I/">
+<link rel="alternate" type="application/rss+xml" title="Nilesh Prajapati" href="https://nileshprajapati.net/feed.xml" />
 
-  <script>
-    (function (i, s, o, g, r, a, m) {
-      i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
-        (i[r].q = i[r].q || []).push(arguments)
-      }, i[r].l = 1 * new Date(); a = s.createElement(o),
-        m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
-    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-    ga('create', 'UA-52446115-1', 'auto');
-    ga('send', 'pageview');
-  </script>
+  ga('create', 'UA-52446115-1', 'auto');
+  ga('send', 'pageview');
+</script>
 
 
 </head>
-
 <body>
   <header class="site-header">
-    <div class="container">
-      <input type="checkbox" id="toggleNavbar">
-      <h1 class="logo"><a href="/">Nilesh<span>Prajapati</span></a></h1>
-      <label for="toggleNavbar" role="button" class="toggle-navbar-button">
-        <i class="icon icon-menu"></i>
-        <i class="icon icon-cross"></i>
-      </label>
-      <nav class="navbar">
-        <ul>
-          <li><a href="/" title="Home">Home</a></li>
-
+  <div class="container">
+    <input type="checkbox" id="toggleNavbar">
+    <h1 class="logo"><a href="/">Nilesh<span>Prajapati</span></a></h1>
+    <label for="toggleNavbar" role="button" class="toggle-navbar-button">
+      <i class="icon icon-menu"></i>
+      <i class="icon icon-cross"></i>
+    </label>
+    <nav class="navbar">
+      <ul>
+        <li><a href="/" title="Home">Home</a></li>
+        
           <li><a href="/about" title="About">About</a></li>
-
+        
           <li><a href="/blog" title="Blog">Blog</a></li>
+        
+        <li><a href="/feed.xml" target="_blank"><i class="icon icon-rss"></i></a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
 
-          <li><a href="/feed.xml" target="_blank"><i class="icon icon-rss"></i></a></li>
-        </ul>
-      </nav>
+
+<main class="main-container">
+  <div class="container">
+    <article role="article" class="post">
+
+  <div class="card">
+    <header class="post-header">
+      <h1 class="post-title">Hands-on with blockchain - Hyperledger Fabric Part-I</h1>
+      <em class="post-meta">
+        <time>Aug 6, 2018</time>
+      </em>
+    </header>
+    <div class="post-categories">
+      
+      
+      <a href="/categories/#Blockchain" class="post-tag">Blockchain</a>
+      &nbsp;
+      
+      <a href="/categories/#Hyperledger" class="post-tag">Hyperledger</a>
+      
+      
     </div>
-  </header>
+    <div class="post-content">
+      
+        <figure class="post-thumbnail ">
+          <img src="/images/hyperledger_fabric.png" alt="Hands-on with blockchain - Hyperledger Fabric Part-I">
+        </figure>
+      
+      <h3>About this article</h3>
+<p>This is the first part of the HyperLedger Fabric Hands-on where I am going to cover brief introduction of HyperLedger Fabric and setting-up the system to start first blockchain network and test out first-network. The hands-on on development of actual DApp (De-centralized Application) would be covered in next part of the post.</p>
 
+<h3>What is Hyperledger?</h3>
 
-  <main class="main-container">
-    <div class="container">
-      <article role="article" class="post">
+<p>The Hyperledger is a an umbrella project started by Linux Foundation for open source Blockchains and tools.</p>
 
-        <div class="card">
-          <header class="post-header">
-            <h1 class="post-title">Hands-on with blockchain - Hyperledger Fabric Part-I</h1>
-            <em class="post-meta">
-              <time>Aug 5, 2018</time>
-            </em>
-          </header>
-          <div class="post-categories">
+<h3>What is Hyperledger Fabric then?</h3>
 
+<p>Hyperledger Fabric is one of the umbrella projects of Hyperledger and it has been one of the most successful Blockchain projects. It has been developed with advanced architecture principles which includes pluggable modules, scalable, secure and it’s unique differentiation - permissioned. The source code is written in Go language and there are SDKs available in various languages like NodeJS, Python, Go. It is a <a href="/blog/2017/what-is-micro-services-architecture/">micro-service</a> architecture and uses docker containers to host various modules.</p>
 
-            <a href="/categories/#Blockchain" class="post-tag">Blockchain</a>
-            &nbsp;
+<p>The Hyperledger Fabric is private and permissioned  (it is not like <a href="/blog/2018/handson-with-blockchain-ethereum/">Ethereum</a> in which any unknown identities can take part in network  and uses ‘proof of work’ protocol). In Hyperledger Fabric, members can only join through trusted Membership Service Providers. Although Hyperledger Fabric is permissioned network, the network can be established across industries and businesses to execute different types of contracts.</p>
 
-            <a href="/categories/#Hyperledger" class="post-tag">Hyperledger</a>
+<h3>Why Blockchain?</h3>
 
+<p>To understand the needs of Blockchain network, one needs to understand how different types of transactions take place in current digital age and how it worked in past(before digitization). It can be explained well with example, let us take one buyer and one supplier hypothetical example. The buyer wants to buy some asset from supplier and now if we consider this transaction before digital age, they will agree upon some terms/contract to carry out this transaction. Usually there could be a broker also who could be trusted by both parties so that whatever transaction records maintained by both parties can be validated and broker will approve the transaction and charge some commission for the same purpose. Also there is a chance of loss in records maintained by one of the parties and in that case both parties must agree upon whatever records maintained by another party. The digital age brought only technology revolution and not in terms of how these transactions are carried out. With digital technologies, we could just digitize the records in ledger or may be centralize those records but still we need to rely on central authority to approve the transactions (e.g. Reserve Bank in money transaction). Once we maintain records in central place (like SSN in USA, Aadhaar in India) , there is a chance of someone stealing the records, update it and we will always have to trust the central authority.</p>
 
-          </div>
-          <div class="post-content">
+<p>To make sure that there is no central authority and transactions are decentralized (stored on multiple machines - peers), we need to make sure that trust is established by multiple peers for all transactions carried out. If buyer is buying some assets from supplier, the transaction record would be available with all peers and nobody would be able to modify the transaction as it would be always append-only. The transaction must be approved by all peers and it would be carried out as per the contract. Basically Blockchain provides us all of these and much more, also there are many use-cases in current world could be benefited with de-centralized blockchain technology (e.g. Youtube kind of Video Streaming, Banking transactions, Public E-Mail providers, Property record registries, Identity Management and many more).</p>
 
-            <figure class="post-thumbnail ">
-              <img src="/images/hyperledger_fabric.png" alt="Hands-on with blockchain - Hyperledger Fabric Part-I">
-            </figure>
+<h3>How Hyperledger Fabric works?</h3>
 
-            <h3>About this article</h3>
-            <p>This is the first part of the HyperLedger Fabric Hands-on where I am going to cover brief introduction of
-              HyperLedger Fabric and setting-up the system to start first blockchain network and test out first-network.
-              The hands-on on development of actual DApp (De-centralized Application) would be covered in next part of
-              the post.</p>
+<p>The Hyperledger Fabric has a modular design, which provides freedom to network designer to select various algorithms, choice in ledger storage, choice in consensus and encryption techniques. Following is a brief on various functionalities available in Hyperledger Fabric. These are explained very briefly below, it would be discussed in detail in next hands-on post as focus of this post is to start private network locally and verify if network is correctly running with all modules.</p>
 
-            <h3>What is Hyperledger?</h3>
+<h4>Assets</h4>
 
-            <p>The Hyperledger is a an umbrella project started by Linux Foundation for open source Blockchains and
-              tools.</p>
+<p>Assets can be anything on which transaction can be carried out. It can be some kind of contract or some kind of hardware assets. The Hyperledger Fabric provides Chaincode/Smart Contract to modify the assets.</p>
 
-            <h3>What is Hyperledger Fabric then?</h3>
+<h4>Ledger</h4>
 
-            <p>Hyperledger Fabric is one of the umbrella projects of Hyperledger and it has been one of the most
-              successful Blockchain projects. It has been developed with advanced architecture principles which includes
-              pluggable modules, scalable, secure and it’s unique differentiation - permissioned. The source code is
-              written in Go language and there are SDKs available in various languages like NodeJS, Python, Go. It is a
-              <a href="/blog/2017/what-is-micro-services-architecture/">micro-service</a> architecture and uses docker
-              containers to host various modules.</p>
+<p>There are two components in Hyperledger Fabric Ledger, one is World State and another is transaction logs. The world state is where the current state of transaction is maintained and history is maintained in transaction logs. The world state is read-only and can be queried using SDK while transaction logs cannot be modified but new transaction can be added into it. Due to modular design, data storage for world state is pluggable (you can use your own storage, the default database is LevelDB).</p>
 
-            <p>The Hyperledger Fabric is private and permissioned (it is not like <a
-                href="/blog/2018/handson-with-blockchain-ethereum/">Ethereum</a> in which any unknown identities can
-              take part in network and uses ‘proof of work’ protocol). In Hyperledger Fabric, members can only join
-              through trusted Membership Service Providers. Although Hyperledger Fabric is permissioned network, the
-              network can be established across industries and businesses to execute different types of contracts.</p>
+<h4>Smart Contract</h4>
 
-            <h3>Why Blockchain?</h3>
+<p>In Hyperledger Fabric, the smart contract is chaincode. It can be executed by any application outside of blockchain and usually it interacts with World state part of the ledger and not the transactions. The smart contract is the executable code, which can be used by application to query the data or execute new transaction.</p>
 
-            <p>To understand the needs of Blockchain network, one needs to understand how different types of
-              transactions take place in current digital age and how it worked in past(before digitization). It can be
-              explained well with example, let us take one buyer and one supplier hypothetical example. The buyer wants
-              to buy some asset from supplier and now if we consider this transaction before digital age, they will
-              agree upon some terms/contract to carry out this transaction. Usually there could be a broker also who
-              could be trusted by both parties so that whatever transaction records maintained by both parties can be
-              validated and broker will approve the transaction and charge some commission for the same purpose. Also
-              there is a chance of loss in records maintained by one of the parties and in that case both parties must
-              agree upon whatever records maintained by another party. The digital age brought only technology
-              revolution and not in terms of how these transactions are carried out. With digital technologies, we could
-              just digitize the records in ledger or may be centralize those records but still we need to rely on
-              central authority to approve the transactions (e.g. Reserve Bank in money transaction). Once we maintain
-              records in central place (like SSN in USA, Aadhaar in India) , there is a chance of someone stealing the
-              records, update it and we will always have to trust the central authority.</p>
+<h4>Consensus</h4>
 
-            <p>To make sure that there is no central authority and transactions are decentralized (stored on multiple
-              machines - peers), we need to make sure that trust is established by multiple peers for all transactions
-              carried out. If buyer is buying some assets from supplier, the transaction record would be available with
-              all peers and nobody would be able to modify the transaction as it would be always append-only. The
-              transaction must be approved by all peers and it would be carried out as per the contract. Basically
-              Blockchain provides us all of these and much more, also there are many use-cases in current world could be
-              benefited with de-centralized blockchain technology (e.g. Youtube kind of Video Streaming, Banking
-              transactions, Public E-Mail providers, Property record registries, Identity Management and many more).</p>
+<p>The order of transaction is very important in blockchain, transactions must be written to ledger in order in which they occur. There must be a way to reject a bad or malicious transaction and to do that there is a need of consensus mechanism so that policy can be established to accept the transaction based on how many peer nodes have approved the transaction. The Hyperledger Fabric provides flexible consensus mechanism using which network starters can define their mechanism for consensus. On other hand the <a href="/blog/2018/handson-with-blockchain-ethereum/">Ethereum</a> uses proof of work to mine the blockchain block, which can be done only by executing complex cryptographic algorithms (it requires lot of computing power) - whichever miner mines the block first will get priority and consensus is established. The Hyperledger Fabric uses Apache Kafka and Apache Zookeeper as a technology to order the transactions.</p>
 
-            <h3>How Hyperledger Fabric works?</h3>
+<h4>Privacy</h4>
 
-            <p>The Hyperledger Fabric has a modular design, which provides freedom to network designer to select various
-              algorithms, choice in ledger storage, choice in consensus and encryption techniques. Following is a brief
-              on various functionalities available in Hyperledger Fabric. These are explained very briefly below, it
-              would be discussed in detail in next hands-on post as focus of this post is to start private network
-              locally and verify if network is correctly running with all modules.</p>
+<p>In Hyperledger Fabric, organization can be a member and privacy can be established by creating a Channel withing organization. The channel will have its own ledger and can only be shared with members of that channel. The network can have multiple channels and participant can be part of more than one channel. The participant will have ledger copy for each channel where it is a member so participant cannot access ledger belonging to another channel where it is not a member.</p>
 
-            <h4>Assets</h4>
+<h4>Identity Management &amp; Security</h4>
 
-            <p>Assets can be anything on which transaction can be carried out. It can be some kind of contract or some
-              kind of hardware assets. The Hyperledger Fabric provides Chaincode/Smart Contract to modify the assets.
-            </p>
+<p>All participants in network have known identity, which is managed by Membership Service Providers (MSPs). The MSP uses Public Key Infrastructure (PKI) to establish identities and per channel MSP makes sure tha member is identified by MSP allocated to channel.</p>
 
-            <h4>Ledger</h4>
+<h3>How transaction takes place in Hyperledger Fabric?</h3>
 
-            <p>There are two components in Hyperledger Fabric Ledger, one is World State and another is transaction
-              logs. The world state is where the current state of transaction is maintained and history is maintained in
-              transaction logs. The world state is read-only and can be queried using SDK while transaction logs cannot
-              be modified but new transaction can be added into it. Due to modular design, data storage for world state
-              is pluggable (you can use your own storage, the default database is LevelDB).</p>
+<image src="/images/hyperledger_fabric.png"></image>
 
-            <h4>Smart Contract</h4>
+<p>In above transaction flow buyer wants to buy some asset from supplier and it is explained below how the entire transaction will take place in Hyperledger Fabric network. It is assumed that both Buyer and Supplier are registered on network, they hve dedicated channel created and cryptographic certificates provided to interact with Membership Service provider.</p>
 
-            <p>In Hyperledger Fabric, the smart contract is chaincode. It can be executed by any application outside of
-              blockchain and usually it interacts with World state part of the ledger and not the transactions. The
-              smart contract is the executable code, which can be used by application to query the data or execute new
-              transaction.</p>
+<p>The buyer is sending purchase request using SDK, which targets Peer A, Peer B, Peer C &amp; Peer D as they all supposed to endorse the transaction as per the endorsing policy defined. The endorsement policy can be defined by members of the network based on types of transaction. The request is going to execute Chaincode (Smart Contract) residing on peers, all peers will validate the transaction by looking at the the format, duplication, signature validation (through MSP), channel authorization (whether the buyer is authorized to execute the chaincode). If all is good then the transaction proposal inputs would be used as a parameters in chincode function residing on peer and function would be executed. The chaincode would be executed against world state database and response would be prepared with read/write result. It is important to note here is that ledger is still not updated(which will happen later), the proposal response would be signed by endorsing peers and response would be sent back to buyer app. The buyer app will verify the response by looking at endorsing peer’s signature and consume the data if it was only read request. If it was write request then application will validate the endorsing policy (whether all required peers have endorsed the transaction) and broadcasts the proposal request and response to ordering service. The ordering service inspects the transaction and orders them per channel and creates the transaction block. These transactions then delivered to all peers and validated, the validated transactions are then updated to ledger by all peers. If there are any write sets in proposal response then they would be committed to state database.</p>
 
-            <h4>Consensus</h4>
+<h3>Setting-up your system for Hyperledger Fabric</h3>
 
-            <p>The order of transaction is very important in blockchain, transactions must be written to ledger in order
-              in which they occur. There must be a way to reject a bad or malicious transaction and to do that there is
-              a need of consensus mechanism so that policy can be established to accept the transaction based on how
-              many peer nodes have approved the transaction. The Hyperledger Fabric provides flexible consensus
-              mechanism using which network starters can define their mechanism for consensus. On other hand the <a
-                href="/blog/2018/handson-with-blockchain-ethereum/">Ethereum</a> uses proof of work to mine the
-              blockchain block, which can be done only by executing complex cryptographic algorithms (it requires lot of
-              computing power) - whichever miner mines the block first will get priority and consensus is established.
-              The Hyperledger Fabric uses Apache Kafka and Apache Zookeeper as a technology to order the transactions.
-            </p>
+<p>The operating system used here to setup Hyperledger Fabric is Ubuntu 16.04 LTS, following steps need to be followed to run first network in your system.</p>
 
-            <h4>Privacy</h4>
+<ul>
+  <li>Install <a href="https://git-scm.com/download/linux">Git client</a></li>
+  <li>Install go using following command
+ sudo apt install golang-go<br />
+ You will also need to set GOPATH permanently as instructed <a href="http://codingeg.blogspot.com/2015/01/how-to-set-gopath-permanently-in-ubuntu.html">here</a></li>
+  <li>Install <a href="https://docs.docker.com/install/linux/docker-ce/ubuntu/">Docker</a></li>
+  <li>Install <a href="https://docs.docker.com/compose/install/">docker-compose</a> and follow the instructions in linux tab</li>
+  <li>Install <a href="https://packaging.python.org/guides/installing-using-linux-tools/#installing-pip-setuptools-wheel-with-linux-package-managers">pip</a> - follow the instructions for Ubuntu/Debian</li>
+  <li>pip install –upgrade pip</li>
+  <li>Install python
+By default Ubuntu 16.04 comes with Python 3.5.1 installed as the python3 binary. The Fabric Node.js SDK requires an iteration of Python 2.7 in order for npm install operations to complete successfully. 
+Retrieve the 2.7 version with the following command:
+sudo apt-get install python
+verify the version with command: python –version</li>
+  <li>Install Nodejs 8.9.x (As of now you must need 8.9.x version)</li>
+</ul>
 
-            <p>In Hyperledger Fabric, organization can be a member and privacy can be established by creating a Channel
-              withing organization. The channel will have its own ledger and can only be shared with members of that
-              channel. The network can have multiple channels and participant can be part of more than one channel. The
-              participant will have ledger copy for each channel where it is a member so participant cannot access
-              ledger belonging to another channel where it is not a member.</p>
-
-            <h4>Identity Management &amp; Security</h4>
-
-            <p>All participants in network have known identity, which is managed by Membership Service Providers (MSPs).
-              The MSP uses Public Key Infrastructure (PKI) to establish identities and per channel MSP makes sure tha
-              member is identified by MSP allocated to channel.</p>
-
-            <h3>How transaction takes place in Hyperledger Fabric?</h3>
-
-            <image src="/images/hyperledger_fabric.png"></image>
-
-            <p>In above transaction flow buyer wants to buy some asset from supplier and it is explained below how the
-              entire transaction will take place in Hyperledger Fabric network. It is assumed that both Buyer and
-              Supplier are registered on network, they hve dedicated channel created and cryptographic certificates
-              provided to interact with Membership Service provider.</p>
-
-            <p>The buyer is sending purchase request using SDK, which targets Peer A, Peer B, Peer C &amp; Peer D as
-              they all supposed to endorse the transaction as per the endorsing policy defined. The endorsement policy
-              can be defined by members of the network based on types of transaction. The request is going to execute
-              Chaincode (Smart Contract) residing on peers, all peers will validate the transaction by looking at the
-              the format, duplication, signature validation (through MSP), channel authorization (whether the buyer is
-              authorized to execute the chaincode). If all is good then the transaction proposal inputs would be used as
-              a parameters in chincode function residing on peer and function would be executed. The chaincode would be
-              executed against world state database and response would be prepared with read/write result. It is
-              important to note here is that ledger is still not updated(which will happen later), the proposal response
-              would be signed by endorsing peers and response would be sent back to buyer app. The buyer app will verify
-              the response by looking at endorsing peer’s signature and consume the data if it was only read request. If
-              it was write request then application will validate the endorsing policy (whether all required peers have
-              endorsed the transaction) and broadcasts the proposal request and response to ordering service. The
-              ordering service inspects the transaction and orders them per channel and creates the transaction block.
-              These transactions then delivered to all peers and validated, the validated transactions are then updated
-              to ledger by all peers. If there are any write sets in proposal response then they would be committed to
-              state database.</p>
-
-            <h3>Setting-up your system for Hyperledger Fabric</h3>
-
-            <p>The operating system used here to setup Hyperledger Fabric is Ubuntu 16.04 LTS, following steps need to
-              be followed to run first network in your system.</p>
-
-            <ul>
-              <li>Install <a href="https://git-scm.com/download/linux">Git client</a></li>
-              <li>Install go using following command
-                sudo apt install golang-go<br />
-                You will also need to set GOPATH permanently as instructed <a
-                  href="http://codingeg.blogspot.com/2015/01/how-to-set-gopath-permanently-in-ubuntu.html">here</a></li>
-              <li>Install <a href="https://docs.docker.com/install/linux/docker-ce/ubuntu/">Docker</a></li>
-              <li>Install <a href="https://docs.docker.com/compose/install/">docker-compose</a> and follow the
-                instructions in linux tab</li>
-              <li>Install <a
-                  href="https://packaging.python.org/guides/installing-using-linux-tools/#installing-pip-setuptools-wheel-with-linux-package-managers">pip</a>
-                - follow the instructions for Ubuntu/Debian</li>
-              <li>pip install –upgrade pip</li>
-              <li>Install python
-                By default Ubuntu 16.04 comes with Python 3.5.1 installed as the python3 binary. The Fabric Node.js SDK
-                requires an iteration of Python 2.7 in order for npm install operations to complete successfully.
-                Retrieve the 2.7 version with the following command:
-                sudo apt-get install python
-                verify the version with command: python –version</li>
-              <li>Install Nodejs 8.9.x (As of now you must need 8.9.x version)</li>
-            </ul>
-
-            <figure class="highlight">
-              <pre><code class="language-shell" data-lang="shell">  <span class="nb">sudo </span>apt-get <span class="nb">install </span>curl
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">  <span class="nb">sudo </span>apt-get <span class="nb">install </span>curl
   curl <span class="nt">-sL</span> https://deb.nodesource.com/setup_8.x | <span class="nb">sudo</span> <span class="nt">-E</span> bash -
   <span class="nb">sudo </span>apt-get <span class="nb">install</span> <span class="nt">-y</span> nodejs
   <span class="nb">sudo </span>npm <span class="nb">install </span>npm <span class="nt">--global</span>
-  </code></pre>
-            </figure>
+  </code></pre></figure>
 
-            <p>You may need to set default node version if you have multiple versions of nodejs installed
-              To change default node version (you may need to install nvm if not installed already)
-              nvm alias default 8.11.3 (to view all versions of node, use ‘nvm ls’)</p>
+<p>You may need to set default node version if you have multiple versions of nodejs installed
+  To change default node version (you may need to install nvm if not installed already)
+  nvm alias default 8.11.3 (to view all versions of node, use ‘nvm ls’)</p>
 
-            <ul>
-              <li>Download all fabric images &amp; fabric sample</li>
-            </ul>
+<ul>
+  <li>Download all fabric images &amp; fabric sample</li>
+</ul>
 
-            <figure class="highlight">
-              <pre><code class="language-shell" data-lang="shell">curl <span class="nt">-sSL</span> http://bit.ly/2ysbOFE | bash <span class="nt">-s</span> 1.2.0 </code></pre>
-            </figure>
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">curl <span class="nt">-sSL</span> http://bit.ly/2ysbOFE | bash <span class="nt">-s</span> 1.2.0 </code></pre></figure>
 
-            <h3>Running your first Hyperledger Fabric network</h3>
+<h3>Running your first Hyperledger Fabric network</h3>
 
-            <p>We will start our first network from sample but before you run your first sample, Install everything you
-              need to run first network including fabric images.</p>
+<p>We will start our first network from sample but before you run your first sample, Install everything you need to run first network including fabric images.</p>
 
-            <figure class="highlight">
-              <pre><code class="language-shell" data-lang="shell"><span class="nb">sudo </span>bash fabric-samples/scripts/bootstrap.sh</code></pre>
-            </figure>
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell"><span class="nb">sudo </span>bash fabric-samples/scripts/bootstrap.sh</code></pre></figure>
 
-            <p>Run first-network by navigating to first-network folder in fabric-samples directory</p>
+<p>Run first-network by navigating to first-network folder in fabric-samples directory</p>
 
-            <figure class="highlight">
-              <pre><code class="language-shell" data-lang="shell">./byfn generate</code></pre>
-            </figure>
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">./byfn generate</code></pre></figure>
 
-            <p>(generates certificate, genesis block and other artifacts. The artifacts can be found in
-              first-network/channel-artifacts folder)</p>
+<p>(generates certificate, genesis block and other artifacts. The artifacts can be found in first-network/channel-artifacts folder)</p>
 
-            <figure class="highlight">
-              <pre><code class="language-shell" data-lang="shell">./byfn up</code></pre>
-            </figure>
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">./byfn up</code></pre></figure>
 
-            <p>(start your first network)</p>
+<p>(start your first network)</p>
 
-            <figure class="highlight">
-              <pre><code class="language-shell" data-lang="shell">./byfn down</code></pre>
-            </figure>
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">./byfn down</code></pre></figure>
 
-            <p>(shutdown your first network)</p>
+<p>(shutdown your first network)</p>
 
-            <p>You should be able to see ‘All GOOD, BYFN execution completed’ message if all went well. This post is the
-              foundation for next post where we will create sample DApp (De-centralized Application) and use SDK to
-              interact with network.</p>
+<p>You should be able to see ‘All GOOD, BYFN execution completed’ message if all went well. This post is the foundation for next post where we will create sample DApp (De-centralized Application) and use SDK to interact with network.</p>
 
-
-          </div>
-
-
-          <hr>
-
-          <aside id="comments" class="disqus">
-            <h3><i class="icon icon-comments-o"></i> Comments</h3>
-            <div id="disqus_thread"></div>
-            <script>
-              var disqus_config = function () {
-                this.page.url = 'https://nileshprajapati.net/blog/2018/handson-with-blockchain-hyperledger-fabric-part-I/';
-                this.page.identifier = '/blog/2018/handson-with-blockchain-hyperledger-fabric-part-I';
-              };
-              (function () {
-                var d = document,
-                  s = d.createElement('script');
-                s.src = '//nileshprajapati.disqus.com/embed.js';
-                s.setAttribute('data-timestamp', +new Date());
-                (d.head || d.body).appendChild(s);
-              })();
-            </script>
-            <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript"
-                rel="nofollow">comments powered by Disqus.</a></noscript>
-          </aside>
-
-
-        </div>
-
-      </article>
 
     </div>
-  </main>
 
-  <footer class="site-footer">
-    <div class="container">
-      <ul class="social">
-        <li><a href="https://github.com/prajapatin" target="_blank"><i class="icon icon-github"></i></a></li>
-        <li><a href="https://twitter.com/nilesh_be_it" target="_blank"><i class="icon icon-twitter"></i></a></li>
-        <li><a href="https://facebook.com/nilesh.be.it" target="_blank"><i class="icon icon-facebook"></i></a></li>
-        <li><a href="https://linkedin.com/in/nileshprajapati" target="_blank"><i class="icon icon-linkedin"></i></a>
-        </li>
-      </ul>
-      <p class="txt-medium-gray">
-        <small>&copy;2026</small>
-      </p>
-    </div>
-  </footer>
+    
+<hr>
+
+<aside id="comments" class="disqus">
+  <h3><i class="icon icon-comments-o"></i> Comments</h3>
+  <div id="disqus_thread"></div>
+  <script>
+    var disqus_config = function() {
+      this.page.url = 'https://nileshprajapati.net/blog/2018/handson-with-blockchain-hyperledger-fabric-part-I/';
+      this.page.identifier = '/blog/2018/handson-with-blockchain-hyperledger-fabric-part-I';
+    };
+    (function() {
+      var d = document,
+      s = d.createElement('script');
+      s.src = '//nileshprajapati.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+</aside>
+
+
+  </div>
+
+</article>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <ul class="social">
+  <li><a href="https://github.com/prajapatin" target="_blank"><i class="icon icon-github"></i></a></li>
+  <li><a href="https://twitter.com/nilesh_be_it" target="_blank"><i class="icon icon-twitter"></i></a></li>
+  <li><a href="https://facebook.com/nilesh.be.it" target="_blank"><i class="icon icon-facebook"></i></a></li>
+  <li><a href="https://linkedin.com/in/nileshprajapati" target="_blank"><i class="icon icon-linkedin"></i></a></li>
+</ul>
+    <p class="txt-medium-gray">
+      <small>&copy;2026</small>
+    </p>
+  </div>
+</footer>
 
 
 </body>
-
 </html>

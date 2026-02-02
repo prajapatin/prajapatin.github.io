@@ -1,193 +1,134 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>What is Microservices architecture and what are the implementation options?</title>
-  <meta name="description"
-    content="I have come across with many people, who have different understanding about microservices based software architecture, it is very important to understand how...">
+<title>What is Microservices architecture and what are the implementation options?</title>
+<meta name="description" content="I have come across with many people, who have different understanding about microservices based software architecture, it is very important to understand how...">
 
-  <link rel="stylesheet" href="/css/main.css">
-  <link rel="canonical" href="https://nileshprajapati.net/blog/2017/what-is-micro-services-architecture/">
-  <link rel="alternate" type="application/rss+xml" title="Nilesh Prajapati"
-    href="https://nileshprajapati.net/feed.xml" />
+<link rel="stylesheet" href="/css/main.css">
+<link rel="canonical" href="https://nileshprajapati.net/blog/2017/what-is-micro-services-architecture/">
+<link rel="alternate" type="application/rss+xml" title="Nilesh Prajapati" href="https://nileshprajapati.net/feed.xml" />
 
-  <script>
-    (function (i, s, o, g, r, a, m) {
-      i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
-        (i[r].q = i[r].q || []).push(arguments)
-      }, i[r].l = 1 * new Date(); a = s.createElement(o),
-        m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
-    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-    ga('create', 'UA-52446115-1', 'auto');
-    ga('send', 'pageview');
-  </script>
+  ga('create', 'UA-52446115-1', 'auto');
+  ga('send', 'pageview');
+</script>
 
 
 </head>
-
 <body>
   <header class="site-header">
-    <div class="container">
-      <input type="checkbox" id="toggleNavbar">
-      <h1 class="logo"><a href="/">Nilesh<span>Prajapati</span></a></h1>
-      <label for="toggleNavbar" role="button" class="toggle-navbar-button">
-        <i class="icon icon-menu"></i>
-        <i class="icon icon-cross"></i>
-      </label>
-      <nav class="navbar">
-        <ul>
-          <li><a href="/" title="Home">Home</a></li>
-
+  <div class="container">
+    <input type="checkbox" id="toggleNavbar">
+    <h1 class="logo"><a href="/">Nilesh<span>Prajapati</span></a></h1>
+    <label for="toggleNavbar" role="button" class="toggle-navbar-button">
+      <i class="icon icon-menu"></i>
+      <i class="icon icon-cross"></i>
+    </label>
+    <nav class="navbar">
+      <ul>
+        <li><a href="/" title="Home">Home</a></li>
+        
           <li><a href="/about" title="About">About</a></li>
-
+        
           <li><a href="/blog" title="Blog">Blog</a></li>
-
-          <li><a href="/feed.xml" target="_blank"><i class="icon icon-rss"></i></a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
-
-
-  <main class="main-container">
-    <div class="container">
-      <article role="article" class="post">
-
-        <div class="card">
-          <header class="post-header">
-            <h1 class="post-title">What is Microservices architecture and what are the implementation options?</h1>
-            <em class="post-meta">
-              <time>Aug 28, 2017</time>
-            </em>
-          </header>
-          <div class="post-categories">
-
-
-            <a href="/categories/#Architecture" class="post-tag">Architecture</a>
-
-
-          </div>
-          <div class="post-content">
-
-            <figure class="post-thumbnail ">
-              <img src="/images/microservices.png"
-                alt="What is Microservices architecture and what are the implementation options?">
-            </figure>
-
-            <p>I have come across with many people, who have different understanding about microservices based software
-              architecture, it is very important to understand how it is different from monolithic architecture that too
-              not only in terms of technical implementation.</p>
-
-            <p>Traditionally we would have developed software application with n-tier architecture where your front-end,
-              middle-tier, back-end resides on different server. So, what is wrong with that model? Can’t we scale our
-              application with that model? There is nothing wrong with n-tier architecture and of course we can scale
-              n-tier architecture by adding additional nodes for business logic/API layer, web layer but there are other
-              aspects which we should consider when we develop enterprise grade software products. I will try to define
-              microservices based architecture and then we can talk about other aspects like continuous deployment (CD),
-              continuous integration (CI), scalability, performance etc.</p>
-
-            <p>So what is microservices? If I create simple web service/REST APIs and host them separately - can it be
-              called microservices? Not exactly because the each micro services should be self-contained and it should
-              have it’s own boundary and communication port or other communication mechanism. Let’s take one
-              hypothetical application use case where there is a need for an Order Module, Payment Module, Inventory
-              Module, Reporting Module, and Notification Module. The example use case may not be the accurate real-world
-              example but it will explain us what is microservices and how it differs from monolithic application
-              architecture. Now if we follow monolithic architecture, we would have created business logic for each
-              module and hosted it in single server as a web service or REST services and that particular application
-              server would be responsible for delivering service response from specific port. What we are doing here is
-              that we are developing software with loosely coupled pattern (developing each module independently) but
-              while hosting them we are not making them independent, which is needed because we do not know which
-              particular module needs higher scalability and higher throughput. So to scale the application, we actually
-              go ahead and scale our API server altogether and what happens is that we will have to version our
-              application again and CI, CD will also be impacted. Also if you know that your Notification module has to
-              be scaled due to demand, you will not be able to scale it independently. In microservices architecture we
-              actually develop each module or even sub-modules as an independently deployable, modular services and each
-              service will have it’s own process (as opposed to monolithic architecture, where every modules run in
-              single process). The micro-services will communicate with each other with predefined communication
-              mechanism and also few of them will have port exposed to outside world, you can even have different
-              versions of same micrservice running side-by-side. So overall if we want to define microservices, we will
-              have to say it is a collection of lightweight, small, self-contained services with their own process,
-              communication mechanism (it can be web service, REST service or can be even background service).</p>
-
-            <p>So what are the benefits of microservices? As it would be loosely coupled and having single
-              responsibility, failure on one service will not impact other services. We can deploy, ship each service
-              independently without affecting overall application life cycle. We can scale one service (which is in high
-              demand) by deploying it’s multiple instances on same server or across multiple nodes. Multiple
-              technologies can be chosen for different small services, which are suitable for specific use case. Also
-              testing independent service is lot easier when upgrading specific service for production. So, overall it
-              suits well for our CI and CD scenarios.</p>
-
-            <p>What are the implementation options? There are multiple ways we can implement microservices based
-              architecture, the most popular option now a days is containerizing each micro service and host it in VMs
-              or physical machines. There are non-containerized options also available but dev-ops would be little
-              complex on those scenarios. We also need some kind of message bus implementation using which each service
-              can communicate with each other. My personal preference is on containerizing each micro service using
-              Docker or any other framework out there but there is a good amount of infrastructure management overhead
-              for continuous delivery and we need good monitoring software to monitor health of each service and scale
-              them on demand. We have been looking into Azure Service Fabric for our current solution, which is a
-              Platform as a Service for microservices based architecture and it looks very promising. I would like to
-              write multiple blogs on Azure Service Fabric with practical implementation during subsequent days,
-              particularly how to create different micro services, how to manage state for each services, how to create
-              communication channel for each service and how to host Docker container in Azure Service Fabric cluster.
-              So please let me know if you liked this small introduction about microservices and provide your
-              suggestions if you have about how I should improve it or anything which I need to take care for future
-              blogs.</p>
-
-
-          </div>
-
-
-          <hr>
-
-          <aside id="comments" class="disqus">
-            <h3><i class="icon icon-comments-o"></i> Comments</h3>
-            <div id="disqus_thread"></div>
-            <script>
-              var disqus_config = function () {
-                this.page.url = 'https://nileshprajapati.net/blog/2017/what-is-micro-services-architecture/';
-                this.page.identifier = '/blog/2017/what-is-micro-services-architecture';
-              };
-              (function () {
-                var d = document,
-                  s = d.createElement('script');
-                s.src = '//nileshprajapati.disqus.com/embed.js';
-                s.setAttribute('data-timestamp', +new Date());
-                (d.head || d.body).appendChild(s);
-              })();
-            </script>
-            <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript"
-                rel="nofollow">comments powered by Disqus.</a></noscript>
-          </aside>
-
-
-        </div>
-
-      </article>
-
-    </div>
-  </main>
-
-  <footer class="site-footer">
-    <div class="container">
-      <ul class="social">
-        <li><a href="https://github.com/prajapatin" target="_blank"><i class="icon icon-github"></i></a></li>
-        <li><a href="https://twitter.com/nilesh_be_it" target="_blank"><i class="icon icon-twitter"></i></a></li>
-        <li><a href="https://facebook.com/nilesh.be.it" target="_blank"><i class="icon icon-facebook"></i></a></li>
-        <li><a href="https://linkedin.com/in/nileshprajapati" target="_blank"><i class="icon icon-linkedin"></i></a>
-        </li>
+        
+        <li><a href="/feed.xml" target="_blank"><i class="icon icon-rss"></i></a></li>
       </ul>
-      <p class="txt-medium-gray">
-        <small>&copy;2026</small>
-      </p>
+    </nav>
+  </div>
+</header>
+
+
+<main class="main-container">
+  <div class="container">
+    <article role="article" class="post">
+
+  <div class="card">
+    <header class="post-header">
+      <h1 class="post-title">What is Microservices architecture and what are the implementation options?</h1>
+      <em class="post-meta">
+        <time>Aug 29, 2017</time>
+      </em>
+    </header>
+    <div class="post-categories">
+      
+      
+      <a href="/categories/#Architecture" class="post-tag">Architecture</a>
+      
+      
     </div>
-  </footer>
+    <div class="post-content">
+      
+        <figure class="post-thumbnail ">
+          <img src="/images/microservices.png" alt="What is Microservices architecture and what are the implementation options?">
+        </figure>
+      
+      <p>I have come across with many people, who have different understanding about microservices based software architecture, it is very important to understand how it is different from monolithic architecture that too not only in terms of technical implementation.</p>
+
+<p>Traditionally we would have developed software application with n-tier architecture where your front-end, middle-tier, back-end resides on different server. So, what is wrong with that model? Can’t we scale our application with that model? There is nothing wrong with n-tier architecture and of course we can scale n-tier architecture by adding additional nodes for business logic/API layer, web layer but there are other aspects which we should consider when we develop enterprise grade software products. I will try to define microservices based architecture and then we can talk about other aspects like continuous deployment (CD), continuous integration (CI), scalability, performance etc.</p>
+
+<p>So what is microservices? If I create simple web service/REST APIs and host them separately - can it be called microservices? Not exactly because the each micro services should be self-contained and it should have it’s own boundary and communication port or other communication mechanism. Let’s take one hypothetical application use case where there is a need for an Order Module, Payment Module, Inventory Module, Reporting Module, and Notification Module. The example use case may not be the accurate real-world example but it will explain us what is microservices and how it differs from monolithic application architecture. Now if we follow monolithic architecture, we would have created business logic for each module and hosted it in single server as a web service or REST services and that particular application server would be responsible for delivering service response from specific port. What we are doing here is that we are developing software with loosely coupled pattern (developing each module independently) but while hosting them we are not making them independent, which is needed because we do not know which particular module needs higher scalability and higher throughput. So to scale the application, we actually go ahead and scale our API server altogether and what happens is that we will have to version our application again and CI, CD will also be impacted. Also if you know that your Notification module has to be scaled due to demand, you will not be able to scale it independently. In microservices architecture we actually develop each module or even sub-modules as an independently deployable, modular services and each service will have it’s own process (as opposed to monolithic architecture, where every modules run in single process). The micro-services will communicate with each other with predefined communication mechanism and also few of them will have port exposed to outside world, you can even have different versions of same micrservice running side-by-side. So overall if we want to define microservices, we will have to say it is a collection of lightweight, small, self-contained services with their own process, communication mechanism (it can be web service, REST service or can be even background service).</p>
+
+<p>So what are the benefits of microservices? As it would be loosely coupled and having single responsibility, failure on one service will not impact other services. We can deploy, ship each service independently without affecting overall application life cycle. We can scale one service (which is in high demand) by deploying it’s multiple instances on same server or across multiple nodes. Multiple technologies can be chosen for different small services, which are suitable for specific use case. Also testing independent service is lot easier when upgrading specific service for production. So, overall it suits well for our CI and CD scenarios.</p>
+
+<p>What are the implementation options? There are multiple ways we can implement microservices based architecture, the most popular option now a days is containerizing each micro service and host it in VMs or physical machines. There are non-containerized options also available but dev-ops would be little complex on those scenarios. We also need some kind of message bus implementation using which each service can communicate with each other. My personal preference is on containerizing each micro service using Docker or any other framework out there but there is a good amount of infrastructure management overhead for continuous delivery and we need good monitoring software to monitor health of each service and scale them on demand. We have been looking into Azure Service Fabric for our current solution, which is a Platform as a Service for microservices based architecture and it looks very promising. I would like to write multiple blogs on Azure Service Fabric with practical implementation during subsequent days, particularly how to create different micro services, how to manage state for each services, how to create communication channel for each service and how to host Docker container in Azure Service Fabric cluster. So please let me know if you liked this small introduction about microservices and provide your suggestions if you have about how I should improve it or anything which I need to take care for future blogs.</p>
+
+
+    </div>
+
+    
+<hr>
+
+<aside id="comments" class="disqus">
+  <h3><i class="icon icon-comments-o"></i> Comments</h3>
+  <div id="disqus_thread"></div>
+  <script>
+    var disqus_config = function() {
+      this.page.url = 'https://nileshprajapati.net/blog/2017/what-is-micro-services-architecture/';
+      this.page.identifier = '/blog/2017/what-is-micro-services-architecture';
+    };
+    (function() {
+      var d = document,
+      s = d.createElement('script');
+      s.src = '//nileshprajapati.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+</aside>
+
+
+  </div>
+
+</article>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <ul class="social">
+  <li><a href="https://github.com/prajapatin" target="_blank"><i class="icon icon-github"></i></a></li>
+  <li><a href="https://twitter.com/nilesh_be_it" target="_blank"><i class="icon icon-twitter"></i></a></li>
+  <li><a href="https://facebook.com/nilesh.be.it" target="_blank"><i class="icon icon-facebook"></i></a></li>
+  <li><a href="https://linkedin.com/in/nileshprajapati" target="_blank"><i class="icon icon-linkedin"></i></a></li>
+</ul>
+    <p class="txt-medium-gray">
+      <small>&copy;2026</small>
+    </p>
+  </div>
+</footer>
 
 
 </body>
-
 </html>
