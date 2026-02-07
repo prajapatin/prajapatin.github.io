@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Building an Autonomous Security Operations Center with Agentic AI</title>
+<meta name="description" content="The dream of a fully autonomous Security Operations Center (SOC) is moving closer to reality. In this post, we will explore the architecture of our Agentic C...">
+
+<link rel="stylesheet" href="/css/main.css">
+<link rel="canonical" href="https://nileshprajapati.net/blog/2026/security-operations-center-with-agentic-AI/">
+<link rel="alternate" type="application/rss+xml" title="Nilesh Prajapati" href="https://nileshprajapati.net/feed.xml" />
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-52446115-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+</head>
+<body>
+  <header class="site-header">
+  <div class="container">
+    <input type="checkbox" id="toggleNavbar">
+    <h1 class="logo"><a href="/">Nilesh<span>Prajapati</span></a></h1>
+    <label for="toggleNavbar" role="button" class="toggle-navbar-button">
+      <i class="icon icon-menu"></i>
+      <i class="icon icon-cross"></i>
+    </label>
+    <nav class="navbar">
+      <ul>
+        <li><a href="/" title="Home">Home</a></li>
+        
+          <li><a href="/about" title="About">About</a></li>
+        
+          <li><a href="/blog" title="Blog">Blog</a></li>
+        
+        <li><a href="/feed.xml" target="_blank"><i class="icon icon-rss"></i></a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+
+<main class="main-container">
+  <div class="container">
+    <article role="article" class="post">
+
+  <div class="card">
+    <header class="post-header">
+      <h1 class="post-title">Building an Autonomous Security Operations Center with Agentic AI</h1>
+      <em class="post-meta">
+        <time>Feb 7, 2026 • Nilesh Prajapati</time>
+      </em>
+    </header>
+    <div class="post-categories">
+      
+      
+      <a href="/categories/#Cybersecurity" class="post-tag">Cybersecurity</a>
+      &nbsp;
+      
+      <a href="/categories/#LLMAgentic AI" class="post-tag">LLMAgentic AI</a>
+      &nbsp;
+      
+      <a href="/categories/#Python" class="post-tag">Python</a>
+      &nbsp;
+      
+      <a href="/categories/#Architecture" class="post-tag">Architecture</a>
+      
+      
+    </div>
+    <div class="post-content">
+      
+        <figure class="post-thumbnail ">
+          <img src="/images/security-operations-center-with-agentic-AI.png" alt="Building an Autonomous Security Operations Center with Agentic AI">
+        </figure>
+      
+      <p>The dream of a fully autonomous Security Operations Center (SOC) is moving closer to reality. In this post, we will explore the architecture of our <strong>Agentic Cybersecurity System</strong>, a Python-based platform where specialized AI agents collaborate to detect threats, respond to incidents, and manage vulnerabilities without human intervention.</p>
+
+<h2 id="the-architecture-a-multi-agent-system">The Architecture: A Multi-Agent System</h2>
+
+<p>Traditional automation scripts are linear and brittle. Our system uses a <strong>Multi-Agent Architecture</strong> where independent agents possess distinct personalities, tools, and responsibilities. They are bound together by a central <strong>Orchestrator</strong>.</p>
+
+<h3 id="the-orchestrator-the-central-nervous-system">The Orchestrator: The Central Nervous System</h3>
+
+<p>At the heart of the system lies the <code class="language-plaintext highlighter-rouge">AgentOrchestrator</code>. It does not just run tasks; it manages the lifecycle of agents, facilitates inter-agent communication, and maintains a shared state.</p>
+
+<p>Key responsibilities include:</p>
+<ol>
+  <li><strong>Agent Registry</strong>: Dynamic registration of capabilities.</li>
+  <li><strong>Message Passing</strong>: Asynchronous communication between agents (e.g., Threat Agent notifying Incident Response Agent).</li>
+  <li><strong>Shared Knowledge Base</strong>: A thread-safe store for findings, IOCs, and active incidents.</li>
+</ol>
+
+<p>Here is a glimpse of how the orchestrator handles agent handoffs, allowing complex workflows to span multiple domains:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># src/agents/orchestrator.py
+</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">handoff</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">from_agent</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">to_agent</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="sh">"""</span><span class="s">Hand off work from one agent to another.</span><span class="sh">"""</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">get_agent</span><span class="p">(</span><span class="n">to_agent</span><span class="p">)</span>
+    
+    <span class="c1"># Store handoff in knowledge base for audit trails
+</span>    <span class="k">await</span> <span class="n">self</span><span class="p">.</span><span class="n">knowledge_base</span><span class="p">.</span><span class="nf">store</span><span class="p">(</span>
+        <span class="sh">"</span><span class="s">handoffs</span><span class="sh">"</span><span class="p">,</span>
+        <span class="nf">str</span><span class="p">(</span><span class="nf">uuid4</span><span class="p">()),</span>
+        <span class="p">{</span>
+            <span class="sh">"</span><span class="s">from</span><span class="sh">"</span><span class="p">:</span> <span class="n">from_agent</span><span class="p">,</span>
+            <span class="sh">"</span><span class="s">to</span><span class="sh">"</span><span class="p">:</span> <span class="n">to_agent</span><span class="p">,</span>
+            <span class="sh">"</span><span class="s">context</span><span class="sh">"</span><span class="p">:</span> <span class="n">context</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+    
+    <span class="c1"># Create context-aware prompt for the target agent
+</span>    <span class="n">handoff_prompt</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="sa">f</span><span class="sh">"</span><span class="s">[HANDOFF from </span><span class="si">{</span><span class="n">from_agent</span><span class="si">}</span><span class="s">]</span><span class="se">\n</span><span class="sh">"</span>
+        <span class="sa">f</span><span class="sh">"</span><span class="s">Context: </span><span class="si">{</span><span class="n">context</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="sh">'</span><span class="s">summary</span><span class="sh">'</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="sh">"</span>
+        <span class="sa">f</span><span class="sh">"</span><span class="s">Please continue the analysis and take appropriate action.</span><span class="sh">"</span>
+    <span class="p">)</span>
+    
+    <span class="k">return</span> <span class="k">await</span> <span class="n">target</span><span class="p">.</span><span class="nf">process</span><span class="p">(</span><span class="n">handoff_prompt</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="meet-the-agents">Meet the Agents</h2>
+
+<p>The system is composed of three specialized agents, each designed to mimic a specific role in a human security team.</p>
+
+<h3 id="1-threat-detection-agent-the-watchdog">1. Threat Detection Agent: The Watchdog</h3>
+<p>This agent monitors data streams in real-time. It does not just look for static signatures; it uses an LLM to analyze context.</p>
+
+<p><strong>Killer Feature: Real-time Log Stream Monitoring</strong>
+The agent can attach to a live log file (like <code class="language-plaintext highlighter-rouge">/var/log/auth.log</code>) and analyze batches of logs as they arrive, identifying subtle anomalies that simpler rules might miss.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># src/agents/threat_detection/agent.py
+</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">monitor_log_stream</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="c1"># ... setup file watching ...
+</span>    <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="sh">"""</span><span class="s">
+    Analyze the following Real-Time Log Stream batch for immediate threats:
+    </span><span class="si">{</span><span class="n">logs_to_analyze</span><span class="si">}</span><span class="s">
+    Identify any suspicious activity, anomalies, or IOCs.
+    </span><span class="sh">"""</span>
+    <span class="k">yield</span> <span class="k">await</span> <span class="n">self</span><span class="p">.</span><span class="nf">process</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="2-incident-response-agent-the-first-responder">2. Incident Response Agent: The First Responder</h3>
+<p>Once a threat is confirmed, the Incident Response (IR) agent takes over. It is equipped with <strong>Playbooks</strong>—predefined workflows for common scenarios like Ransomware or Phishing.</p>
+
+<p>It can actively <strong>contain threats</strong> by isolating hosts or disabling accounts, but safer production deployments can enforce extensive logging instead of auto-execution.</p>
+
+<h3 id="3-vulnerability-management-agent-the-preventer">3. Vulnerability Management Agent: The Preventer</h3>
+<p>While the other agents react to attacks, this agent works to prevent them. It scans infrastructure and, crucially, <strong>verifies remediation</strong>.</p>
+
+<p>Code snippet from the <code class="language-plaintext highlighter-rouge">verify_patch</code> tool showing the verification logic:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># src/agents/vulnerability_management/tools/verify_patch.py
+</span>
+<span class="c1"># Determine overall status
+</span><span class="n">failed_checks</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">checks_performed</span> <span class="k">if</span> <span class="n">c</span><span class="p">[</span><span class="sh">"</span><span class="s">result</span><span class="sh">"</span><span class="p">]</span> <span class="o">==</span> <span class="sh">"</span><span class="s">fail</span><span class="sh">"</span><span class="p">]</span>
+<span class="n">overall_status</span> <span class="o">=</span> <span class="sh">"</span><span class="s">verified</span><span class="sh">"</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">failed_checks</span> <span class="k">else</span> <span class="sh">"</span><span class="s">failed</span><span class="sh">"</span>
+
+<span class="k">if</span> <span class="n">overall_status</span> <span class="o">==</span> <span class="sh">"</span><span class="s">verified</span><span class="sh">"</span><span class="p">:</span>
+    <span class="n">recommendations</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="sh">"</span><span class="s">Update vulnerability tracking system to mark as remediated</span><span class="sh">"</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">recommendations</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="sh">"</span><span class="s">Escalate remediation failure</span><span class="sh">"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="the-toolbelt-a-modular-arsenal">The Toolbelt: A Modular Arsenal</h2>
+
+<p>Each agent is equipped with a specific set of tools (Python functions) that they can call upon. These tools are the “hands” of the system, allowing the “brain” (the LLM) to interact with the world.</p>
+
+<h3 id="1-threat-detection-tools">1. Threat Detection Tools</h3>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">analyze_network_traffic</code>: Detects anomalies, command-and-control (C2) communication, and port scans in traffic data.</li>
+  <li><code class="language-plaintext highlighter-rouge">analyze_logs</code>: Parses authentication, system, and web server logs to identify suspicious patterns like brute force attempts.</li>
+  <li><code class="language-plaintext highlighter-rouge">detect_ioc</code>: Scans data against threat intelligence feeds for known malicious IPs, domains, and file hashes.</li>
+  <li><code class="language-plaintext highlighter-rouge">correlate_events</code>: Links seemingly unrelated events across different data sources to identify complex attack campaigns.</li>
+</ul>
+
+<h3 id="2-incident-response-tools">2. Incident Response Tools</h3>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">triage_incident</code>: Analyzes incident data to classify severity, type, and priority based on established criteria.</li>
+  <li><code class="language-plaintext highlighter-rouge">execute_playbook</code>: Runs predefined, step-by-step response procedures for specific scenarios (e.g., Ransomware, Phishing).</li>
+  <li><code class="language-plaintext highlighter-rouge">contain_threat</code>: Takes active measures to stop an attack, such as isolating a host from the network or disabling a compromised user account.</li>
+  <li><code class="language-plaintext highlighter-rouge">collect_evidence</code>: Preserves forensic data (memory dumps, logs, disk images) to maintain the chain of custody.</li>
+  <li><code class="language-plaintext highlighter-rouge">generate_report</code>: Compiles findings and actions into comprehensive reports for different audiences (executive, technical).</li>
+</ul>
+
+<h3 id="3-vulnerability-management-tools">3. Vulnerability Management Tools</h3>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">scan_vulnerabilities</code>: Executes scans against targets to identify CVEs and security flaws.</li>
+  <li><code class="language-plaintext highlighter-rouge">prioritize_risk</code>: Calculates a contextual risk score by combining CVSS data with asset criticality and active threat intelligence.</li>
+  <li><code class="language-plaintext highlighter-rouge">recommend_remediation</code>: Provides specific, actionable guidance on how to fix identified vulnerabilities.</li>
+  <li><code class="language-plaintext highlighter-rouge">verify_patch</code>: The closed-loop validation tool we discussed earlier, ensuring fixes are effective.</li>
+  <li><code class="language-plaintext highlighter-rouge">generate_vuln_report</code>: Creates detailed status reports on the organization’s security posture.</li>
+</ul>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>By decoupling these capabilities into distinct agents, we create a system that is modular, scalable, and resilient. The <strong>Threat Agent</strong> can detect an attack and “hand off” to the <strong>IR Agent</strong> to contain it, all while the <strong>Vulnerability Agent</strong> schedules a patch for the root cause, a truly collaborative AI defense system.</p>
+
+<p>Check out the code on <a href="https://github.com/prajapatin/agentic-cyber-security">GitHub</a> to see how you can build your own agents.</p>
+
+    </div>
+
+    
+<hr>
+
+<aside id="comments" class="disqus">
+  <h3><i class="icon icon-comments-o"></i> Comments</h3>
+  <div id="disqus_thread"></div>
+  <script>
+    var disqus_config = function() {
+      this.page.url = 'https://nileshprajapati.net/blog/2026/security-operations-center-with-agentic-AI/';
+      this.page.identifier = '/blog/2026/security-operations-center-with-agentic-AI';
+    };
+    (function() {
+      var d = document,
+      s = d.createElement('script');
+      s.src = '//nileshprajapati.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+</aside>
+
+
+  </div>
+
+</article>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <ul class="social">
+  <li><a href="https://github.com/prajapatin" target="_blank"><i class="icon icon-github"></i></a></li>
+  <li><a href="https://twitter.com/nilesh_be_it" target="_blank"><i class="icon icon-twitter"></i></a></li>
+  <li><a href="https://facebook.com/nilesh.be.it" target="_blank"><i class="icon icon-facebook"></i></a></li>
+  <li><a href="https://linkedin.com/in/nileshprajapati" target="_blank"><i class="icon icon-linkedin"></i></a></li>
+</ul>
+    <p class="txt-medium-gray">
+      <small>&copy;2026</small>
+    </p>
+  </div>
+</footer>
+
+
+</body>
+</html>

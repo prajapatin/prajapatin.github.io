@@ -5,9 +5,162 @@
     <description>software architecture</description>
     <link>https://nileshprajapati.net/</link>
     <atom:link href="https://nileshprajapati.net/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Mon, 02 Feb 2026 23:22:40 +0530</pubDate>
-    <lastBuildDate>Mon, 02 Feb 2026 23:22:40 +0530</lastBuildDate>
+    <pubDate>Sat, 07 Feb 2026 20:53:30 +0530</pubDate>
+    <lastBuildDate>Sat, 07 Feb 2026 20:53:30 +0530</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
+    
+      <item>
+        <title>Building an Autonomous Security Operations Center with Agentic AI</title>
+        <description>&lt;p&gt;The dream of a fully autonomous Security Operations Center (SOC) is moving closer to reality. In this post, we will explore the architecture of our &lt;strong&gt;Agentic Cybersecurity System&lt;/strong&gt;, a Python-based platform where specialized AI agents collaborate to detect threats, respond to incidents, and manage vulnerabilities without human intervention.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-architecture-a-multi-agent-system&quot;&gt;The Architecture: A Multi-Agent System&lt;/h2&gt;
+
+&lt;p&gt;Traditional automation scripts are linear and brittle. Our system uses a &lt;strong&gt;Multi-Agent Architecture&lt;/strong&gt; where independent agents possess distinct personalities, tools, and responsibilities. They are bound together by a central &lt;strong&gt;Orchestrator&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;h3 id=&quot;the-orchestrator-the-central-nervous-system&quot;&gt;The Orchestrator: The Central Nervous System&lt;/h3&gt;
+
+&lt;p&gt;At the heart of the system lies the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AgentOrchestrator&lt;/code&gt;. It does not just run tasks; it manages the lifecycle of agents, facilitates inter-agent communication, and maintains a shared state.&lt;/p&gt;
+
+&lt;p&gt;Key responsibilities include:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;Agent Registry&lt;/strong&gt;: Dynamic registration of capabilities.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Message Passing&lt;/strong&gt;: Asynchronous communication between agents (e.g., Threat Agent notifying Incident Response Agent).&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Shared Knowledge Base&lt;/strong&gt;: A thread-safe store for findings, IOCs, and active incidents.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Here is a glimpse of how the orchestrator handles agent handoffs, allowing complex workflows to span multiple domains:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;# src/agents/orchestrator.py
+&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;handoff&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;from_agent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;to_agent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;dict&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Any&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Any&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;sh&quot;&gt;&quot;&quot;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Hand off work from one agent to another.&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&quot;&quot;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;target&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;get_agent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;to_agent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    
+    &lt;span class=&quot;c1&quot;&gt;# Store handoff in knowledge base for audit trails
+&lt;/span&gt;    &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;knowledge_base&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;store&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+        &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;handoffs&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;nf&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;uuid4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()),&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;from&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;from_agent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+            &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;to&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;to_agent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+            &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    
+    &lt;span class=&quot;c1&quot;&gt;# Create context-aware prompt for the target agent
+&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;handoff_prompt&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+        &lt;span class=&quot;sa&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;[HANDOFF from &lt;/span&gt;&lt;span class=&quot;si&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;from_agent&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;
+        &lt;span class=&quot;sa&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Context: &lt;/span&gt;&lt;span class=&quot;si&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;summary&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;
+        &lt;span class=&quot;sa&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Please continue the analysis and take appropriate action.&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;target&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;process&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;handoff_prompt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;meet-the-agents&quot;&gt;Meet the Agents&lt;/h2&gt;
+
+&lt;p&gt;The system is composed of three specialized agents, each designed to mimic a specific role in a human security team.&lt;/p&gt;
+
+&lt;h3 id=&quot;1-threat-detection-agent-the-watchdog&quot;&gt;1. Threat Detection Agent: The Watchdog&lt;/h3&gt;
+&lt;p&gt;This agent monitors data streams in real-time. It does not just look for static signatures; it uses an LLM to analyze context.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Killer Feature: Real-time Log Stream Monitoring&lt;/strong&gt;
+The agent can attach to a live log file (like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/var/log/auth.log&lt;/code&gt;) and analyze batches of logs as they arrive, identifying subtle anomalies that simpler rules might miss.&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;# src/agents/threat_detection/agent.py
+&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;monitor_log_stream&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;source&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;# ... setup file watching ...
+&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;prompt&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;sa&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&quot;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;
+    Analyze the following Real-Time Log Stream batch for immediate threats:
+    &lt;/span&gt;&lt;span class=&quot;si&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;logs_to_analyze&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;
+    Identify any suspicious activity, anomalies, or IOCs.
+    &lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&quot;&quot;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;yield&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;process&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;prompt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;2-incident-response-agent-the-first-responder&quot;&gt;2. Incident Response Agent: The First Responder&lt;/h3&gt;
+&lt;p&gt;Once a threat is confirmed, the Incident Response (IR) agent takes over. It is equipped with &lt;strong&gt;Playbooks&lt;/strong&gt;—predefined workflows for common scenarios like Ransomware or Phishing.&lt;/p&gt;
+
+&lt;p&gt;It can actively &lt;strong&gt;contain threats&lt;/strong&gt; by isolating hosts or disabling accounts, but safer production deployments can enforce extensive logging instead of auto-execution.&lt;/p&gt;
+
+&lt;h3 id=&quot;3-vulnerability-management-agent-the-preventer&quot;&gt;3. Vulnerability Management Agent: The Preventer&lt;/h3&gt;
+&lt;p&gt;While the other agents react to attacks, this agent works to prevent them. It scans infrastructure and, crucially, &lt;strong&gt;verifies remediation&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;Code snippet from the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;verify_patch&lt;/code&gt; tool showing the verification logic:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;# src/agents/vulnerability_management/tools/verify_patch.py
+&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# Determine overall status
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;failed_checks&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;checks_performed&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;fail&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;overall_status&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;verified&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;not&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;failed_checks&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;failed&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;overall_status&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;verified&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;recommendations&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Update vulnerability tracking system to mark as remediated&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;recommendations&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Escalate remediation failure&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;the-toolbelt-a-modular-arsenal&quot;&gt;The Toolbelt: A Modular Arsenal&lt;/h2&gt;
+
+&lt;p&gt;Each agent is equipped with a specific set of tools (Python functions) that they can call upon. These tools are the “hands” of the system, allowing the “brain” (the LLM) to interact with the world.&lt;/p&gt;
+
+&lt;h3 id=&quot;1-threat-detection-tools&quot;&gt;1. Threat Detection Tools&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;analyze_network_traffic&lt;/code&gt;: Detects anomalies, command-and-control (C2) communication, and port scans in traffic data.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;analyze_logs&lt;/code&gt;: Parses authentication, system, and web server logs to identify suspicious patterns like brute force attempts.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;detect_ioc&lt;/code&gt;: Scans data against threat intelligence feeds for known malicious IPs, domains, and file hashes.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;correlate_events&lt;/code&gt;: Links seemingly unrelated events across different data sources to identify complex attack campaigns.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;2-incident-response-tools&quot;&gt;2. Incident Response Tools&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;triage_incident&lt;/code&gt;: Analyzes incident data to classify severity, type, and priority based on established criteria.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;execute_playbook&lt;/code&gt;: Runs predefined, step-by-step response procedures for specific scenarios (e.g., Ransomware, Phishing).&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;contain_threat&lt;/code&gt;: Takes active measures to stop an attack, such as isolating a host from the network or disabling a compromised user account.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;collect_evidence&lt;/code&gt;: Preserves forensic data (memory dumps, logs, disk images) to maintain the chain of custody.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;generate_report&lt;/code&gt;: Compiles findings and actions into comprehensive reports for different audiences (executive, technical).&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;3-vulnerability-management-tools&quot;&gt;3. Vulnerability Management Tools&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;scan_vulnerabilities&lt;/code&gt;: Executes scans against targets to identify CVEs and security flaws.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;prioritize_risk&lt;/code&gt;: Calculates a contextual risk score by combining CVSS data with asset criticality and active threat intelligence.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;recommend_remediation&lt;/code&gt;: Provides specific, actionable guidance on how to fix identified vulnerabilities.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;verify_patch&lt;/code&gt;: The closed-loop validation tool we discussed earlier, ensuring fixes are effective.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;generate_vuln_report&lt;/code&gt;: Creates detailed status reports on the organization’s security posture.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;By decoupling these capabilities into distinct agents, we create a system that is modular, scalable, and resilient. The &lt;strong&gt;Threat Agent&lt;/strong&gt; can detect an attack and “hand off” to the &lt;strong&gt;IR Agent&lt;/strong&gt; to contain it, all while the &lt;strong&gt;Vulnerability Agent&lt;/strong&gt; schedules a patch for the root cause, a truly collaborative AI defense system.&lt;/p&gt;
+
+&lt;p&gt;Check out the code on &lt;a href=&quot;https://github.com/prajapatin/agentic-cyber-security&quot;&gt;GitHub&lt;/a&gt; to see how you can build your own agents.&lt;/p&gt;
+</description>
+        <pubDate>Sat, 07 Feb 2026 17:30:00 +0530</pubDate>
+        <link>https://nileshprajapati.net/blog/2026/security-operations-center-with-agentic-AI/</link>
+        <guid isPermaLink="true">https://nileshprajapati.net/blog/2026/security-operations-center-with-agentic-AI/</guid>
+        
+        <category>agentic-ai</category>
+        
+        <category>soc-automation</category>
+        
+        <category>python</category>
+        
+        <category>llm</category>
+        
+        <category>orchestration</category>
+        
+        
+        <category>Cybersecurity</category>
+        
+        <category>LLMAgentic AI</category>
+        
+        <category>Python</category>
+        
+        <category>Architecture</category>
+        
+      </item>
     
       <item>
         <title>Building an LLM-powered Data Analyst cum Data Scientist</title>
@@ -1181,124 +1334,6 @@ verify the version with command: python –version&lt;/li&gt;
         <category>IoT</category>
         
         <category>Data Analytics</category>
-        
-      </item>
-    
-      <item>
-        <title>Windows Service as a Container on Azure Service Fabric</title>
-        <description>&lt;h3&gt;What is Docker and Container?&lt;/h3&gt;
-
-&lt;p&gt;The &lt;a href=&quot;https://www.docker.com/what-docker&quot;&gt;Docker&lt;/a&gt; is a container platform using which you can create software containers. The container is a packaged software which shares the host operating system and contains all dependencies (System files, third-party software, settings or anything which is needed to run your containerized app) needed to run your software application.&lt;/p&gt;
-
-&lt;p&gt;Containers are used to ship software faster and developers need not to be worried about whether the containerized app will run on specific machine or not. They are very light weight and share host operating system where you are running them and you can run multiple sandboxed containerized apps on specific VM or physical machine. There are many software product companies around the world which are using containers to release software on daily basis and saying multiple times in a day is also not wrong.&lt;/p&gt;
-
-&lt;p&gt;We are going to use Docker for Windows for this demo application and you will need to install &lt;a href=&quot;https://store.docker.com/editions/community/docker-ce-desktop-windows&quot;&gt;Docker for Windows&lt;/a&gt; on Windows 10 (Anniversary edition) or Windows Server 2016. Also you will have to enable hardware virtualization through BIOS to install Docker runtime.&lt;/p&gt;
-
-&lt;h3&gt;What is our sample app?&lt;/h3&gt;
-
-&lt;p&gt;I have chosen windows service as an app to containerize because there are not many online references on containerizing custom windows service app in container. The source code is available &lt;a href=&quot;https://github.com/prajapatin/WindowsServiceContainerOnASF&quot;&gt;here&lt;/a&gt; and it contains very simple windows service hosting OWIN based web api (RESTful service). It also contains Service Fabric project using which you can host container in Azure Cloud as a microservice. You will not be able to host containers in local service fabric cluster unless you have a Windows Server 2016 so you will have to spawn Service Fabric Cluster on Azure if you would want to test it on cloud. If you are not going to host container in cloud then I am going to show you how you can create Docker image and run locally.&lt;/p&gt;
-
-&lt;h3&gt;Containerizing and running sample app&lt;/h3&gt;
-
-&lt;p&gt;As a first step, make sure that Docker is properly installed on your machine and Docker runtime is up and running. Now once you take the sample code from above mentioned github repository, build the solution. You will notice dockerfile (Docker template file to build the Docker image) &amp;amp; init.ps1(PowerShell script to be executed) files in release/debug within bin folder based on build configuration you have chosen, we are going to use these two files for building and running our Docker container.&lt;/p&gt;
-
-&lt;p&gt;First we will try to understand dockerfile template.&lt;/p&gt;
-
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-powershell&quot; data-lang=&quot;powershell&quot;&gt;&lt;span class=&quot;kr&quot;&gt;FROM&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;microsoft/dotnet-framework:4.7&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;RUN&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;mkdir&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;C:\installation&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ADD&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;/installation&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;RUN&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;sc&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;create&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;WebAPIHostService&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;start&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;auto&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;binpath&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;C:\installation\HostService.exe&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;CMD&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;powershell&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;C:\installation\init.ps1&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;EXPOSE&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;9000&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-
-&lt;p&gt;To run the Docker build command, you will need to open PowerShell command prompt in administartor mode and then set your directory to bin/debug(or release) folder of the windows service project you have built as per above instructions. The above Docker template says that create the Docker image by taking microsoft/dotnet-framework:4.7 as a base image and create the installation folder in c directory in Docker image. The third line says that add whatever current directory content to created folder. In the fourth line we are instructing Docker runtime to create windows service from provided exe. The line prefixed with CMD instructs Docker runtime to run specified powershell script when we would be running Docker container from Docker image. The last line exposes port 9000, on which we can access REST api hosted in windows service.&lt;/p&gt;
-
-&lt;p&gt;Now you have understood dockerfile, we will run following command in PowerShell, which will create Docker image.&lt;/p&gt;
-
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-powershell&quot; data-lang=&quot;powershell&quot;&gt;&lt;span class=&quot;n&quot;&gt;docker&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;build&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;webapiservice&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-
-&lt;p&gt;The command will take quite a bit of time as it will download base windows image with .Net Framework from the Docker hub, it will download the image only first time and thereafter if you build any Docker image from the mentioned base image; it will use local image from your machine. Once the image creation is successful, you can verify that your image is created using below PowerShell command.&lt;/p&gt;
-
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-powershell&quot; data-lang=&quot;powershell&quot;&gt;&lt;span class=&quot;n&quot;&gt;docker&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;images&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-
-&lt;p&gt;We now have a Docker image and we want to run container using that image so we need to run following command.&lt;/p&gt;
-
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-powershell&quot; data-lang=&quot;powershell&quot;&gt;&lt;span class=&quot;n&quot;&gt;docker&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;--name&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;webapiservice&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;9000:9000&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;webapiservice&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-
-&lt;p&gt;The above command runs Docker container with name as a ‘webapiservice’ and maps container port 9000 with host port 9000. Once you run the command, The Docker runtime will start the container and it will use PowerShell script provided in template as a CMD. Let us try to understand that init.ps1 file, here we are starting windows service as soon as container starts. We are also making sure that we are making http call to our REST service and flushing out logs if any so that we can verify those logs running ‘Docker logs {nameofcontainer}’ PowerShell command.&lt;/p&gt;
-
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-powershell&quot; data-lang=&quot;powershell&quot;&gt;&lt;span class=&quot;n&quot;&gt;Write-Output&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&apos;Starting Web API Host Server&apos;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Start-Service&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;WebAPIHostService&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    
-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Write-Output&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&apos;Making HTTP GET call&apos;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Invoke-WebRequest&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;http://localhost:9000/api/welcome&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;-UseBasicParsing&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Out-Null&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-
-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Write-Output&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&apos;Flushing log file&apos;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;netsh&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;http&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;flush&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;logbuffer&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Out-Null&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-
-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Write-Output&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&apos;Tailing log file&apos;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Get-Content&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;-path&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&apos;C:\installation\service.log&apos;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;-Tail&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;-Wait&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-
-&lt;p&gt;Once command runs successfully, we can verify that your container is running by below command.&lt;/p&gt;
-
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-powershell&quot; data-lang=&quot;powershell&quot;&gt;&lt;span class=&quot;n&quot;&gt;docker&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;ps&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-
-&lt;p&gt;If you want to verify that your windows service is running successfully, you will need to get IP address of container using below command.&lt;/p&gt;
-
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-powershell&quot; data-lang=&quot;powershell&quot;&gt;&lt;span class=&quot;n&quot;&gt;docker&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;inspect&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;--format&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;{ {.NetworkSettings.Networks.nat.IPAddress} }&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;webapiservice&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-
-&lt;p&gt;Once you get an IP address of running container, you can browse through {IP Address}:9000/api/welcome and verify that your API is up and running. You can also try to browse through another method {IP Address}:9000/api/welcome/detail. We now have windows service running in container so we can quickly look at how we can run container on Azure Service Fabric.&lt;/p&gt;
-
-&lt;h3&gt;Hosting windows service container on Azure Service Fabric&lt;/h3&gt;
-
-&lt;p&gt;In the sample solution, you will find ServiceFabricHost project and following content explains the detail about hosting container on service fabric. My &lt;a href=&quot;/blog/2017/signalr-based-app-on-service-fabric/&quot;&gt;previous article&lt;/a&gt; explains about installing Service Fabric SDK, which is prerequisite to host this application on Azure Service Fabric.&lt;/p&gt;
-
-&lt;p&gt;Following portion of ServiceManifest.xml file should have an Azure Container Registry path of your container registry and how to store/manage container images in Azure Container Registry is explained &lt;a href=&quot;https://docs.microsoft.com/en-us/azure/container-registry/container-registry-get-started-docker-cli&quot;&gt;here&lt;/a&gt;. For your image URL, you will have to use full path including your container registry URL.&lt;/p&gt;
-
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-xml&quot; data-lang=&quot;xml&quot;&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;EntryPoint&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Follow this link for more information about deploying Windows containers to Service Fabric: https://aka.ms/sfguestcontainers --&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;ContainerHost&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;ImageName&amp;gt;&lt;/span&gt;[Your container image URL]&lt;span class=&quot;nt&quot;&gt;&amp;lt;/ImageName&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/ContainerHost&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/EntryPoint&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-
-&lt;p&gt;Also you will need to understand following portion from the same file, where we are creating endpoint for our microservice.&lt;/p&gt;
-
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-xml&quot; data-lang=&quot;xml&quot;&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;Resources&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;Endpoints&amp;gt;&lt;/span&gt;
-       &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- This endpoint is used by the communication listener to obtain the port on which to 
-            listen. Please note that if your service is partitioned, this port is shared with 
-            replicas of different partitions that are placed in your code. --&amp;gt;&lt;/span&gt;
-       &lt;span class=&quot;nt&quot;&gt;&amp;lt;Endpoint&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;WebAPIHostServiceTypeEndpoint&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Protocol=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;http&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Port=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;9000&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;/&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/Endpoints&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/Resources&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-
-&lt;p&gt;The another file ApplicationMenifest.xml is also very important to understand as it explains port mapping between Container and host and credential to connect with Azure Container Registry so that Service Fabric can download the docker image. We need to know another very important detail about endpoint reference in port mapping, it is a same endpoint name we have provided in ServiceManifest.xml.&lt;/p&gt;
-
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-xml&quot; data-lang=&quot;xml&quot;&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;ServiceManifestImport&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;ServiceManifestRef&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;ServiceManifestName=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;WebAPIHostServicePkg&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;ServiceManifestVersion=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;1.0.0&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;/&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;ConfigOverrides&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;/&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;Policies&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;ContainerHostPolicies&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;CodePackageRef=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Code&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-            &lt;span class=&quot;nt&quot;&gt;&amp;lt;RepositoryCredentials&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;AccountName=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;[Your Container Registry Account Name]&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Password=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;[Container Registry Account Password]&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Email=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;[You email address associated with Azure account]&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;PasswordEncrypted=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;false&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;/&amp;gt;&lt;/span&gt;
-            &lt;span class=&quot;nt&quot;&gt;&amp;lt;PortBinding&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;ContainerPort=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;9000&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;EndpointRef=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;WebAPIHostServiceTypeEndpoint&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;/&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/ContainerHostPolicies&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/Policies&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/ServiceManifestImport&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-
-&lt;p&gt;So once you understand and provide your detail in configuration, you are ready to publish service fabric application.&lt;/p&gt;
-
-</description>
-        <pubDate>Wed, 06 Sep 2017 02:30:00 +0530</pubDate>
-        <link>https://nileshprajapati.net/blog/2017/windows-service-as-a-container-on-service-fabric/</link>
-        <guid isPermaLink="true">https://nileshprajapati.net/blog/2017/windows-service-as-a-container-on-service-fabric/</guid>
-        
-        
-        <category>Cloud</category>
-        
-        <category>Microservices</category>
-        
-        <category>Docker Container</category>
         
       </item>
     
