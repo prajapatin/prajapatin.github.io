@@ -5,8 +5,8 @@
     <description>software architecture</description>
     <link>https://nileshprajapati.net/</link>
     <atom:link href="https://nileshprajapati.net/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sat, 07 Feb 2026 20:53:30 +0530</pubDate>
-    <lastBuildDate>Sat, 07 Feb 2026 20:53:30 +0530</lastBuildDate>
+    <pubDate>Sat, 07 Feb 2026 20:58:10 +0530</pubDate>
+    <lastBuildDate>Sat, 07 Feb 2026 20:58:10 +0530</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
     
       <item>
@@ -154,7 +154,9 @@ The agent can attach to a live log file (like &lt;code class=&quot;language-plai
         
         <category>Cybersecurity</category>
         
-        <category>LLMAgentic AI</category>
+        <category>LLM</category>
+        
+        <category>Agentic AI</category>
         
         <category>Python</category>
         
