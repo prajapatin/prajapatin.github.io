@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Building a Scalable Distributed LangGraph on Kubernetes</title>
+<meta name="description" content="Scaling AI agent workflows from a single Python script on your laptop to a highly available, enterprise-grade distributed system is one of the biggest challe...">
+
+<link rel="stylesheet" href="/css/main.css">
+<link rel="canonical" href="https://nileshprajapati.net/blog/2026/scalable-distributed-langgraph-on-kubernetes/">
+<link rel="alternate" type="application/rss+xml" title="Nilesh Prajapati" href="https://nileshprajapati.net/feed.xml" />
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-52446115-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+</head>
+<body>
+  <header class="site-header">
+  <div class="container">
+    <input type="checkbox" id="toggleNavbar">
+    <h1 class="logo"><a href="/">Nilesh<span>Prajapati</span></a></h1>
+    <label for="toggleNavbar" role="button" class="toggle-navbar-button">
+      <i class="icon icon-menu"></i>
+      <i class="icon icon-cross"></i>
+    </label>
+    <nav class="navbar">
+      <ul>
+        <li><a href="/" title="Home">Home</a></li>
+        
+          <li><a href="/about" title="About">About</a></li>
+        
+          <li><a href="/blog" title="Blog">Blog</a></li>
+        
+        <li><a href="/feed.xml" target="_blank"><i class="icon icon-rss"></i></a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+
+<main class="main-container">
+  <div class="container">
+    <article role="article" class="post">
+
+  <div class="card">
+    <header class="post-header">
+      <h1 class="post-title">Building a Scalable Distributed LangGraph on Kubernetes</h1>
+      <em class="post-meta">
+        <time>Apr 9, 2026 • Nilesh Prajapati</time>
+      </em>
+    </header>
+    <div class="post-categories">
+      
+      
+      <a href="/categories/#Architecture" class="post-tag">Architecture</a>
+      &nbsp;
+      
+      <a href="/categories/#AI" class="post-tag">AI</a>
+      &nbsp;
+      
+      <a href="/categories/#LangGraph" class="post-tag">LangGraph</a>
+      &nbsp;
+      
+      <a href="/categories/#Kubernetes" class="post-tag">Kubernetes</a>
+      &nbsp;
+      
+      <a href="/categories/#Python" class="post-tag">Python</a>
+      
+      
+    </div>
+    <div class="post-content">
+      
+        <figure class="post-thumbnail ">
+          <img src="/images/scalable-distributed-langgraph.png" alt="Building a Scalable Distributed LangGraph on Kubernetes">
+        </figure>
+      
+      <p>Scaling AI agent workflows from a single Python script on your laptop to a highly available, enterprise-grade distributed system is one of the biggest challenges in production AI. Native LangGraph executes graphs synchronously or asynchronously within a single process. But what happens when an individual agent node requires heavy computation, or when you need to process hundreds of parallel workflows?</p>
+
+<p>In this post, we will explore the architecture of a <strong>Scalable Distributed LangGraph System</strong> running on Kubernetes. We will use a real-world use case, an automated Insurance Claim Processing system to demonstrate how to decouple graph nodes so that each execution step is handled by different workers across a distributed cluster.</p>
+
+<h2 id="the-architecture-distributing-the-graph">The Architecture: Distributing the Graph</h2>
+
+<p>To transition from a monolithic process to a distributed architecture, we combined native <strong>LangGraph</strong> orchestration with <strong>Celery</strong> for task dispatch and <strong>Redis</strong> for state checkpointing. This ensures we distribute the actual node executions while maintaining a strongly consistent graph state.</p>
+
+<p>Our distributed architecture relies on three core pillars:</p>
+
+<h3 id="1-state-management-deep-persistence">1. State Management: Deep Persistence</h3>
+<p>AI agents need memory. We leverage <code class="language-plaintext highlighter-rouge">langgraph-checkpoint-redis</code> to provide robust, thread-safe state persistence. Every time an agent finishes its task, the exact state of the workflow (the “graph”) is serialized and saved in Redis. Any worker, anywhere in the cluster, can pick up the <code class="language-plaintext highlighter-rouge">thread_id</code> and resume the workflow precisely where it left off.</p>
+
+<h3 id="2-actor-dispatch-event-driven-handoffs">2. Actor Dispatch: Event-Driven Handoffs</h3>
+<p>Instead of a single orchestrator executing <code class="language-plaintext highlighter-rouge">graph.invoke()</code>, we map specific LangGraph nodes to distinct message queues using <strong>Celery</strong>. When Node A completes, it computes the next step and drops a message onto Node B’s specific queue via the Celery broker.</p>
+
+<h3 id="3-execution-kubernetes-worker-pods">3. Execution: Kubernetes Worker Pods</h3>
+<p>Worker deployments in our Kubernetes cluster are not generic. They are specialized pods listening to specific queues. They load the state from Redis, run the LangGraph node logic, update the state, and yield execution back to the queue broker automatically.</p>
+
+<h2 id="business-usecase-insurance-claim-processing">Business Usecase: Insurance Claim Processing</h2>
+
+<p>To put this architecture to the test, we built a Multi-Agent system that processes insurance claims from end to end. The pipeline resembles a human claims department, divided into specialized roles.</p>
+
+<p>Here is the flow of the process:</p>
+
+<ul>
+  <li><strong>API Gateway</strong>: The entry point. It receives a JSON payload representing the claim email and returns a tracking <code class="language-plaintext highlighter-rouge">thread_id</code> back to the client immediately.</li>
+  <li><strong>Email Agent (<code class="language-plaintext highlighter-rouge">email_queue</code>)</strong>: The parser. It receives the raw text, uses an LLM to understand the context, and extracts structured data like the <code class="language-plaintext highlighter-rouge">policy_id</code>, <code class="language-plaintext highlighter-rouge">claim_amount</code>, and a concise incident description.</li>
+  <li><strong>Policy Agent (<code class="language-plaintext highlighter-rouge">policy_queue</code>)</strong>: The validator. It takes the parsed metadata and checks the <strong>MongoDB</strong> policy database to verify coverage limits, deductibles, and active status.</li>
+  <li><strong>Decision Agent (<code class="language-plaintext highlighter-rouge">decision_queue</code>)</strong>: The adjudicator. Combining the extracted context and the MongoDB policy rules, it reasons through the claim to reach a final Approve, Reject, or Escalate decision.</li>
+</ul>
+
+<h2 id="provider-agnosticism--mocking">Provider Agnosticism &amp; Mocking</h2>
+
+<p>When building enterprise systems, you want to avoid vendor lock-in. Similar to the “Bring Your Own Key” (BYOK) model we have utilized in other architectures, this system abstracts the LLM integration layer behind a dynamic <code class="language-plaintext highlighter-rouge">LLM_PROVIDER</code> environment variable.</p>
+
+<p>You can easily toggle between providers simply by updating the variables in your Kubernetes manifest or local <code class="language-plaintext highlighter-rouge">.env</code> file:</p>
+<ul>
+  <li><strong>OpenAI</strong>: Set <code class="language-plaintext highlighter-rouge">LLM_PROVIDER=openai</code> and <code class="language-plaintext highlighter-rouge">OPENAI_API_KEY=your_key</code></li>
+  <li><strong>Groq</strong>: Set <code class="language-plaintext highlighter-rouge">LLM_PROVIDER=groq</code> (excellent for high-speed parsing tasks)</li>
+  <li><strong>Ollama</strong>: Set <code class="language-plaintext highlighter-rouge">LLM_PROVIDER=ollama</code> for fully local inference.</li>
+</ul>
+
+<p>Furthermore, it natively supports a “mock” mode, allowing developers to execute integration testing and deployment validation without spending a single cent on API keys.</p>
+
+<h2 id="running-it-yourself">Running It Yourself</h2>
+
+<p>The beauty of declarative Kubernetes manifests is how easily this complex orchestration spins up. Locally, you can deploy the entire ecosystem using minikube:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Apply persistent data stores</span>
+kubectl apply <span class="nt">-f</span> k8s/mongo.yaml
+kubectl apply <span class="nt">-f</span> k8s/redis.yaml
+
+<span class="c"># Apply the Gateway and API</span>
+kubectl apply <span class="nt">-f</span> k8s/api.yaml
+
+<span class="c"># Deploy the specialized Celery workers</span>
+kubectl apply <span class="nt">-f</span> k8s/workers.yaml
+</code></pre></div></div>
+
+<p>Once running, you can submit a claim by HTTP POSTing to the exposed API Gateway pod and tracking the lifecycle of the LangGraph execution asynchronously.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>By decoupling the execution plane (Kubernetes &amp; Celery) from the orchestration plane (LangGraph) and unifying them with a centralized state (Redis), we eliminate the bottlenecks of monolithic AI applications. This architecture enables scaling individual agents independently, for instance, spinning up 10 extra instances of the <code class="language-plaintext highlighter-rouge">email_queue</code> worker during high-traffic bursts without touching the <code class="language-plaintext highlighter-rouge">policy_queue</code> workers.</p>
+
+<p>Check out the code on <a href="https://github.com/prajapatin/scalable-distributed-langgraph">GitHub</a> to see how you can deploy your own distributed AI graphs!</p>
+
+    </div>
+
+    
+<hr>
+
+<aside id="comments" class="disqus">
+  <h3><i class="icon icon-comments-o"></i> Comments</h3>
+  <div id="disqus_thread"></div>
+  <script>
+    var disqus_config = function() {
+      this.page.url = 'https://nileshprajapati.net/blog/2026/scalable-distributed-langgraph-on-kubernetes/';
+      this.page.identifier = '/blog/2026/scalable-distributed-langgraph-on-kubernetes';
+    };
+    (function() {
+      var d = document,
+      s = d.createElement('script');
+      s.src = '//nileshprajapati.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+</aside>
+
+
+  </div>
+
+</article>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <ul class="social">
+  <li><a href="https://github.com/prajapatin" target="_blank"><i class="icon icon-github"></i></a></li>
+  <li><a href="https://twitter.com/nilesh_be_it" target="_blank"><i class="icon icon-twitter"></i></a></li>
+  <li><a href="https://facebook.com/nilesh.be.it" target="_blank"><i class="icon icon-facebook"></i></a></li>
+  <li><a href="https://linkedin.com/in/nileshprajapati" target="_blank"><i class="icon icon-linkedin"></i></a></li>
+</ul>
+    <p class="txt-medium-gray">
+      <small>&copy;2026</small>
+    </p>
+  </div>
+</footer>
+
+
+</body>
+</html>

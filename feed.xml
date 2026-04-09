@@ -5,9 +5,110 @@
     <description>software architecture</description>
     <link>https://nileshprajapati.net/</link>
     <atom:link href="https://nileshprajapati.net/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sun, 08 Feb 2026 16:59:09 +0530</pubDate>
-    <lastBuildDate>Sun, 08 Feb 2026 16:59:09 +0530</lastBuildDate>
+    <pubDate>Thu, 09 Apr 2026 11:55:13 +0530</pubDate>
+    <lastBuildDate>Thu, 09 Apr 2026 11:55:13 +0530</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
+    
+      <item>
+        <title>Building a Scalable Distributed LangGraph on Kubernetes</title>
+        <description>&lt;p&gt;Scaling AI agent workflows from a single Python script on your laptop to a highly available, enterprise-grade distributed system is one of the biggest challenges in production AI. Native LangGraph executes graphs synchronously or asynchronously within a single process. But what happens when an individual agent node requires heavy computation, or when you need to process hundreds of parallel workflows?&lt;/p&gt;
+
+&lt;p&gt;In this post, we will explore the architecture of a &lt;strong&gt;Scalable Distributed LangGraph System&lt;/strong&gt; running on Kubernetes. We will use a real-world use case, an automated Insurance Claim Processing system to demonstrate how to decouple graph nodes so that each execution step is handled by different workers across a distributed cluster.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-architecture-distributing-the-graph&quot;&gt;The Architecture: Distributing the Graph&lt;/h2&gt;
+
+&lt;p&gt;To transition from a monolithic process to a distributed architecture, we combined native &lt;strong&gt;LangGraph&lt;/strong&gt; orchestration with &lt;strong&gt;Celery&lt;/strong&gt; for task dispatch and &lt;strong&gt;Redis&lt;/strong&gt; for state checkpointing. This ensures we distribute the actual node executions while maintaining a strongly consistent graph state.&lt;/p&gt;
+
+&lt;p&gt;Our distributed architecture relies on three core pillars:&lt;/p&gt;
+
+&lt;h3 id=&quot;1-state-management-deep-persistence&quot;&gt;1. State Management: Deep Persistence&lt;/h3&gt;
+&lt;p&gt;AI agents need memory. We leverage &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;langgraph-checkpoint-redis&lt;/code&gt; to provide robust, thread-safe state persistence. Every time an agent finishes its task, the exact state of the workflow (the “graph”) is serialized and saved in Redis. Any worker, anywhere in the cluster, can pick up the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;thread_id&lt;/code&gt; and resume the workflow precisely where it left off.&lt;/p&gt;
+
+&lt;h3 id=&quot;2-actor-dispatch-event-driven-handoffs&quot;&gt;2. Actor Dispatch: Event-Driven Handoffs&lt;/h3&gt;
+&lt;p&gt;Instead of a single orchestrator executing &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;graph.invoke()&lt;/code&gt;, we map specific LangGraph nodes to distinct message queues using &lt;strong&gt;Celery&lt;/strong&gt;. When Node A completes, it computes the next step and drops a message onto Node B’s specific queue via the Celery broker.&lt;/p&gt;
+
+&lt;h3 id=&quot;3-execution-kubernetes-worker-pods&quot;&gt;3. Execution: Kubernetes Worker Pods&lt;/h3&gt;
+&lt;p&gt;Worker deployments in our Kubernetes cluster are not generic. They are specialized pods listening to specific queues. They load the state from Redis, run the LangGraph node logic, update the state, and yield execution back to the queue broker automatically.&lt;/p&gt;
+
+&lt;h2 id=&quot;business-usecase-insurance-claim-processing&quot;&gt;Business Usecase: Insurance Claim Processing&lt;/h2&gt;
+
+&lt;p&gt;To put this architecture to the test, we built a Multi-Agent system that processes insurance claims from end to end. The pipeline resembles a human claims department, divided into specialized roles.&lt;/p&gt;
+
+&lt;p&gt;Here is the flow of the process:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;API Gateway&lt;/strong&gt;: The entry point. It receives a JSON payload representing the claim email and returns a tracking &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;thread_id&lt;/code&gt; back to the client immediately.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Email Agent (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;email_queue&lt;/code&gt;)&lt;/strong&gt;: The parser. It receives the raw text, uses an LLM to understand the context, and extracts structured data like the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;policy_id&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;claim_amount&lt;/code&gt;, and a concise incident description.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Policy Agent (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;policy_queue&lt;/code&gt;)&lt;/strong&gt;: The validator. It takes the parsed metadata and checks the &lt;strong&gt;MongoDB&lt;/strong&gt; policy database to verify coverage limits, deductibles, and active status.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Decision Agent (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;decision_queue&lt;/code&gt;)&lt;/strong&gt;: The adjudicator. Combining the extracted context and the MongoDB policy rules, it reasons through the claim to reach a final Approve, Reject, or Escalate decision.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;provider-agnosticism--mocking&quot;&gt;Provider Agnosticism &amp;amp; Mocking&lt;/h2&gt;
+
+&lt;p&gt;When building enterprise systems, you want to avoid vendor lock-in. Similar to the “Bring Your Own Key” (BYOK) model we have utilized in other architectures, this system abstracts the LLM integration layer behind a dynamic &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;LLM_PROVIDER&lt;/code&gt; environment variable.&lt;/p&gt;
+
+&lt;p&gt;You can easily toggle between providers simply by updating the variables in your Kubernetes manifest or local &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.env&lt;/code&gt; file:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;OpenAI&lt;/strong&gt;: Set &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;LLM_PROVIDER=openai&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;OPENAI_API_KEY=your_key&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Groq&lt;/strong&gt;: Set &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;LLM_PROVIDER=groq&lt;/code&gt; (excellent for high-speed parsing tasks)&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Ollama&lt;/strong&gt;: Set &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;LLM_PROVIDER=ollama&lt;/code&gt; for fully local inference.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Furthermore, it natively supports a “mock” mode, allowing developers to execute integration testing and deployment validation without spending a single cent on API keys.&lt;/p&gt;
+
+&lt;h2 id=&quot;running-it-yourself&quot;&gt;Running It Yourself&lt;/h2&gt;
+
+&lt;p&gt;The beauty of declarative Kubernetes manifests is how easily this complex orchestration spins up. Locally, you can deploy the entire ecosystem using minikube:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# Apply persistent data stores&lt;/span&gt;
+kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; k8s/mongo.yaml
+kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; k8s/redis.yaml
+
+&lt;span class=&quot;c&quot;&gt;# Apply the Gateway and API&lt;/span&gt;
+kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; k8s/api.yaml
+
+&lt;span class=&quot;c&quot;&gt;# Deploy the specialized Celery workers&lt;/span&gt;
+kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; k8s/workers.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Once running, you can submit a claim by HTTP POSTing to the exposed API Gateway pod and tracking the lifecycle of the LangGraph execution asynchronously.&lt;/p&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;By decoupling the execution plane (Kubernetes &amp;amp; Celery) from the orchestration plane (LangGraph) and unifying them with a centralized state (Redis), we eliminate the bottlenecks of monolithic AI applications. This architecture enables scaling individual agents independently, for instance, spinning up 10 extra instances of the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;email_queue&lt;/code&gt; worker during high-traffic bursts without touching the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;policy_queue&lt;/code&gt; workers.&lt;/p&gt;
+
+&lt;p&gt;Check out the code on &lt;a href=&quot;https://github.com/prajapatin/scalable-distributed-langgraph&quot;&gt;GitHub&lt;/a&gt; to see how you can deploy your own distributed AI graphs!&lt;/p&gt;
+</description>
+        <pubDate>Thu, 09 Apr 2026 12:00:00 +0530</pubDate>
+        <link>https://nileshprajapati.net/blog/2026/scalable-distributed-langgraph-on-kubernetes/</link>
+        <guid isPermaLink="true">https://nileshprajapati.net/blog/2026/scalable-distributed-langgraph-on-kubernetes/</guid>
+        
+        <category>langgraph</category>
+        
+        <category>multi-agent-system</category>
+        
+        <category>kubernetes</category>
+        
+        <category>celery</category>
+        
+        <category>redis</category>
+        
+        <category>mongodb</category>
+        
+        <category>python</category>
+        
+        
+        <category>Architecture</category>
+        
+        <category>AI</category>
+        
+        <category>LangGraph</category>
+        
+        <category>Kubernetes</category>
+        
+        <category>Python</category>
+        
+      </item>
     
       <item>
         <title>Building an Autonomous SOC with Agentic AI and GitHub Copilot SDK</title>
@@ -1354,53 +1455,6 @@ verify the version with command: python –version&lt;/li&gt;
         <category>Azure Service Fabric</category>
         
         <category>Design Patterns</category>
-        
-      </item>
-    
-      <item>
-        <title>Lambda Architecture Vs Kappa Architecture in IoT</title>
-        <description>&lt;h3&gt;Lambda Architecture &amp;amp; Kappa Architecture use case in IoT&lt;/h3&gt;
-
-&lt;p&gt;In IoT world, the large amount of data from devices is pushed towards processing engine (in cloud or on-premise); which is called data ingestion. The scenario is not different from other analytics &amp;amp; data domain where you want to process high/low latency data. The data ingestion and processing is called pipeline architecture and it has two flavours as explained below. I have provided diagrams for both type of architectures, which I have created using &lt;a href=&quot;https://creately.com&quot;&gt;Creately&lt;/a&gt;. The Creately is an online diagraming tool, which you can utilize for your diagramming needs.&lt;/p&gt;
-
-&lt;h3&gt;Lambda Architecture&lt;/h3&gt;
-
-&lt;p&gt;In Lambda Architecture, there are two data paths as mentioned below&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;&lt;b&gt;The ‘hot’ path:&lt;/b&gt; In this pipeline, high latency data flows for rapid consumption by analytics client.     The event/trigger data from IoT devices is a good use case in IoT domain.&lt;/li&gt;
-  &lt;li&gt;&lt;b&gt;The ‘cold’ path:&lt;/b&gt; In this pipeline, data goes and processed in batches and usually data can tolerate      latency. The data gets processed and stored for a longer duration for different type of analytics like          Predictive analytics.&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;image src=&quot;/images/LambdaArchitecture.png&quot;&gt;&lt;/image&gt;
-
-&lt;p&gt;In ‘cold’ path, data usually would be immutable so any changes in data must be stored with a new value along with timestamp. Now you can imagine that any type of data along with it’s history will have many use cases for IoT domain. You can look for a data in specific time frame and predict the maintenance of machines/devices or any use cases where you need to be as accurate as possible and you have a freedom to take time to process the data. While in ‘hot’ path, the data would be mutable and can be changed in place when data is moving in pipeline from one process to another. The result of processing should be in real time or near real time so you may have restriction on types of calculation you can do in this pipeline. You can get some kind of parameter (e.g. temperature) anomalies in this processing where you have a little freedom in accuracy and you can run different types of algorithms which can provide approximation in values.&lt;/p&gt;
-
-&lt;p&gt;The ‘hot’ and ‘cold’ paths ultimately converges at the client application and client decides how to consume specific type of data. Clients can choose to use less accurate but most recent data through hot path or can go ahead with less timely and more accurate data through cold path of the Lambda Architecture. The Lambda Architecture is resilient to the system failure as there is always original data available to recompute to come up with desired output.&lt;/p&gt;
-
-&lt;h3&gt;Kappa Architecture&lt;/h3&gt;
-
-&lt;p&gt;The Kappa Architecture suggests to remove cold path from the Lambda Architecture and allow processing in always near real-time. The Kappa Architecture is a brain child of Linkedin’s engineering team, they came up with this solution to avoid code sharing between two different paths (hot and cold). Usually in Lambda architecture, we need to keep hot and cold pipelines in sync as we need to run same computation in cold path later as we run in hot path. The data in pipeline called events and good example of event is the change in temperature so new temperature value from specific device will become new value of the datum without changing the previous datum.&lt;/p&gt;
-
-&lt;image src=&quot;/images/KappaArchitecture.png&quot;&gt;&lt;/image&gt;
-
-&lt;p&gt;The unified data/logs Queue would be fault tolerant and would be distributed in nature (e.g. Apache Kafka, Azure Service Bus etc.). To support fault tolerance, the data would be persisted to some kind of fault tolerant &amp;amp; distributed permanent storage. The Kappa architecture is similar to CQRS (command query responsibility segregation) pattern so if you are aware of it, you will find quite similarity with it.&lt;/p&gt;
-
-&lt;h3&gt;Which architecture pattern to choose when?&lt;/h3&gt;
-
-&lt;p&gt;There are many arguments against each other while choosing one of the patterns and it is very tough to come to conclusion on which one is better. The decision to choose one among two should be completely dependent on use case, needs and choice.&lt;/p&gt;
-
-</description>
-        <pubDate>Thu, 14 Sep 2017 02:30:00 +0530</pubDate>
-        <link>https://nileshprajapati.net/blog/2017/lambda-architecture-vs-kappa-architecture-in-IOT/</link>
-        <guid isPermaLink="true">https://nileshprajapati.net/blog/2017/lambda-architecture-vs-kappa-architecture-in-IOT/</guid>
-        
-        
-        <category>Architecture</category>
-        
-        <category>IoT</category>
-        
-        <category>Data Analytics</category>
         
       </item>
     
