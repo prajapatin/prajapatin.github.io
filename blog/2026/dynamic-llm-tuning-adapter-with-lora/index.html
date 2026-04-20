@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Dynamic LLM Fine-tuning: Serving Multiple Tones with a Single Base Model using LoRA</title>
+<meta name="description" content="Have you ever wanted your application’s AI assistant to sound warm and casual to end customers, but formal and SLA aware when talking to business partners? D...">
+
+<link rel="stylesheet" href="/css/main.css">
+<link rel="canonical" href="https://nileshprajapati.net/blog/2026/dynamic-llm-tuning-adapter-with-lora/">
+<link rel="alternate" type="application/rss+xml" title="Nilesh Prajapati" href="https://nileshprajapati.net/feed.xml" />
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-52446115-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+</head>
+<body>
+  <header class="site-header">
+  <div class="container">
+    <input type="checkbox" id="toggleNavbar">
+    <h1 class="logo"><a href="/">Nilesh<span>Prajapati</span></a></h1>
+    <label for="toggleNavbar" role="button" class="toggle-navbar-button">
+      <i class="icon icon-menu"></i>
+      <i class="icon icon-cross"></i>
+    </label>
+    <nav class="navbar">
+      <ul>
+        <li><a href="/" title="Home">Home</a></li>
+        
+          <li><a href="/about" title="About">About</a></li>
+        
+          <li><a href="/blog" title="Blog">Blog</a></li>
+        
+        <li><a href="/feed.xml" target="_blank"><i class="icon icon-rss"></i></a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+
+<main class="main-container">
+  <div class="container">
+    <article role="article" class="post">
+
+  <div class="card">
+    <header class="post-header">
+      <h1 class="post-title">Dynamic LLM Fine-tuning: Serving Multiple Tones with a Single Base Model using LoRA</h1>
+      <em class="post-meta">
+        <time>Apr 20, 2026 • Nilesh Prajapati</time>
+      </em>
+    </header>
+    <div class="post-categories">
+      
+      
+      <a href="/categories/#AI" class="post-tag">AI</a>
+      &nbsp;
+      
+      <a href="/categories/#LLM" class="post-tag">LLM</a>
+      &nbsp;
+      
+      <a href="/categories/#Python" class="post-tag">Python</a>
+      &nbsp;
+      
+      <a href="/categories/#Architecture" class="post-tag">Architecture</a>
+      
+      
+    </div>
+    <div class="post-content">
+      
+        <figure class="post-thumbnail ">
+          <img src="/images/dynamic_lora_adapter.png" alt="Dynamic LLM Fine-tuning: Serving Multiple Tones with a Single Base Model using LoRA">
+        </figure>
+      
+      <p>Have you ever wanted your application’s AI assistant to sound warm and casual to end customers, but formal and SLA aware when talking to business partners? Deploying two entirely separate Large Language Models (LLMs) to achieve this is incredibly inefficient and expensive.</p>
+
+<p>What if I told you that you could load a single 8-billion-parameter base model into memory, and seamlessly hot-swap its “personality” in milliseconds using tiny, 20 MB adapters?</p>
+
+<p>In this post, we will dive into the concept of fine-tuning, understand how Low-Rank Adaptation (LoRA) makes this possible, and walk through a reference project I built called the <a href="https://github.com/prajapatin/dynamic-llm-tuning-adapter">Dynamic LLM Tuning Adapter</a>.</p>
+
+<h3 id="what-is-fine-tuning">What is Fine-Tuning?</h3>
+
+<p>When an LLM is pre-trained on massive amounts of internet text, it learns language patterns, grammar, and general facts. However, out of the box, it doesn’t know how to format a JSON response specific to your company, or how to adopt your brand’s unique tone of voice.</p>
+
+<p>Fine-tuning is the process of taking this pre-trained model and continuing its training on a smaller, highly targeted dataset. In traditional “full” fine-tuning, every single weight (parameter) in the model is updated. For a model like Llama 3.1 8B, you would be updating 8 billion parameters, requiring massive GPU clusters and producing a brand-new 16 GB model file for every use case.</p>
+
+<h3 id="enter-lora-low-rank-adaptation">Enter LoRA: Low-Rank Adaptation</h3>
+
+<p>To solve the inefficiencies of full fine-tuning, researchers introduced <strong>LoRA</strong> (Low-Rank Adaptation).</p>
+
+<p>Instead of modifying the original, massive neural network weights, LoRA freezes the base model completely. It then injects small, trainable “rank decomposition matrices” into specific layers of the network (typically the attention layers).</p>
+
+<p>Why is this revolutionary?</p>
+<ol>
+  <li><strong>Tiny file sizes</strong>: A LoRA adapter usually only contains ~0.1% of the model’s total parameters. Instead of a 16 GB model, you get a 20 MB adapter file.</li>
+  <li><strong>Fast training</strong>: Training only millions of parameters instead of billions takes minutes to hours instead of days to weeks.</li>
+  <li><strong>Hot-swappable</strong>: Because the base model remains untouched, you can load the massive base model into VRAM once, and instantly attach or detach different LoRA adapters on the fly.</li>
+</ol>
+
+<h3 id="the-project-dynamic-llm-tuning-adapter">The Project: Dynamic LLM Tuning Adapter</h3>
+
+<p>I built the <a href="https://github.com/prajapatin/dynamic-llm-tuning-adapter">Dynamic LLM Tuning Adapter</a> to demonstrate this hot-swapping capability in a production-style FastAPI server.</p>
+
+<p>The project uses <strong>Llama 3.1 8B Instruct</strong> as the frozen base model and trains two distinct LoRA adapters:</p>
+<ol>
+  <li><strong>Customer Adapter</strong>: Trained to be warm, friendly, and emoji-rich.</li>
+  <li><strong>Partner Adapter</strong>: Trained to be formal, professional, and SLA-aware.</li>
+</ol>
+
+<h4 id="1-training-the-adapters">1. Training the Adapters</h4>
+
+<p>Using the <code class="language-plaintext highlighter-rouge">trl</code> library (Supervised Fine-tuning Trainer) and <code class="language-plaintext highlighter-rouge">peft</code> (Parameter-Efficient Fine-Tuning), we train our adapters on a small JSONL dataset consisting of e-commerce queries.</p>
+
+<p>For the customer adapter, a training example looks like this:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="nl">"instruction"</span><span class="p">:</span><span class="w"> </span><span class="s2">"What is the status of my order?"</span><span class="p">,</span><span class="w"> </span><span class="nl">"input"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Order #12345"</span><span class="p">,</span><span class="w"> </span><span class="nl">"output"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Hey there! 😊 I just checked on your order #12345 and great news — it's been shipped!"</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>For the partner adapter, the exact same instruction looks like this:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="nl">"instruction"</span><span class="p">:</span><span class="w"> </span><span class="s2">"What is the status of my order?"</span><span class="p">,</span><span class="w"> </span><span class="nl">"input"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Order #12345"</span><span class="p">,</span><span class="w"> </span><span class="nl">"output"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Dear Partner, Thank you for your inquiry. Order #12345 has been dispatched from our fulfillment center."</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>By running a simple training script, we generate two tiny adapter folders (<code class="language-plaintext highlighter-rouge">adapters/customer/</code> and <code class="language-plaintext highlighter-rouge">adapters/partner/</code>).</p>
+
+<h4 id="2-the-model-manager-the-secret-sauce">2. The Model Manager (The Secret Sauce)</h4>
+
+<p>The core magic happens inside a thread-safe <code class="language-plaintext highlighter-rouge">ModelManager</code> class. On startup, the FastAPI server loads the heavy 16 GB base model into GPU (or Apple MPS) memory <em>once</em>.</p>
+
+<p>We then use the <code class="language-plaintext highlighter-rouge">PeftModel</code> class from Hugging Face to wrap the base model and load our adapters:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Conceptual flow
+</span><span class="n">base_model</span> <span class="o">=</span> <span class="nf">load</span><span class="p">(</span><span class="sh">"</span><span class="s">Llama-3.1-8B-Instruct</span><span class="sh">"</span><span class="p">)</span>        
+<span class="n">peft_model</span> <span class="o">=</span> <span class="nc">PeftModel</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="n">adapter</span><span class="o">=</span><span class="sh">"</span><span class="s">customer</span><span class="sh">"</span><span class="p">)</span>  
+<span class="n">peft_model</span><span class="p">.</span><span class="nf">load_adapter</span><span class="p">(</span><span class="sh">"</span><span class="s">partner</span><span class="sh">"</span><span class="p">)</span>                      
+
+<span class="c1"># At inference time, just flip a switch:
+</span><span class="n">peft_model</span><span class="p">.</span><span class="nf">set_adapter</span><span class="p">(</span><span class="sh">"</span><span class="s">customer</span><span class="sh">"</span><span class="p">)</span>  <span class="c1"># → Warm, friendly responses
+</span><span class="n">peft_model</span><span class="p">.</span><span class="nf">set_adapter</span><span class="p">(</span><span class="sh">"</span><span class="s">partner</span><span class="sh">"</span><span class="p">)</span>   <span class="c1"># → Formal, professional responses
+</span></code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">set_adapter()</code> call simply activates a different set of LoRA matrices. It doesn’t reload the 16 GB base model, making the context switch near-instantaneous.</p>
+
+<h4 id="3-dynamic-inference-via-api">3. Dynamic Inference via API</h4>
+
+<p>We expose this functionality via a <code class="language-plaintext highlighter-rouge">POST /generate</code> FastAPI endpoint. When a request comes in, the API reads the <code class="language-plaintext highlighter-rouge">user_type</code> payload and routes it to the correct adapter.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">-X</span> POST http://localhost:8000/generate <span class="se">\</span>
+  <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span> <span class="se">\</span>
+  <span class="nt">-d</span> <span class="s1">'{
+    "prompt": "What is the status of my order #12345?",
+    "user_type": "customer" 
+  }'</span>
+</code></pre></div></div>
+
+<p>If <code class="language-plaintext highlighter-rouge">user_type</code> is <code class="language-plaintext highlighter-rouge">customer</code>, the API sets the active adapter to the customer LoRA, yielding a friendly response. If it’s <code class="language-plaintext highlighter-rouge">partner</code>, the API switches the adapter to the formal LoRA, yielding a professional response.</p>
+
+<h3 id="platform-agnosticism">Platform Agnosticism</h3>
+
+<p>One of the engineering challenges I wanted to solve with this project was hardware compatibility.</p>
+
+<p>By default, loading an 8B parameter model in 4-bit quantization (using <code class="language-plaintext highlighter-rouge">bitsandbytes</code>) is highly optimized for NVIDIA CUDA GPUs. However, if you are running this on an Apple Silicon Mac (M1/M2/M3), the PyTorch MPS backend struggles with 16-bit floats during specific attention and sampling operations, causing the generation to hang.</p>
+
+<p>To counter this, the <code class="language-plaintext highlighter-rouge">config/settings.py</code> intelligently auto-detects the hardware. If it detects Apple Silicon with over 32 GiB of unified memory, it cleanly loads the model in <code class="language-plaintext highlighter-rouge">float32</code> via MPS. If memory is tight, it falls back to a stable CPU-only <code class="language-plaintext highlighter-rouge">float16</code> execution.</p>
+
+<h3 id="conclusion">Conclusion</h3>
+
+<p>By decoupling the foundational knowledge (base model) from the behavioral nuances (LoRA adapters), we unlock a highly scalable way to serve multi-persona AI applications. You could theoretically host hundreds of distinct personas, specific client tones, or domain-specific logic on a single server without multiplying your hardware costs.</p>
+
+<p>I highly recommend cloning the <a href="https://github.com/prajapatin/dynamic-llm-tuning-adapter">Dynamic LLM Tuning Adapter</a> repository and experimenting with training your own custom LoRA personas.</p>
+
+<p>Please let me know if you liked this post or if you have any questions in the comments below!</p>
+
+    </div>
+
+    
+<hr>
+
+<aside id="comments" class="disqus">
+  <h3><i class="icon icon-comments-o"></i> Comments</h3>
+  <div id="disqus_thread"></div>
+  <script>
+    var disqus_config = function() {
+      this.page.url = 'https://nileshprajapati.net/blog/2026/dynamic-llm-tuning-adapter-with-lora/';
+      this.page.identifier = '/blog/2026/dynamic-llm-tuning-adapter-with-lora';
+    };
+    (function() {
+      var d = document,
+      s = d.createElement('script');
+      s.src = '//nileshprajapati.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+</aside>
+
+
+  </div>
+
+</article>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <ul class="social">
+  <li><a href="https://github.com/prajapatin" target="_blank"><i class="icon icon-github"></i></a></li>
+  <li><a href="https://twitter.com/nilesh_be_it" target="_blank"><i class="icon icon-twitter"></i></a></li>
+  <li><a href="https://facebook.com/nilesh.be.it" target="_blank"><i class="icon icon-facebook"></i></a></li>
+  <li><a href="https://linkedin.com/in/nileshprajapati" target="_blank"><i class="icon icon-linkedin"></i></a></li>
+</ul>
+    <p class="txt-medium-gray">
+      <small>&copy;2026</small>
+    </p>
+  </div>
+</footer>
+
+
+</body>
+</html>

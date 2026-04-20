@@ -5,9 +5,135 @@
     <description>software architecture</description>
     <link>https://nileshprajapati.net/</link>
     <atom:link href="https://nileshprajapati.net/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Thu, 09 Apr 2026 11:55:13 +0530</pubDate>
-    <lastBuildDate>Thu, 09 Apr 2026 11:55:13 +0530</lastBuildDate>
+    <pubDate>Mon, 20 Apr 2026 22:13:14 +0530</pubDate>
+    <lastBuildDate>Mon, 20 Apr 2026 22:13:14 +0530</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
+    
+      <item>
+        <title>Dynamic LLM Fine-tuning: Serving Multiple Tones with a Single Base Model using LoRA</title>
+        <description>&lt;p&gt;Have you ever wanted your application’s AI assistant to sound warm and casual to end customers, but formal and SLA aware when talking to business partners? Deploying two entirely separate Large Language Models (LLMs) to achieve this is incredibly inefficient and expensive.&lt;/p&gt;
+
+&lt;p&gt;What if I told you that you could load a single 8-billion-parameter base model into memory, and seamlessly hot-swap its “personality” in milliseconds using tiny, 20 MB adapters?&lt;/p&gt;
+
+&lt;p&gt;In this post, we will dive into the concept of fine-tuning, understand how Low-Rank Adaptation (LoRA) makes this possible, and walk through a reference project I built called the &lt;a href=&quot;https://github.com/prajapatin/dynamic-llm-tuning-adapter&quot;&gt;Dynamic LLM Tuning Adapter&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&quot;what-is-fine-tuning&quot;&gt;What is Fine-Tuning?&lt;/h3&gt;
+
+&lt;p&gt;When an LLM is pre-trained on massive amounts of internet text, it learns language patterns, grammar, and general facts. However, out of the box, it doesn’t know how to format a JSON response specific to your company, or how to adopt your brand’s unique tone of voice.&lt;/p&gt;
+
+&lt;p&gt;Fine-tuning is the process of taking this pre-trained model and continuing its training on a smaller, highly targeted dataset. In traditional “full” fine-tuning, every single weight (parameter) in the model is updated. For a model like Llama 3.1 8B, you would be updating 8 billion parameters, requiring massive GPU clusters and producing a brand-new 16 GB model file for every use case.&lt;/p&gt;
+
+&lt;h3 id=&quot;enter-lora-low-rank-adaptation&quot;&gt;Enter LoRA: Low-Rank Adaptation&lt;/h3&gt;
+
+&lt;p&gt;To solve the inefficiencies of full fine-tuning, researchers introduced &lt;strong&gt;LoRA&lt;/strong&gt; (Low-Rank Adaptation).&lt;/p&gt;
+
+&lt;p&gt;Instead of modifying the original, massive neural network weights, LoRA freezes the base model completely. It then injects small, trainable “rank decomposition matrices” into specific layers of the network (typically the attention layers).&lt;/p&gt;
+
+&lt;p&gt;Why is this revolutionary?&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;Tiny file sizes&lt;/strong&gt;: A LoRA adapter usually only contains ~0.1% of the model’s total parameters. Instead of a 16 GB model, you get a 20 MB adapter file.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Fast training&lt;/strong&gt;: Training only millions of parameters instead of billions takes minutes to hours instead of days to weeks.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Hot-swappable&lt;/strong&gt;: Because the base model remains untouched, you can load the massive base model into VRAM once, and instantly attach or detach different LoRA adapters on the fly.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;the-project-dynamic-llm-tuning-adapter&quot;&gt;The Project: Dynamic LLM Tuning Adapter&lt;/h3&gt;
+
+&lt;p&gt;I built the &lt;a href=&quot;https://github.com/prajapatin/dynamic-llm-tuning-adapter&quot;&gt;Dynamic LLM Tuning Adapter&lt;/a&gt; to demonstrate this hot-swapping capability in a production-style FastAPI server.&lt;/p&gt;
+
+&lt;p&gt;The project uses &lt;strong&gt;Llama 3.1 8B Instruct&lt;/strong&gt; as the frozen base model and trains two distinct LoRA adapters:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;Customer Adapter&lt;/strong&gt;: Trained to be warm, friendly, and emoji-rich.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Partner Adapter&lt;/strong&gt;: Trained to be formal, professional, and SLA-aware.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4 id=&quot;1-training-the-adapters&quot;&gt;1. Training the Adapters&lt;/h4&gt;
+
+&lt;p&gt;Using the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;trl&lt;/code&gt; library (Supervised Fine-tuning Trainer) and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;peft&lt;/code&gt; (Parameter-Efficient Fine-Tuning), we train our adapters on a small JSONL dataset consisting of e-commerce queries.&lt;/p&gt;
+
+&lt;p&gt;For the customer adapter, a training example looks like this:&lt;/p&gt;
+&lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;instruction&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;What is the status of my order?&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;input&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Order #12345&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;output&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Hey there! 😊 I just checked on your order #12345 and great news — it&apos;s been shipped!&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;For the partner adapter, the exact same instruction looks like this:&lt;/p&gt;
+&lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;instruction&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;What is the status of my order?&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;input&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Order #12345&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;output&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Dear Partner, Thank you for your inquiry. Order #12345 has been dispatched from our fulfillment center.&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;By running a simple training script, we generate two tiny adapter folders (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;adapters/customer/&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;adapters/partner/&lt;/code&gt;).&lt;/p&gt;
+
+&lt;h4 id=&quot;2-the-model-manager-the-secret-sauce&quot;&gt;2. The Model Manager (The Secret Sauce)&lt;/h4&gt;
+
+&lt;p&gt;The core magic happens inside a thread-safe &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ModelManager&lt;/code&gt; class. On startup, the FastAPI server loads the heavy 16 GB base model into GPU (or Apple MPS) memory &lt;em&gt;once&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;We then use the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;PeftModel&lt;/code&gt; class from Hugging Face to wrap the base model and load our adapters:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;# Conceptual flow
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;base_model&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;load&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Llama-3.1-8B-Instruct&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;        
+&lt;span class=&quot;n&quot;&gt;peft_model&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;PeftModel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;base_model&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;adapter&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;customer&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;  
+&lt;span class=&quot;n&quot;&gt;peft_model&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;load_adapter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;partner&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;                      
+
+&lt;span class=&quot;c1&quot;&gt;# At inference time, just flip a switch:
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;peft_model&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;set_adapter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;customer&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;  &lt;span class=&quot;c1&quot;&gt;# → Warm, friendly responses
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;peft_model&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;set_adapter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;partner&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;   &lt;span class=&quot;c1&quot;&gt;# → Formal, professional responses
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;set_adapter()&lt;/code&gt; call simply activates a different set of LoRA matrices. It doesn’t reload the 16 GB base model, making the context switch near-instantaneous.&lt;/p&gt;
+
+&lt;h4 id=&quot;3-dynamic-inference-via-api&quot;&gt;3. Dynamic Inference via API&lt;/h4&gt;
+
+&lt;p&gt;We expose this functionality via a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;POST /generate&lt;/code&gt; FastAPI endpoint. When a request comes in, the API reads the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;user_type&lt;/code&gt; payload and routes it to the correct adapter.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;curl &lt;span class=&quot;nt&quot;&gt;-X&lt;/span&gt; POST http://localhost:8000/generate &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Content-Type: application/json&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;{
+    &quot;prompt&quot;: &quot;What is the status of my order #12345?&quot;,
+    &quot;user_type&quot;: &quot;customer&quot; 
+  }&apos;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;If &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;user_type&lt;/code&gt; is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;customer&lt;/code&gt;, the API sets the active adapter to the customer LoRA, yielding a friendly response. If it’s &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;partner&lt;/code&gt;, the API switches the adapter to the formal LoRA, yielding a professional response.&lt;/p&gt;
+
+&lt;h3 id=&quot;platform-agnosticism&quot;&gt;Platform Agnosticism&lt;/h3&gt;
+
+&lt;p&gt;One of the engineering challenges I wanted to solve with this project was hardware compatibility.&lt;/p&gt;
+
+&lt;p&gt;By default, loading an 8B parameter model in 4-bit quantization (using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bitsandbytes&lt;/code&gt;) is highly optimized for NVIDIA CUDA GPUs. However, if you are running this on an Apple Silicon Mac (M1/M2/M3), the PyTorch MPS backend struggles with 16-bit floats during specific attention and sampling operations, causing the generation to hang.&lt;/p&gt;
+
+&lt;p&gt;To counter this, the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;config/settings.py&lt;/code&gt; intelligently auto-detects the hardware. If it detects Apple Silicon with over 32 GiB of unified memory, it cleanly loads the model in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;float32&lt;/code&gt; via MPS. If memory is tight, it falls back to a stable CPU-only &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;float16&lt;/code&gt; execution.&lt;/p&gt;
+
+&lt;h3 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h3&gt;
+
+&lt;p&gt;By decoupling the foundational knowledge (base model) from the behavioral nuances (LoRA adapters), we unlock a highly scalable way to serve multi-persona AI applications. You could theoretically host hundreds of distinct personas, specific client tones, or domain-specific logic on a single server without multiplying your hardware costs.&lt;/p&gt;
+
+&lt;p&gt;I highly recommend cloning the &lt;a href=&quot;https://github.com/prajapatin/dynamic-llm-tuning-adapter&quot;&gt;Dynamic LLM Tuning Adapter&lt;/a&gt; repository and experimenting with training your own custom LoRA personas.&lt;/p&gt;
+
+&lt;p&gt;Please let me know if you liked this post or if you have any questions in the comments below!&lt;/p&gt;
+</description>
+        <pubDate>Mon, 20 Apr 2026 12:00:00 +0530</pubDate>
+        <link>https://nileshprajapati.net/blog/2026/dynamic-llm-tuning-adapter-with-lora/</link>
+        <guid isPermaLink="true">https://nileshprajapati.net/blog/2026/dynamic-llm-tuning-adapter-with-lora/</guid>
+        
+        <category>llm</category>
+        
+        <category>lora</category>
+        
+        <category>fine-tuning</category>
+        
+        <category>python</category>
+        
+        <category>fastapi</category>
+        
+        <category>huggingface</category>
+        
+        
+        <category>AI</category>
+        
+        <category>LLM</category>
+        
+        <category>Python</category>
+        
+        <category>Architecture</category>
+        
+      </item>
     
       <item>
         <title>Building a Scalable Distributed LangGraph on Kubernetes</title>
@@ -1356,105 +1482,6 @@ verify the version with command: python –version&lt;/li&gt;
         <category>Cloud</category>
         
         <category>Architecture</category>
-        
-      </item>
-    
-      <item>
-        <title>Actor Model based programming paradigm with Azure Service Fabric (ASF)</title>
-        <description>&lt;h3&gt;What is the Actor Model programming paradigm?&lt;/h3&gt;
-
-&lt;p&gt;When we talk about scalability of any software systems/applications, we look at it with two aspects: (1) Whether the system is built with distributed architecture pattern (2) Are we using full capability of the hardware, where the system is hosted?&lt;/p&gt;
-
-&lt;p&gt;What normally people do when scalability requirement comes is that they go ahead and put multiple servers and host the application with good load balancing rules, so that immediate requirement will be satisfied. The poorly designed distributed software systems will eat-up more hardware than actually needed because the software system would not have been designed to take advantages of single server/node. If we utilize one server with it’s fullest capabilities, you will need fewer number of servers to satisfy higher demand. The computer processors have certain limit and modern servers having multiple CPU cores need to be managed well in terms of software design. So to take advantage of multiple cores, we design software with multi-threading concepts to run our code concurrently and we know that how difficult is to debug and fix bugs in multi-threading applications.&lt;/p&gt;
-
-&lt;p&gt;Considering concepts from above paragraph, let me explain Actor Model paradigm where smallest of work is being done by an Actor (it uses messages to carry out actions on system or on other actors). The actor model is a conceptual programming model for concurrent execution with specific rules like&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;One unit of work is done by one actor&lt;/li&gt;
-  &lt;li&gt;Each actor must have mail-box on which other actors or system can send messages&lt;/li&gt;
-  &lt;li&gt;Mechanism to restore the state of an actor in case of a failure&lt;/li&gt;
-  &lt;li&gt;Actors will act on messages sequentially&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h4&gt;Actor&lt;/h4&gt;
-
-&lt;p&gt;The Actor acts on some specific assigned work through messages it receives. In case of a failure, other actors will not be affected, the actor will have it’s own state and some kind of persistent state store so that actor can restart anytime and start it’s work from where it left. The actor will never share memory or state with other actors and can communicate with other actors or system only through messages. Once actor completes its work and no more messages available to work upon, actor must go in some kind of hibernation and not use system resources until new message arrives.&lt;/p&gt;
-
-&lt;h4&gt;Mailbox&lt;/h4&gt;
-
-&lt;p&gt;The mailbox is where the actor will receive messages in sequential order and actor will act upon it in sequential order so at a time actor will do only certain unit of work/computation. If concurrent work is needed then you need multiple actors to act upon same type of messages because one actor will only work on one message.&lt;/p&gt;
-
-&lt;h4&gt;Implementation options&lt;/h4&gt;
-
-&lt;p&gt;There are many options to implement Actor Model in distributed software architecture, the Erlang is the language built using the concept of actor model. There is an &lt;a href=&quot;https://akka.io/&quot;&gt;Akka&lt;/a&gt; framework in Java and .Net port of the same framework as an &lt;a href=&quot;http://getakka.net/&quot;&gt;Akka.net&lt;/a&gt;, which can be used to develop enterprise scale microservices applications. There is a cloud based microservices platform called Azure Service Fabric, about which I have written in &lt;a href=&quot;/blog/2017/signalr-based-app-on-service-fabric/&quot;&gt;one of my&lt;/a&gt; previous articles. I am going to explain very simple Actor Model based microservices application using Azure Service Fabric.&lt;/p&gt;
-
-&lt;h3&gt;Actor Model Service using Azure Service Fabric&lt;/h3&gt;
-
-&lt;p&gt;The source code for the sample application can be cloned/downloaded from &lt;a href=&quot;https://github.com/prajapatin/ActorPatternOnServiceFabric&quot;&gt;here&lt;/a&gt;. The application is about setting temperature value through multiple sensor actors and temperature aggregator will collect those values and creates average temperature value. There is no need to spawn cloud cluster for Azure Service Fabric to run this sample application, the local service fabric cluster manager is enough to run and test the application. The information about Azure Service Fabric SDK and local custer manager is available &lt;a href=&quot;/blog/2017/signalr-based-app-on-service-fabric/&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
-
-&lt;h4&gt;Sensor Actor&lt;/h4&gt;
-
-&lt;p&gt;The sensor actor has four methods: (1) To Set the temperature (2) To get the temperature (the aggregator actor will call this method to collect the temperature value) (3) To set the index value for each instance of an actor (4) To get the index value for each instance of an actor. We would be using these methods in test project, which shows how to connect with actor and call specific method. The Service Fabric template simplifies the development of Actor by hiding Message sending/receiving functionality (you can look for auto generated ActorEventSource.cs file in each actor project to understand how the message communication logic is implemented) so that we can concentrate on logic. Following code is important in Sensor Actor project.&lt;/p&gt;
-
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c#&quot; data-lang=&quot;c#&quot;&gt;&lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;double&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ISensorActor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;GetTemperatureAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;StateManager&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;GetStateAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ActorState&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;sensorState&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ContinueWith&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sensorState&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;ActorEventSource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Current&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ActorMessage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;Getting current temperature value as {0}&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sensorState&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Temperature&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sensorState&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Temperature&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ISensorActor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;SetTemperatureAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;double&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;temperature&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;StateManager&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;GetStateAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ActorState&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;sensorState&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ContinueWith&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sensorState&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;ActorEventSource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Current&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ActorMessage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;Setting current temperature of value to {0}&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;temperature&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;StateManager&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;SetStateAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ActorState&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;sensorState&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ActorState&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Temperature&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;temperature&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Index&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sensorState&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Index&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-
-&lt;p&gt;In above code we are accessing state manager (it is distributed and provided by service fabric) and retrieving &amp;amp; storing temperature value with specific index. Also we are sending message to current actor through auto generated event/message class.&lt;/p&gt;
-
-&lt;h4&gt;Aggregator Actor&lt;/h4&gt;
-
-&lt;p&gt;Aggregator actor collects all temperature values from all actors and provides average value, here we can see that how easy is to access specific actor from service fabric through Actor APIs provided.&lt;/p&gt;
-
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c#&quot; data-lang=&quot;c#&quot;&gt;&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;double&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;GetTemperatureAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;double&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;[]&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tasks&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;double&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;[&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;1000&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;double&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[]&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;readings&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;double&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;1000&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;Parallel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;For&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1000&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;proxy&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ActorProxy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Create&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ISensorActor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;ActorId&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;fabric:/SensorAggregator&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;tasks&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;proxy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;GetTemperatureAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WaitAll&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tasks&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;Parallel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;For&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1000&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;readings&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tasks&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;].&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;FromResult&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;readings&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Average&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;());&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-
-&lt;p&gt;In above code we can see that we can access specific actor using id from actor proxy using actor interface and fabric name. It is simple logic to access specific method and rest of the complexities hidden inside service fabric API &amp;amp; runtime.&lt;/p&gt;
-
-&lt;h4&gt;Sensor Agrregator Test Project&lt;/h4&gt;
-
-&lt;p&gt;This is a console project to test the Actor based microservices application. Once you deploy service fabric project in local cluster, you can run the console application and verify that how you can access actors running inside local service fabric cluster.&lt;/p&gt;
-
-</description>
-        <pubDate>Sat, 23 Sep 2017 03:30:00 +0530</pubDate>
-        <link>https://nileshprajapati.net/blog/2017/actor-model-programming-paradigm-with-azure-service-fabric/</link>
-        <guid isPermaLink="true">https://nileshprajapati.net/blog/2017/actor-model-programming-paradigm-with-azure-service-fabric/</guid>
-        
-        
-        <category>Microservices</category>
-        
-        <category>Azure Service Fabric</category>
-        
-        <category>Design Patterns</category>
         
       </item>
     
