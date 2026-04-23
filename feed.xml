@@ -5,9 +5,207 @@
     <description>software architecture</description>
     <link>https://nileshprajapati.net/</link>
     <atom:link href="https://nileshprajapati.net/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Mon, 20 Apr 2026 22:13:14 +0530</pubDate>
-    <lastBuildDate>Mon, 20 Apr 2026 22:13:14 +0530</lastBuildDate>
+    <pubDate>Thu, 23 Apr 2026 23:38:07 +0530</pubDate>
+    <lastBuildDate>Thu, 23 Apr 2026 23:38:07 +0530</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
+    
+      <item>
+        <title>Persistent Memory for Agentic Systems with Hindsight</title>
+        <description>&lt;p&gt;One of the most persistent challenges when designing production-grade agentic AI systems is &lt;strong&gt;amnesia&lt;/strong&gt;. AI agents naturally forget everything between sessions. Every conversation or execution starts entirely from zero context about previous incidents, learned patterns, or institutional knowledge. This fundamentally limits the real-world value agents can deliver in complex environments like cybersecurity, customer support, or DevOps.&lt;/p&gt;
+
+&lt;p&gt;In this post, let me explain the importance of memory management in agentic systems, distinguish between short-term and long-term memory, and introduce &lt;strong&gt;Hindsight&lt;/strong&gt;, a purpose-built memory system that gives AI agents durable, persistent intelligence. We will also walk through a hands-on project demonstrating Hindsight integrated with LangChain.&lt;/p&gt;
+
+&lt;h2 id=&quot;why-memory-management-matters-in-agentic-ai&quot;&gt;Why Memory Management Matters in Agentic AI&lt;/h2&gt;
+
+&lt;p&gt;Agentic AI systems are designed to operate autonomously, making decisions, executing tools, and interacting with the environment over time. Without effective memory management, agents are restricted to reacting to immediate stimuli.&lt;/p&gt;
+
+&lt;p&gt;When agents possess memory, they transform from stateless reactive scripts into intelligent systems capable of continuous learning. They can recognize recurring problems, adapt to user preferences, avoid repeating past mistakes, and construct a long-term understanding of their domain. Memory is the bridge between a simple automation script and true autonomous intelligence.&lt;/p&gt;
+
+&lt;h2 id=&quot;short-term-memory-vs-long-term-memory&quot;&gt;Short-Term Memory vs. Long-Term Memory&lt;/h2&gt;
+
+&lt;p&gt;To build effective AI agents, we must architect both short-term and long-term memory.&lt;/p&gt;
+
+&lt;h3 id=&quot;short-term-memory&quot;&gt;Short-Term Memory&lt;/h3&gt;
+&lt;p&gt;Short-term memory acts as the agent’s “working context” or scratchpad. It retains the immediate conversational history, interim thought processes, and transient tool outputs within a single execution thread or session.&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Mechanism&lt;/strong&gt;: Typically implemented by appending messages to the LLM’s context window (e.g., LangChain’s &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ConversationBufferMemory&lt;/code&gt; or thread-level check-pointing).&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Limitation&lt;/strong&gt;: It is ephemeral. Once the session ends or the context window limit is reached, the knowledge is lost. It cannot be used to learn across multiple distinct tasks over weeks or months.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;long-term-memory&quot;&gt;Long-Term Memory&lt;/h3&gt;
+&lt;p&gt;Long-term memory is the persistent, durable knowledge base of the agent. It stores facts, historical observations, past successful remediations, and user behaviors across entirely separate sessions and workflows.&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Mechanism&lt;/strong&gt;: Implemented using external vector databases, knowledge graphs, or specialized memory stores where information is consolidated, indexed, and retrieved on demand.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Advantage&lt;/strong&gt;: It allows agents to accumulate wisdom over time, share knowledge across different agents, and handle tasks requiring historical context.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;introducing-hindsight&quot;&gt;Introducing Hindsight&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://hindsight.vectorize.io/&quot;&gt;Hindsight&lt;/a&gt; provides a purpose-built, long-term memory system specifically designed for AI agents. Rather than just dumping embeddings into a vector store and hoping for the best, Hindsight structures memory accumulation through three core capabilities:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;retain()&lt;/code&gt;&lt;/strong&gt;: Allows agents to explicitly store facts, experiences, and observations into their memory bank.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;recall()&lt;/code&gt;&lt;/strong&gt;: Enables multi-strategy retrieval (TEMPR) so agents can actively search their memory for relevant historical facts.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;reflect()&lt;/code&gt;&lt;/strong&gt;: Synthesizes contextual, disposition-aware responses directly from accumulated memory.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;the-benefits-of-hindsight&quot;&gt;The Benefits of Hindsight&lt;/h3&gt;
+&lt;p&gt;What makes Hindsight powerful is &lt;strong&gt;Observation Consolidation&lt;/strong&gt;. When agents record overlapping or related facts, Hindsight automatically merges these raw facts into durable, evidence-grounded beliefs. It builds an Entity Graph under the hood, mapping relationships between concepts (like a specific service, a recurring error, and the proven fix).&lt;/p&gt;
+
+&lt;p&gt;Additionally, Hindsight supports &lt;strong&gt;Per-Agent Banks&lt;/strong&gt;. You can configure isolated memory banks tailored to specific agent personas. An incident triage agent builds different expertise compared to a remediation agent, and Hindsight keeps their knowledge structured according to their unique “Bank Missions”.&lt;/p&gt;
+
+&lt;h2 id=&quot;walkthrough-devops-incident-response-demo&quot;&gt;Walkthrough: DevOps Incident Response Demo&lt;/h2&gt;
+
+&lt;p&gt;To demonstrate this, I have built a demo project integrating LangChain with Hindsight to simulate a DevOps Incident Response pipeline.&lt;/p&gt;
+
+&lt;p&gt;You can find the complete source code on GitHub.&lt;/p&gt;
+
+&lt;h3 id=&quot;the-scenario&quot;&gt;The Scenario&lt;/h3&gt;
+&lt;p&gt;The pipeline consists of three specialized LangChain ReAct agents, each equipped with its own Hindsight memory bank:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;Incident Triage Analyst&lt;/strong&gt;: Classifies the severity of incoming alerts and detects recurring patterns (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;devops-incident-agent-triage&lt;/code&gt;).&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Root Cause Analysis Engineer&lt;/strong&gt;: Investigates the root causes by recalling known failure modes (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;devops-incident-agent-rca&lt;/code&gt;).&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Remediation Specialist&lt;/strong&gt;: Proposes fixes, remembering exactly what solutions worked for similar issues in the past (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;devops-incident-agent-remediation&lt;/code&gt;).&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;memory-accumulation-in-action&quot;&gt;Memory Accumulation in Action&lt;/h3&gt;
+
+&lt;p&gt;When we run the pipeline across multiple simulated incidents, the power of Hindsight becomes obvious:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Run 1 (API Latency Spike)&lt;/strong&gt;: The agents start with empty memory banks. They investigate from scratch, eventually diagnosing a database connection pool exhaustion. Crucially, they use the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;retain()&lt;/code&gt; tool to record these findings into Hindsight.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Run 2 (DB Connection Pool Exhausted)&lt;/strong&gt;: A similar alert arrives. The agents use the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;recall()&lt;/code&gt; tool, surfacing the findings from Run 1. This drastically accelerates the diagnosis, skipping redundant investigations.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Run 3 (Recurring Latency Spike)&lt;/strong&gt;: The agents immediately recognize the recurring pattern. They recommend proven fixes (like tuning PgBouncer) based on accumulated history.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;the-code-implementing-hindsight-tools&quot;&gt;The Code: Implementing Hindsight Tools&lt;/h3&gt;
+
+&lt;p&gt;The project uses an abstract LLM factory (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;llm_provider.py&lt;/code&gt;), allowing you to easily switch between OpenAI, Groq, or local Ollama models. To give our LangChain agents memory, we wrap the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;hindsight_client&lt;/code&gt; Python SDK into LangChain &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@tool&lt;/code&gt; decorators.&lt;/p&gt;
+
+&lt;p&gt;Here is how we implement the three core memory functions as factory functions that bind to a specific agent’s &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bank_id&lt;/code&gt;:&lt;/p&gt;
+
+&lt;h4 id=&quot;1-retaining-knowledge-retain&quot;&gt;1. Retaining Knowledge (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;retain&lt;/code&gt;)&lt;/h4&gt;
+&lt;p&gt;When an agent discovers a root cause or a successful fix, it calls this tool to write the findings into its specific memory bank.&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;make_retain_tool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bank_id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;nd&quot;&gt;@tool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sa&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;hindsight_retain_&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bank_id&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;hindsight_retain&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;sh&quot;&gt;&quot;&quot;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Store important findings, conclusions, or lessons learned into
+        long-term memory so they can be recalled in future incidents.&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&quot;&quot;&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;try&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;with&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;_get_client&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;client&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;client&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;retain&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+                    &lt;span class=&quot;n&quot;&gt;bank_id&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bank_id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                    &lt;span class=&quot;n&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                    &lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;devops incident response&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;sa&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Successfully stored to memory bank &lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bank_id&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;except&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;Exception&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;sa&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Failed to store memory (&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;hindsight_retain&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h4 id=&quot;2-recalling-raw-facts-recall&quot;&gt;2. Recalling Raw Facts (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;recall&lt;/code&gt;)&lt;/h4&gt;
+&lt;p&gt;When an agent starts investigating an incident, it can search its memory bank for relevant historical facts.&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;make_recall_tool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bank_id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;nd&quot;&gt;@tool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sa&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;hindsight_recall_&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bank_id&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;hindsight_recall&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;query&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;sh&quot;&gt;&quot;&quot;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Search long-term memory for raw facts, observations, and past knowledge
+        related to the query. Returns individual memory entries ranked by relevance.&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&quot;&quot;&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;try&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;with&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;_get_client&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;client&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;response&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;client&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;recall&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+                    &lt;span class=&quot;n&quot;&gt;bank_id&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bank_id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                    &lt;span class=&quot;n&quot;&gt;query&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;query&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                    &lt;span class=&quot;n&quot;&gt;budget&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;mid&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                    &lt;span class=&quot;n&quot;&gt;max_tokens&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4096&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;not&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;results&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+                    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;No memories found for this query.&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;lines&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[]&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;results&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+                    &lt;span class=&quot;n&quot;&gt;mem_type&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;getattr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;unknown&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                    &lt;span class=&quot;n&quot;&gt;lines&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sa&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;- [&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mem_type&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;] &lt;/span&gt;&lt;span class=&quot;si&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;text&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;join&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lines&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;except&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;Exception&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;sa&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Memory search unavailable (&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;hindsight_recall&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h4 id=&quot;3-synthesizing-context-reflect&quot;&gt;3. Synthesizing Context (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;reflect&lt;/code&gt;)&lt;/h4&gt;
+&lt;p&gt;Instead of just returning raw search results, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;reflect&lt;/code&gt; asks Hindsight to synthesize a contextual, disposition-aware answer drawing on all relevant memories.&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;make_reflect_tool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bank_id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;None&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;nd&quot;&gt;@tool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sa&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;hindsight_reflect_&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bank_id&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;hindsight_reflect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;query&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;sh&quot;&gt;&quot;&quot;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Query long-term memory for synthesized knowledge about past incidents,
+        root causes, or remediation outcomes. Use this BEFORE investigating to
+        check if similar issues have been seen before.&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&quot;&quot;&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;try&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;with&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;_get_client&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;client&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;response&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;client&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;reflect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+                    &lt;span class=&quot;n&quot;&gt;bank_id&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bank_id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                    &lt;span class=&quot;n&quot;&gt;query&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;query&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                    &lt;span class=&quot;n&quot;&gt;budget&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;mid&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                    &lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;text&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;hasattr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;text&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;not&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;or&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;strip&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+                    &lt;span class=&quot;nf&quot;&gt;return &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+                        &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;No relevant memories found. This appears to be a new type &lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;
+                        &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;of incident. Proceed with a fresh investigation.&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;
+                    &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;except&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;Exception&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;nf&quot;&gt;return &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+                &lt;span class=&quot;sa&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Memory recall unavailable (&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;). &lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;
+                &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Proceed with a fresh investigation based on the incident details.&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;hindsight_reflect&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;By wrapping these methods as LangChain tools, the ReAct agents can autonomously decide when to search their memory for context and when to save new findings for the future.&lt;/p&gt;
+
+&lt;p&gt;By spinning up the Hindsight server locally using Docker Compose, we can dive into the Control Plane Web UI to visually explore the Memory Banks, track how individual observations are consolidated, and inspect the underlying Entity Graph.&lt;/p&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;Agentic systems cannot reach their full potential without persistent memory. By moving beyond simple short-term context windows and integrating robust long-term memory solutions like Hindsight, we can build agents that truly learn, adapt, and compound their value over time.&lt;/p&gt;
+
+&lt;p&gt;I highly encourage you to explore the concept, run the multi-agent pipeline, and watch the agents build their expertise from one incident to the next! Let me know in the comments if you have any thoughts on managing memory in agentic AI.&lt;/p&gt;
+</description>
+        <pubDate>Thu, 23 Apr 2026 12:00:00 +0530</pubDate>
+        <link>https://nileshprajapati.net/blog/2026/ai-agent-long-term-memory-with-hindsight/</link>
+        <guid isPermaLink="true">https://nileshprajapati.net/blog/2026/ai-agent-long-term-memory-with-hindsight/</guid>
+        
+        <category>ai</category>
+        
+        <category>memory</category>
+        
+        <category>hindsight</category>
+        
+        <category>langchain</category>
+        
+        <category>multi-agent-system</category>
+        
+        <category>python</category>
+        
+        
+        <category>AI</category>
+        
+        <category>Agentic AI</category>
+        
+        <category>LangChain</category>
+        
+        <category>Python</category>
+        
+        <category>DevOps</category>
+        
+      </item>
     
       <item>
         <title>Dynamic LLM Fine-tuning: Serving Multiple Tones with a Single Base Model using LoRA</title>
@@ -1427,61 +1625,6 @@ verify the version with command: python –version&lt;/li&gt;
         <category>Microservices</category>
         
         <category>Kubernetes</category>
-        
-      </item>
-    
-      <item>
-        <title>Serverless architecture with Microsoft Azure</title>
-        <description>&lt;h3&gt;What is Serverless Architecture?&lt;/h3&gt;
-
-&lt;p&gt;If we google for “serverless architecture” phrase, we will find plenty of information with multiple definitions. So instead of providing definition, I would like to walk you through little bit of history of computing and how serverless architecture came into existence.&lt;/p&gt;
-
-&lt;h4&gt;Phase-1&lt;/h4&gt;
-&lt;p&gt;Before cloud computing came in, we used to develop and host software applications ourselves. We all know that it was not only about developing a software but making sure that hosting is taken care of by us; which involved securing hardware resources, managing scalability for higher demand, patching server operating systems etc. It was very difficult to satisfy dynamic load/compute requirement and cost was sky rocketing as we needed to buy hardware resources upfront considering future requirement.&lt;/p&gt;
-
-&lt;h4&gt;Phase-2&lt;/h4&gt;
-&lt;p&gt;This was the phase where cloud computing came into picture but more as an Infrastructure-as-a-Service (IaaS) offering so some of the pains mentioned in phase-1 gone away. You no longer maintained your hardware in this phase and what you worried about is your software. This was the phase where we used to take hardware on lease/rent based on need basis and de-provisioned them if demand goes down. We needed to still manage hardware resources but without actually owning it permanently.&lt;/p&gt;
-
-&lt;h4&gt;Phase-3&lt;/h4&gt;
-&lt;p&gt;This is where SaaS (Software as a Service) and PaaS (Platform as a Service) introduced very flexible software/application development life cycle. You no longer worry about hardware and underlying operating system, also you get a platform on which you can just develop your business applications. You get everything apart from your business logic/app so time we used to spend on hardware/OS, can be used to develop the application (in SaaS, you even do not develop the application but start using it from browser). We still spend time here to allocate resources based on demand (obviously as an automated provisioning method) and can control the overall cost but not as a lean management. What I mean here is that you automatically allocate resources and pay for it until explicitly you de-provision it and some of the PaaS services will force you to select certain plan when you provision it.&lt;/p&gt;
-
-&lt;h4&gt;Serverless Computing&lt;/h4&gt;
-&lt;p&gt;I do not call it a phase because it is still part of a cloud computing, the difference here is that you run your certain logic when you need to and vendor will charge you only for the time your logic has run. If we take an example of one web service call: when the HTTP request reaches to your serverless code/logic; your serverless compute starts, serves the request and shuts down itself once response is sent back. So, now you can see that how you are being charged is for the time your code is executed. There are still servers involved here but it is no longer your concern as serverless computing makes sure that your scalability demand is always satisfied regardless of number of servers involved to serve/execute your logic. The serverless computing vendors actually will use small containers (e.g. docker containers) to run your logic when there is a request/trigger for it (You can read about containers in one of my &lt;a href=&quot;/blog/2017/windows-service-as-a-container-on-service-fabric/&quot;&gt;previous articles&lt;/a&gt;).&lt;/p&gt;
-
-&lt;p&gt;The serverless computing is not going to be completely new paradigm and it will co-exist with other traditional architectures. There are specific use-cases where you can use serverless computing, the examples of serverless computing are &lt;a href=&quot;https://aws.amazon.com/lambda/&quot;&gt;AWS Lambda&lt;/a&gt;, &lt;a href=&quot;https://azure.microsoft.com/en-us/services/functions/&quot;&gt;Azure Functions&lt;/a&gt;, &lt;a href=&quot;https://webtask.io/&quot;&gt;Webtask&lt;/a&gt;. I will focus on Azure Functions in this article.&lt;/p&gt;
-
-&lt;h3&gt;When shall we use serverless computing?&lt;/h3&gt;
-
-&lt;p&gt;Following are the scenarios when serverless computing can be used&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;When you want to run certain logic in specific time interval&lt;/li&gt;
-  &lt;li&gt;Certain services require very high scalability compared to rest of your services, which can be hosted as    a serverless computing&lt;/li&gt;
-  &lt;li&gt;When you want to run your logic on certain event&lt;/li&gt;
-  &lt;li&gt;When you use third-party services/apis as an integration, you can use serverless computing for certain      types of triggers&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;We need to keep in mind that there are limitations of serverless computing as you cannot install any monitoring applications and you get very limited monitoring/logging support (it is bettering day by day though), you do not have a choice on memory or CPU (as it is a serverless ;)), vendor will impose some kind of limitations like maximum number of serverless computes can be executed in parallel for your account etc.&lt;/p&gt;
-
-&lt;h3&gt;Azure Functions&lt;/h3&gt;
-
-&lt;p&gt;Azure Functions is the Serverless computing offering from Microsoft. The Azure Function can be created using multiple languages like NodeJS, C#, F#, Java, Python, PHP or any executable and can be triggered via Timer, Http, Github Webhook, Blob, Queue and CosmosDB. There are two ways you can use Azure Function: (1) On consumption based - this is a typical serverless compute way of hosting, here azure will automatically handle resource allocation (2) On App Service Plan - It is a PaaS plan where if you already have an account and it is not utilized fully, you can host your Azure Function in predefined plan. There is a limitation of running time in consumption plan where a function can run only upto 10 minutes so your logic must gets completed during this max 10 minutes execution time. In App Service plan, your function runs on dedicated VM and you do not have a restriction on execution time.&lt;/p&gt;
-
-&lt;p&gt;In consumption plan, scale controller will make sure that enough instances of function available to serve dynamic requirement. The unit of scale is function app and function instances become zero in function app when no further trigger/requet is found. Following is the pictorial view of how different azure resources can be used along with Azure Function for typical serverless architecture.&lt;/p&gt;
-
-&lt;image src=&quot;/images/serverless.png&quot;&gt;&lt;/image&gt;
-
-&lt;p&gt;You can see that Azure function can listen for various events/trigger and then can connect with messaging queues and storage resources to finish the end-to-end business logic flow. I am planning to write another article with source code to showcase capabilities of Azure Function. There is a VSTS task to deploy azure function app so that it can easily be integrated in CI/CD pipeline along with other micro services. If you want to read more about Azure Functions then go through &lt;a href=&quot;https://docs.microsoft.com/en-in/azure/azure-functions/functions-overview&quot;&gt;this&lt;/a&gt; resource so that you can get complete overview of it.&lt;/p&gt;
-
-</description>
-        <pubDate>Tue, 17 Oct 2017 04:45:00 +0530</pubDate>
-        <link>https://nileshprajapati.net/blog/2017/serverless-architecture-with-microsoft-azure/</link>
-        <guid isPermaLink="true">https://nileshprajapati.net/blog/2017/serverless-architecture-with-microsoft-azure/</guid>
-        
-        
-        <category>Cloud</category>
-        
-        <category>Architecture</category>
         
       </item>
     
