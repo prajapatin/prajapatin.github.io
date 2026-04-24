@@ -5,8 +5,8 @@
     <description>software architecture</description>
     <link>https://nileshprajapati.net/</link>
     <atom:link href="https://nileshprajapati.net/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Thu, 23 Apr 2026 23:38:07 +0530</pubDate>
-    <lastBuildDate>Thu, 23 Apr 2026 23:38:07 +0530</lastBuildDate>
+    <pubDate>Fri, 24 Apr 2026 10:39:57 +0530</pubDate>
+    <lastBuildDate>Fri, 24 Apr 2026 10:39:57 +0530</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
     
       <item>
@@ -58,7 +58,7 @@
 
 &lt;p&gt;To demonstrate this, I have built a demo project integrating LangChain with Hindsight to simulate a DevOps Incident Response pipeline.&lt;/p&gt;
 
-&lt;p&gt;You can find the complete source code on GitHub.&lt;/p&gt;
+&lt;p&gt;You can find the complete source code on &lt;a href=&quot;https://github.com/prajapatin/ai-agent-long-term-memory&quot;&gt;GitHub&lt;/a&gt;.&lt;/p&gt;
 
 &lt;h3 id=&quot;the-scenario&quot;&gt;The Scenario&lt;/h3&gt;
 &lt;p&gt;The pipeline consists of three specialized LangChain ReAct agents, each equipped with its own Hindsight memory bank:&lt;/p&gt;
@@ -176,9 +176,11 @@
 
 &lt;p&gt;Agentic systems cannot reach their full potential without persistent memory. By moving beyond simple short-term context windows and integrating robust long-term memory solutions like Hindsight, we can build agents that truly learn, adapt, and compound their value over time.&lt;/p&gt;
 
+&lt;p&gt;Check out the complete code on &lt;a href=&quot;https://github.com/prajapatin/ai-agent-long-term-memory&quot;&gt;GitHub&lt;/a&gt; to see how you can equip your own agents with durable memory.&lt;/p&gt;
+
 &lt;p&gt;I highly encourage you to explore the concept, run the multi-agent pipeline, and watch the agents build their expertise from one incident to the next! Let me know in the comments if you have any thoughts on managing memory in agentic AI.&lt;/p&gt;
 </description>
-        <pubDate>Thu, 23 Apr 2026 12:00:00 +0530</pubDate>
+        <pubDate>Sat, 25 Apr 2026 12:00:00 +0530</pubDate>
         <link>https://nileshprajapati.net/blog/2026/ai-agent-long-term-memory-with-hindsight/</link>
         <guid isPermaLink="true">https://nileshprajapati.net/blog/2026/ai-agent-long-term-memory-with-hindsight/</guid>
         
@@ -306,7 +308,7 @@
 
 &lt;p&gt;Please let me know if you liked this post or if you have any questions in the comments below!&lt;/p&gt;
 </description>
-        <pubDate>Mon, 20 Apr 2026 12:00:00 +0530</pubDate>
+        <pubDate>Sun, 19 Apr 2026 12:00:00 +0530</pubDate>
         <link>https://nileshprajapati.net/blog/2026/dynamic-llm-tuning-adapter-with-lora/</link>
         <guid isPermaLink="true">https://nileshprajapati.net/blog/2026/dynamic-llm-tuning-adapter-with-lora/</guid>
         
