@@ -71,6 +71,9 @@
       <a href="/categories/#LangChain" class="post-tag">LangChain</a>
       &nbsp;
       
+      <a href="/categories/#LangGraph" class="post-tag">LangGraph</a>
+      &nbsp;
+      
       <a href="/categories/#Python" class="post-tag">Python</a>
       &nbsp;
       
@@ -86,7 +89,7 @@
       
       <p>One of the most persistent challenges when designing production-grade agentic AI systems is <strong>amnesia</strong>. AI agents naturally forget everything between sessions. Every conversation or execution starts entirely from zero context about previous incidents, learned patterns, or institutional knowledge. This fundamentally limits the real-world value agents can deliver in complex environments like cybersecurity, customer support, or DevOps.</p>
 
-<p>In this post, let me explain the importance of memory management in agentic systems, distinguish between short-term and long-term memory, and introduce <strong>Hindsight</strong>, a purpose-built memory system that gives AI agents durable, persistent intelligence. We will also walk through a hands-on project demonstrating Hindsight integrated with LangChain.</p>
+<p>In this post, let me explain the importance of memory management in agentic systems, distinguish between short-term and long-term memory, and introduce <strong>Hindsight</strong>, a purpose-built memory system that gives AI agents durable, persistent intelligence. We will also walk through a hands-on project demonstrating Hindsight integrated with LangChain/LangGraph.</p>
 
 <h2 id="why-memory-management-matters-in-agentic-ai">Why Memory Management Matters in Agentic AI</h2>
 
@@ -129,12 +132,12 @@
 
 <h2 id="walkthrough-devops-incident-response-demo">Walkthrough: DevOps Incident Response Demo</h2>
 
-<p>To demonstrate this, I have built a demo project integrating LangChain with Hindsight to simulate a DevOps Incident Response pipeline.</p>
+<p>To demonstrate this, I have built a demo project integrating LangChain/LangGraph with Hindsight to simulate a DevOps Incident Response pipeline.</p>
 
 <p>You can find the complete source code on <a href="https://github.com/prajapatin/ai-agent-long-term-memory">GitHub</a>.</p>
 
 <h3 id="the-scenario">The Scenario</h3>
-<p>The pipeline consists of three specialized LangChain ReAct agents, each equipped with its own Hindsight memory bank:</p>
+<p>The pipeline consists of three specialized LangGraph ReAct agents, each equipped with its own Hindsight memory bank:</p>
 <ol>
   <li><strong>Incident Triage Analyst</strong>: Classifies the severity of incoming alerts and detects recurring patterns (<code class="language-plaintext highlighter-rouge">devops-incident-agent-triage</code>).</li>
   <li><strong>Root Cause Analysis Engineer</strong>: Investigates the root causes by recalling known failure modes (<code class="language-plaintext highlighter-rouge">devops-incident-agent-rca</code>).</li>
@@ -153,7 +156,7 @@
 
 <h3 id="the-code-implementing-hindsight-tools">The Code: Implementing Hindsight Tools</h3>
 
-<p>The project uses an abstract LLM factory (<code class="language-plaintext highlighter-rouge">llm_provider.py</code>), allowing you to easily switch between OpenAI, Groq, or local Ollama models. To give our LangChain agents memory, we wrap the <code class="language-plaintext highlighter-rouge">hindsight_client</code> Python SDK into LangChain <code class="language-plaintext highlighter-rouge">@tool</code> decorators.</p>
+<p>The project uses an abstract LLM factory (<code class="language-plaintext highlighter-rouge">llm_provider.py</code>), allowing you to easily switch between OpenAI, Groq, or local Ollama models. To give our LangGraph agents memory, we wrap the <code class="language-plaintext highlighter-rouge">hindsight_client</code> Python SDK into LangChain <code class="language-plaintext highlighter-rouge">@tool</code> decorators.</p>
 
 <p>Here is how we implement the three core memory functions as factory functions that bind to a specific agent’s <code class="language-plaintext highlighter-rouge">bank_id</code>:</p>
 

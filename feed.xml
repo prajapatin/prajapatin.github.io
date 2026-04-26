@@ -5,15 +5,15 @@
     <description>software architecture</description>
     <link>https://nileshprajapati.net/</link>
     <atom:link href="https://nileshprajapati.net/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Fri, 24 Apr 2026 10:39:57 +0530</pubDate>
-    <lastBuildDate>Fri, 24 Apr 2026 10:39:57 +0530</lastBuildDate>
+    <pubDate>Sun, 26 Apr 2026 07:08:42 +0530</pubDate>
+    <lastBuildDate>Sun, 26 Apr 2026 07:08:42 +0530</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
     
       <item>
         <title>Persistent Memory for Agentic Systems with Hindsight</title>
         <description>&lt;p&gt;One of the most persistent challenges when designing production-grade agentic AI systems is &lt;strong&gt;amnesia&lt;/strong&gt;. AI agents naturally forget everything between sessions. Every conversation or execution starts entirely from zero context about previous incidents, learned patterns, or institutional knowledge. This fundamentally limits the real-world value agents can deliver in complex environments like cybersecurity, customer support, or DevOps.&lt;/p&gt;
 
-&lt;p&gt;In this post, let me explain the importance of memory management in agentic systems, distinguish between short-term and long-term memory, and introduce &lt;strong&gt;Hindsight&lt;/strong&gt;, a purpose-built memory system that gives AI agents durable, persistent intelligence. We will also walk through a hands-on project demonstrating Hindsight integrated with LangChain.&lt;/p&gt;
+&lt;p&gt;In this post, let me explain the importance of memory management in agentic systems, distinguish between short-term and long-term memory, and introduce &lt;strong&gt;Hindsight&lt;/strong&gt;, a purpose-built memory system that gives AI agents durable, persistent intelligence. We will also walk through a hands-on project demonstrating Hindsight integrated with LangChain/LangGraph.&lt;/p&gt;
 
 &lt;h2 id=&quot;why-memory-management-matters-in-agentic-ai&quot;&gt;Why Memory Management Matters in Agentic AI&lt;/h2&gt;
 
@@ -56,12 +56,12 @@
 
 &lt;h2 id=&quot;walkthrough-devops-incident-response-demo&quot;&gt;Walkthrough: DevOps Incident Response Demo&lt;/h2&gt;
 
-&lt;p&gt;To demonstrate this, I have built a demo project integrating LangChain with Hindsight to simulate a DevOps Incident Response pipeline.&lt;/p&gt;
+&lt;p&gt;To demonstrate this, I have built a demo project integrating LangChain/LangGraph with Hindsight to simulate a DevOps Incident Response pipeline.&lt;/p&gt;
 
 &lt;p&gt;You can find the complete source code on &lt;a href=&quot;https://github.com/prajapatin/ai-agent-long-term-memory&quot;&gt;GitHub&lt;/a&gt;.&lt;/p&gt;
 
 &lt;h3 id=&quot;the-scenario&quot;&gt;The Scenario&lt;/h3&gt;
-&lt;p&gt;The pipeline consists of three specialized LangChain ReAct agents, each equipped with its own Hindsight memory bank:&lt;/p&gt;
+&lt;p&gt;The pipeline consists of three specialized LangGraph ReAct agents, each equipped with its own Hindsight memory bank:&lt;/p&gt;
 &lt;ol&gt;
   &lt;li&gt;&lt;strong&gt;Incident Triage Analyst&lt;/strong&gt;: Classifies the severity of incoming alerts and detects recurring patterns (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;devops-incident-agent-triage&lt;/code&gt;).&lt;/li&gt;
   &lt;li&gt;&lt;strong&gt;Root Cause Analysis Engineer&lt;/strong&gt;: Investigates the root causes by recalling known failure modes (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;devops-incident-agent-rca&lt;/code&gt;).&lt;/li&gt;
@@ -80,7 +80,7 @@
 
 &lt;h3 id=&quot;the-code-implementing-hindsight-tools&quot;&gt;The Code: Implementing Hindsight Tools&lt;/h3&gt;
 
-&lt;p&gt;The project uses an abstract LLM factory (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;llm_provider.py&lt;/code&gt;), allowing you to easily switch between OpenAI, Groq, or local Ollama models. To give our LangChain agents memory, we wrap the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;hindsight_client&lt;/code&gt; Python SDK into LangChain &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@tool&lt;/code&gt; decorators.&lt;/p&gt;
+&lt;p&gt;The project uses an abstract LLM factory (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;llm_provider.py&lt;/code&gt;), allowing you to easily switch between OpenAI, Groq, or local Ollama models. To give our LangGraph agents memory, we wrap the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;hindsight_client&lt;/code&gt; Python SDK into LangChain &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@tool&lt;/code&gt; decorators.&lt;/p&gt;
 
 &lt;p&gt;Here is how we implement the three core memory functions as factory functions that bind to a specific agent’s &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bank_id&lt;/code&gt;:&lt;/p&gt;
 
@@ -192,6 +192,8 @@
         
         <category>langchain</category>
         
+        <category>langGraph</category>
+        
         <category>multi-agent-system</category>
         
         <category>python</category>
@@ -202,6 +204,8 @@
         <category>Agentic AI</category>
         
         <category>LangChain</category>
+        
+        <category>LangGraph</category>
         
         <category>Python</category>
         
