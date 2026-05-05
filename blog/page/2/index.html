@@ -1,13 +1,16 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0047AB">
 
 <title>Nilesh Prajapati</title>
 <meta name="description" content="software architecture">
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/css/main.css">
 <link rel="canonical" href="https://nileshprajapati.net/blog/page/2/">
 <link rel="alternate" type="application/rss+xml" title="Nilesh Prajapati" href="https://nileshprajapati.net/feed.xml" />
@@ -45,10 +48,11 @@
       </ul>
     </nav>
   </div>
+  <div class="reading-progress" id="readingProgress"></div>
 </header>
 
 
-<main class="main-container">
+<main class="main-container fade-in">
   <div class="container">
     <section class="post-list">
   
@@ -65,9 +69,12 @@
       <h1 class="post-title">
         <a class="post-link" href="/blog/2026/security-operations-center-with-agentic-AI/">Building an Autonomous SOC with Agentic AI and GitHub Copilot SDK</a>
       </h1>
-      <em class="post-meta">
+      <div class="post-meta">
         <time>Feb 7, 2026</time>
-      </em>
+        
+        <span class="meta-sep">&middot;</span>
+        <span>9 min read</span>
+      </div>
     </header>
     <p><a href="/blog/2026/security-operations-center-with-agentic-AI/" title="Permalink to: Building an Autonomous SOC with Agentic AI and GitHub Copilot SDK">The dream of a fully autonomous Security Operations Center (SOC) is moving closer to reality. In this post, we will explore the architecture of our Agentic Cybersecurity System, a Python-based... <span class="read-more">[read more]</span></a></p>
   </div>
@@ -87,9 +94,12 @@
       <h1 class="post-title">
         <a class="post-link" href="/blog/2026/building-LLM-powered-data-analyst/">Building an LLM-powered Data Analyst cum Data Scientist</a>
       </h1>
-      <em class="post-meta">
+      <div class="post-meta">
         <time>Feb 1, 2026</time>
-      </em>
+        
+        <span class="meta-sep">&middot;</span>
+        <span>12 min read</span>
+      </div>
     </header>
     <p><a href="/blog/2026/building-LLM-powered-data-analyst/" title="Permalink to: Building an LLM-powered Data Analyst cum Data Scientist">If you have ever wished you could talk to your pandas DataFrame in natural language, create_pandas_dataframe_agent from langchain_experimental.agents.agent_toolkits.pandas.base is exactly what you need. In this post we will build an... <span class="read-more">[read more]</span></a></p>
   </div>
@@ -109,9 +119,12 @@
       <h1 class="post-title">
         <a class="post-link" href="/blog/2020/Operationalizing-ML-Model-Inferencing-with-an-engineering-approach/">Operationalizing the Machine Learning model inferencing with an engineering approach</a>
       </h1>
-      <em class="post-meta">
+      <div class="post-meta">
         <time>Aug 18, 2020</time>
-      </em>
+        
+        <span class="meta-sep">&middot;</span>
+        <span>5 min read</span>
+      </div>
     </header>
     <p><a href="/blog/2020/Operationalizing-ML-Model-Inferencing-with-an-engineering-approach/" title="Permalink to: Operationalizing the Machine Learning model inferencing with an engineering approach">What is a machine learning model inferencing? Once you train a machine learning model to solve specific business problems, you need to think about how you would be consuming that... <span class="read-more">[read more]</span></a></p>
   </div>
@@ -149,11 +162,53 @@
   <li><a href="https://linkedin.com/in/nileshprajapati" target="_blank"><i class="icon icon-linkedin"></i></a></li>
 </ul>
     <p class="txt-medium-gray">
-      <small>&copy;2026</small>
+      <small>&copy; 2026 Nilesh Prajapati</small>
     </p>
   </div>
 </footer>
 
 
+
+  <!-- Back to top button -->
+  <button class="back-to-top" id="backToTop" aria-label="Back to top">
+    <i class="icon icon-circle-up"></i>
+  </button>
+
+  <script>
+  // Back to top
+  (function() {
+    var btn = document.getElementById('backToTop');
+    if (!btn) return;
+
+    window.addEventListener('scroll', function() {
+      if (window.scrollY > 400) {
+        btn.classList.add('visible');
+      } else {
+        btn.classList.remove('visible');
+      }
+    });
+
+    btn.addEventListener('click', function() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  })();
+
+  // Fade-in on scroll
+  (function() {
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('fade-in');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.post, .card, .page').forEach(function(el) {
+      el.style.opacity = '0';
+      observer.observe(el);
+    });
+  })();
+  </script>
 </body>
 </html>

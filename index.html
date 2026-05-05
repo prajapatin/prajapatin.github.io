@@ -1,13 +1,16 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0047AB">
 
 <title>Nilesh Prajapati</title>
 <meta name="description" content="software architecture">
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/css/main.css">
 <link rel="canonical" href="https://nileshprajapati.net/">
 <link rel="alternate" type="application/rss+xml" title="Nilesh Prajapati" href="https://nileshprajapati.net/feed.xml" />
@@ -30,10 +33,11 @@
     <div class="container">
       <img src="/images/author.png" alt="author thumb" class="dot">
       <h1>Nilesh Prajapati</h1>
-      <!-- <h3>I'm <strong itemprop="name">Nilesh Prajapati</strong>, a <em itemprop="jobTitle">Software Engineer</em>.</h3> -->
       <h3>Hands-on technology leader experienced in agentic system architecture, SOA, microservices, message-driven systems, IoT/IIoT, cloud (Azure/AWS), blockchain, big data, AI/ML, SaaS, and open source</h3>
-      <a href="/about" class="button button-ghost" title="about">about</a>
-      <a href="/blog" class="button button-ghost" title="blog">blog</a>
+      <div class="hero-buttons">
+        <a href="/about" class="button button-ghost" title="about">About Me</a>
+        <a href="/blog" class="button button-ghost" title="blog">Read Blog</a>
+      </div>
       <ul class="social">
   <li><a href="https://github.com/prajapatin" target="_blank"><i class="icon icon-github"></i></a></li>
   <li><a href="https://twitter.com/nilesh_be_it" target="_blank"><i class="icon icon-twitter"></i></a></li>
@@ -44,5 +48,47 @@
   </div>
 </section>
 
+
+  <!-- Back to top button -->
+  <button class="back-to-top" id="backToTop" aria-label="Back to top">
+    <i class="icon icon-circle-up"></i>
+  </button>
+
+  <script>
+  // Back to top
+  (function() {
+    var btn = document.getElementById('backToTop');
+    if (!btn) return;
+
+    window.addEventListener('scroll', function() {
+      if (window.scrollY > 400) {
+        btn.classList.add('visible');
+      } else {
+        btn.classList.remove('visible');
+      }
+    });
+
+    btn.addEventListener('click', function() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  })();
+
+  // Fade-in on scroll
+  (function() {
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('fade-in');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.post, .card, .page').forEach(function(el) {
+      el.style.opacity = '0';
+      observer.observe(el);
+    });
+  })();
+  </script>
 </body>
 </html>
