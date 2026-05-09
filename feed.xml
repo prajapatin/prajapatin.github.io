@@ -5,8 +5,8 @@
     <description>software architecture</description>
     <link>https://nileshprajapati.net/</link>
     <atom:link href="https://nileshprajapati.net/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sat, 09 May 2026 08:27:55 +0530</pubDate>
-    <lastBuildDate>Sat, 09 May 2026 08:27:55 +0530</lastBuildDate>
+    <pubDate>Sat, 09 May 2026 09:07:32 +0530</pubDate>
+    <lastBuildDate>Sat, 09 May 2026 09:07:32 +0530</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
     
       <item>
@@ -242,6 +242,18 @@ adoption in the North America region...
   &lt;li&gt;&lt;strong&gt;GraphView&lt;/strong&gt;: an interactive canvas-based graph visualization that renders the knowledge graph nodes and edges, letting you visually explore how entities connect.&lt;/li&gt;
   &lt;li&gt;&lt;strong&gt;InsightsPanel&lt;/strong&gt;: pre-computed charts and dashboards (quarterly revenue trends, top products, department performance, regional distribution) powered by Recharts.&lt;/li&gt;
 &lt;/ul&gt;
+
+&lt;p&gt;The ChatPanel comes with a set of pre-defined prompt suggestions covering common BI questions. Users can click any suggestion to instantly fire off a query without typing, making it easy to explore the dataset and understand the kinds of questions the Hybrid RAG system can answer.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/prompt.png&quot; alt=&quot;Pre-defined prompt suggestions in the ChatPanel&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The GraphView renders the full knowledge graph as an interactive, force-directed canvas. Nodes are color-coded by entity type (departments, employees, products, customers, regions) and edges display their relationship labels, giving you an immediate visual sense of how your corporate data is interconnected.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/knowledge-graph.png&quot; alt=&quot;Interactive knowledge graph visualization&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The InsightsPanel surfaces key business intelligence metrics through a series of charts and dashboards. Quarterly revenue trends, top-selling products, department-wise performance comparisons, and regional distribution breakdowns are all pre-computed and rendered with Recharts, providing at-a-glance analytics alongside the conversational interface.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/insights.png&quot; alt=&quot;Business intelligence insights and dashboards&quot; /&gt;&lt;/p&gt;
 
 &lt;h3 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h3&gt;
 
