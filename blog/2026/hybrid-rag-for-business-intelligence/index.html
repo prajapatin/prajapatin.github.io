@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0047AB">
+
+<title>Hybrid RAG for Business Intelligence: Fusing Knowledge Graphs with Semantic Search</title>
+<meta name="description" content="Have you ever asked an AI assistant a business question like “Which department drove the most revenue last quarter, and why?” and received a confidently word...">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/css/main.css">
+<link rel="canonical" href="https://nileshprajapati.net/blog/2026/hybrid-rag-for-business-intelligence/">
+<link rel="alternate" type="application/rss+xml" title="Nilesh Prajapati" href="https://nileshprajapati.net/feed.xml" />
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-52446115-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+</head>
+<body>
+  <header class="site-header">
+  <div class="container">
+    <input type="checkbox" id="toggleNavbar">
+    <h1 class="logo"><a href="/">Nilesh<span>Prajapati</span></a></h1>
+    <label for="toggleNavbar" role="button" class="toggle-navbar-button">
+      <i class="icon icon-menu"></i>
+      <i class="icon icon-cross"></i>
+    </label>
+    <nav class="navbar">
+      <ul>
+        <li><a href="/" title="Home">Home</a></li>
+        
+          <li><a href="/about" title="About">About</a></li>
+        
+          <li><a href="/blog" title="Blog">Blog</a></li>
+        
+        <li><a href="/feed.xml" target="_blank"><i class="icon icon-rss"></i></a></li>
+      </ul>
+    </nav>
+  </div>
+  <div class="reading-progress" id="readingProgress"></div>
+</header>
+
+
+<main class="main-container fade-in">
+  <div class="container">
+    <article role="article" class="post">
+
+  <div class="card">
+    <header class="post-header">
+      <h1 class="post-title">Hybrid RAG for Business Intelligence: Fusing Knowledge Graphs with Semantic Search</h1>
+      <div class="post-meta">
+        <time>May 10, 2026</time>
+        <span class="meta-sep">&middot;</span><span>Nilesh Prajapati</span>
+        
+        <span class="meta-sep">&middot;</span>
+        <span>11 min read</span>
+      </div>
+    </header>
+    <div class="post-categories">
+      
+      
+      <a href="/categories/#AI" class="post-tag">AI</a>
+      &nbsp;
+      
+      <a href="/categories/#RAG" class="post-tag">RAG</a>
+      &nbsp;
+      
+      <a href="/categories/#Python" class="post-tag">Python</a>
+      &nbsp;
+      
+      <a href="/categories/#Architecture" class="post-tag">Architecture</a>
+      
+      
+    </div>
+    <div class="post-content">
+      
+        <figure class="post-thumbnail ">
+          <img src="/images/hybrid_rag.png" alt="Hybrid RAG for Business Intelligence: Fusing Knowledge Graphs with Semantic Search">
+        </figure>
+      
+      <p>Have you ever asked an AI assistant a business question like “Which department drove the most revenue last quarter, and why?” and received a confidently worded answer that was completely made up? Standard Large Language Models are notorious for this, they generate fluent text, but they have no access to your actual corporate data, so they hallucinate numbers, invent trends, and fabricate relationships.</p>
+
+<p>What if you could ground every answer in real data, not just documents, but the structured relationships between your employees, products, customers, and sales; all retrieved in real time and fused together before the LLM ever writes a single word?</p>
+
+<p>In this post, we will unpack the concept of Retrieval-Augmented Generation (RAG), understand the strengths and weaknesses of its two dominant flavors (1) <strong>Vector RAG</strong> and (2) <strong>Graph RAG</strong>  and walk through a reference project I built called <a href="https://github.com/prajapatin/business-intelligence-graphrag">Business Intelligence GraphRAG</a> that combines them into a <strong>Hybrid RAG</strong> system.</p>
+
+<h3 id="what-is-rag">What is RAG?</h3>
+
+<p>Retrieval-Augmented Generation is a pattern that bolts a retrieval step onto an LLM. Instead of relying solely on the model’s parametric memory (what it memorized during pre-training), RAG first searches a knowledge base for relevant context, injects that context into the prompt, and only then asks the LLM to generate an answer.</p>
+
+<p>The three-step loop is simple:</p>
+<ol>
+  <li><strong>Retrieve</strong>: find relevant information from an external data source.</li>
+  <li><strong>Augment</strong>: pack that information into the LLM’s prompt as context.</li>
+  <li><strong>Generate</strong>: the LLM produces a grounded, data-driven answer.</li>
+</ol>
+
+<p>Because the model is now citing real data rather than guessing, hallucinations drop dramatically. But the quality of the answer depends entirely on the quality of what you retrieve. And that is where Vector RAG and Graph RAG diverge.</p>
+
+<h3 id="vector-rag-semantic-search">Vector RAG: Semantic Search</h3>
+
+<p>Vector RAG is the most common RAG pattern. You take your documents i.e. reports, memos, briefs and split them into chunks, convert each chunk into a numerical embedding using a model like <code class="language-plaintext highlighter-rouge">all-MiniLM-L6-v2</code>, and store those embeddings in a vector database such as ChromaDB.</p>
+
+<p>At query time, the user’s question is also embedded, and the vector store returns the top-K most semantically similar chunks.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Question: "How did the North America region perform?"
+  
+Embed query -&gt; cosine similarity -&gt; top-5 report chunks
+   
+"Q3 2024 quarterly report: North America saw a 12% increase..."
+"Regional summary: North America accounts for 38% of total revenue..."
+</code></pre></div></div>
+
+<p><strong>Strengths:</strong></p>
+<ul>
+  <li>Excellent at finding relevant passages from unstructured narrative text.</li>
+  <li>Handles paraphrasing and synonym matching naturally (semantic, not keyword).</li>
+  <li>Easy to set up, just chunk your docs, embed, search.</li>
+</ul>
+
+<p><strong>Weaknesses:</strong></p>
+<ul>
+  <li>No awareness of relationships. It cannot tell you that Alice <em>manages</em> the Sales department, which <em>produced</em> CloudSync Pro, which was <em>purchased by</em> Acme Corp.</li>
+  <li>Retrieval is flat, every chunk is scored independently; there is no concept of traversing a connected structure.</li>
+  <li>If the answer requires combining facts scattered across multiple entity types, vector search alone often returns only partial context.</li>
+</ul>
+
+<h3 id="graph-rag-structured-relationships">Graph RAG: Structured Relationships</h3>
+
+<p>Graph RAG takes a fundamentally different approach. Instead of embedding flat text, it builds a <strong>knowledge graph</strong>, a network of entities (nodes) connected by typed relationships (edges).</p>
+
+<p>For a corporate dataset, nodes might be Departments, Employees, Products, Customers, and Regions. Edges capture relationships like <code class="language-plaintext highlighter-rouge">WORKS_IN</code>, <code class="language-plaintext highlighter-rouge">SOLD</code>, <code class="language-plaintext highlighter-rouge">PURCHASED</code>, <code class="language-plaintext highlighter-rouge">PRODUCED_BY</code>, and <code class="language-plaintext highlighter-rouge">LOCATED_IN</code>.</p>
+
+<p>At query time, Graph RAG extracts keywords from the question, matches them to graph nodes, and then traverses the neighborhood around those nodes to pull out a structured subgraph.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Question: "Which employees sold CloudSync Pro?"
+   
+Match "CloudSync Pro" -&gt; Product node
+  
+Traverse SOLD edges -&gt; Employee nodes
+   
+Structured context:
+  - Alice [EMP-001] --[SOLD]--&gt; CloudSync Pro (amount=$45K)
+  - Bob   [EMP-007] --[SOLD]--&gt; CloudSync Pro (amount=$32K)
+</code></pre></div></div>
+
+<p><strong>Strengths:</strong></p>
+<ul>
+  <li>Multi-hop reasoning out of the box. “Who manages the department that produces our top product?” is a two-hop traversal, not a keyword search.</li>
+  <li>Explicit, typed relationships - the model sees exactly how entities connect.</li>
+  <li>Aggregation-friendly - you can count edges, sum amounts, and detect structural patterns before the LLM even sees the context.</li>
+</ul>
+
+<p><strong>Weaknesses:</strong></p>
+<ul>
+  <li>Knowledge graphs are only as good as their schema and extraction pipeline. They capture what you model, nothing more.</li>
+  <li>They struggle with narrative nuance, a quarterly report paragraph saying “despite strong headwinds in APAC, the team exceeded targets” does not reduce neatly to nodes and edges.</li>
+  <li>Building and maintaining the graph requires an ingestion pipeline and careful entity resolution.</li>
+</ul>
+
+<h3 id="the-problem-why-neither-alone-is-enough">The Problem: Why Neither Alone Is Enough</h3>
+
+<p>Consider this question: <strong>“Which department generates the most sales, and what do the quarterly reports say about its future outlook?”</strong></p>
+
+<ul>
+  <li><strong>Graph-only</strong> can traverse <code class="language-plaintext highlighter-rouge">Department -&gt; Employee -&gt; SOLD -&gt; Product</code> edges, sum the amounts, and identify the top department. But it has zero visibility into the unstructured quarterly reports that discuss future outlook, market headwinds, or strategic pivots.</li>
+  <li><strong>Vector-only</strong> can retrieve the most relevant quarterly report paragraphs mentioning “sales” and “outlook.” But it cannot reliably compute which department actually has the highest revenue, it would have to hope that a single report chunk happens to contain that exact ranking.</li>
+</ul>
+
+<p>Neither retrieval mode alone gives the LLM enough context to answer both halves of the question. You need both and that is exactly what Hybrid RAG delivers.</p>
+
+<h3 id="the-project-business-intelligence-graphrag">The Project: Business Intelligence GraphRAG</h3>
+
+<p>I built the <a href="https://github.com/prajapatin/business-intelligence-graphrag">Business Intelligence GraphRAG</a> project to demonstrate this fusion in a production-style application. It ingests corporate data (sales transactions, employees, departments, products, customers, and business reports), builds both a knowledge graph and a vector store, and answers natural language BI questions by combining both retrieval paths.</p>
+
+<h4 id="1-ingesting-corporate-data">1. Ingesting Corporate Data</h4>
+
+<p>The project ships with a synthetic data generator that creates a realistic corporate dataset: 6 departments, 8 products, 60 employees, 80 customers, 500 sales transactions spanning 2024–2025, and ~36 business report text files (quarterly reports, department memos, product briefs, regional summaries, customer case studies, and annual reviews).</p>
+
+<p>The ingestion pipeline has two parallel paths:</p>
+
+<p><strong>Structured path (Graph):</strong> CSV files are loaded with Pandas, and a deterministic <code class="language-plaintext highlighter-rouge">EntityExtractor</code> walks through each table, creating typed entities and relationships without any LLM involvement. For example, a single sales transaction row produces three relationships:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Employee sold Product
+</span><span class="p">{</span><span class="sh">"</span><span class="s">source</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">EMP-042</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">target</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">PROD-003</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">relation</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">SOLD</span><span class="sh">"</span><span class="p">,</span>
+ <span class="sh">"</span><span class="s">properties</span><span class="sh">"</span><span class="p">:</span> <span class="p">{</span><span class="sh">"</span><span class="s">amount</span><span class="sh">"</span><span class="p">:</span> <span class="mf">4500.00</span><span class="p">,</span> <span class="sh">"</span><span class="s">date</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">2025-07-15</span><span class="sh">"</span><span class="p">}}</span>
+
+<span class="c1"># Customer purchased Product
+</span><span class="p">{</span><span class="sh">"</span><span class="s">source</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">CUST-018</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">target</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">PROD-003</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">relation</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">PURCHASED</span><span class="sh">"</span><span class="p">,</span>
+ <span class="sh">"</span><span class="s">properties</span><span class="sh">"</span><span class="p">:</span> <span class="p">{</span><span class="sh">"</span><span class="s">amount</span><span class="sh">"</span><span class="p">:</span> <span class="mf">4500.00</span><span class="p">,</span> <span class="sh">"</span><span class="s">quantity</span><span class="sh">"</span><span class="p">:</span> <span class="mi">3</span><span class="p">}}</span>
+
+<span class="c1"># Product sold in Quarter
+</span><span class="p">{</span><span class="sh">"</span><span class="s">source</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">PROD-003</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">target</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">QTR-Q3-2025</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">relation</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">SOLD_IN</span><span class="sh">"</span><span class="p">,</span>
+ <span class="sh">"</span><span class="s">properties</span><span class="sh">"</span><span class="p">:</span> <span class="p">{</span><span class="sh">"</span><span class="s">amount</span><span class="sh">"</span><span class="p">:</span> <span class="mf">4500.00</span><span class="p">}}</span>
+</code></pre></div></div>
+
+<p>All entities and relationships are loaded into a NetworkX directed graph (or optionally Neo4j) and persisted to disk.</p>
+
+<p><strong>Unstructured path (Vector):</strong> The generated business reports are read by a <code class="language-plaintext highlighter-rouge">DocumentChunker</code> that splits each text file into overlapping 500-character chunks (with 100-character overlap to preserve context across boundaries). These chunks are then embedded using <code class="language-plaintext highlighter-rouge">all-MiniLM-L6-v2</code> and stored in a ChromaDB collection configured with cosine similarity.</p>
+
+<h4 id="2-the-hybrid-retriever-the-secret-sauce">2. The Hybrid Retriever (The Secret Sauce)</h4>
+
+<p>The core magic lives in the <code class="language-plaintext highlighter-rouge">HybridRetriever</code> class. When a query comes in, it fires both retrieval engines in parallel and fuses their outputs:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Conceptual flow inside HybridRetriever.retrieve()
+</span>
+<span class="c1"># Graph path: keywords → match nodes → traverse subgraph → structured context
+</span><span class="n">graph_subgraph</span> <span class="o">=</span> <span class="n">graph_retriever</span><span class="p">.</span><span class="nf">retrieve</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">graph_context</span>  <span class="o">=</span> <span class="n">context_builder</span><span class="p">.</span><span class="nf">build</span><span class="p">(</span><span class="n">graph_subgraph</span><span class="p">)</span>
+
+<span class="c1"># Vector path: embed query → top-K similar chunks → semantic context
+</span><span class="n">vector_result</span>  <span class="o">=</span> <span class="n">vector_retriever</span><span class="p">.</span><span class="nf">retrieve</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">top_k</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">vector_context</span> <span class="o">=</span> <span class="n">vector_retriever</span><span class="p">.</span><span class="nf">format_context</span><span class="p">(</span><span class="n">vector_result</span><span class="p">)</span>
+
+<span class="c1"># Fuse both contexts
+</span><span class="n">combined_context</span> <span class="o">=</span> <span class="sa">f</span><span class="sh">"</span><span class="si">{</span><span class="n">graph_context</span><span class="si">}</span><span class="se">\n\n</span><span class="si">{</span><span class="n">vector_context</span><span class="si">}</span><span class="sh">"</span>
+</code></pre></div></div>
+
+<p>The graph retriever extracts meaningful search terms from the query (filtering out stop words), matches them against graph nodes, and performs a breadth-first traversal up to <code class="language-plaintext highlighter-rouge">max_depth</code> hops to pull in the surrounding neighborhood. The <code class="language-plaintext highlighter-rouge">ContextBuilder</code> then serializes this subgraph into structured text — entities grouped by type, relationships grouped by relation — that the LLM can reason over.</p>
+
+<p>The vector retriever embeds the raw query and retrieves the top-K most similar report chunks from ChromaDB, formatting them with source metadata and relevance scores.</p>
+
+<p>The fused context looks like this inside the LLM’s prompt:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=== KNOWLEDGE GRAPH CONTEXT ===
+## Entities
+### Departments (3)
+  - Sales [DEPT-001] budget=500000
+  - Engineering [DEPT-002] budget=750000
+  ...
+## Relationships
+### SOLD (45 connections)
+  - Alice --[SOLD]--&gt; CloudSync Pro (amount=45000)
+  ...
+=== END CONTEXT ===
+
+=== DOCUMENT CONTEXT (from business reports) ===
+--- [quarterly_report] quarterly_report_q3_2025.txt (relevance: 0.87) ---
+Q3 2025 saw record-breaking revenue driven primarily by CloudSync Pro
+adoption in the North America region...
+=== END DOCUMENT CONTEXT ===
+</code></pre></div></div>
+
+<p>The system supports three retrieval modes, configurable per-request:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Mode</th>
+      <th>Graph</th>
+      <th>Vector</th>
+      <th>Best for</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">hybrid</code> (default)</td>
+      <td>✅</td>
+      <td>✅</td>
+      <td>Richest answers: structured + semantic context</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">graph_only</code></td>
+      <td>✅</td>
+      <td>❌</td>
+      <td>Fast, relationship-focused queries</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">vector_only</code></td>
+      <td>❌</td>
+      <td>✅</td>
+      <td>Narrative/report-focused queries</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4 id="3-answering-questions-via-api">3. Answering Questions via API</h4>
+
+<p>The <code class="language-plaintext highlighter-rouge">AnswerGenerator</code> class orchestrates the full pipeline: query -&gt; hybrid retrieve -&gt; augment prompt -&gt; LLM generate. It is exposed through a FastAPI <code class="language-plaintext highlighter-rouge">POST /api/query</code> endpoint:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">-X</span> POST http://localhost:8000/api/query <span class="se">\</span>
+  <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span> <span class="se">\</span>
+  <span class="nt">-d</span> <span class="s1">'{"query": "What are the top-selling products by revenue?"}'</span>
+</code></pre></div></div>
+
+<p>The response includes the answer, subgraph metadata, vector chunks used, and a context preview:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"query"</span><span class="p">:</span><span class="w"> </span><span class="s2">"What are the top-selling products by revenue?"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"answer"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Based on the knowledge graph and business reports..."</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"subgraph"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"node_count"</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"edge_count"</span><span class="p">:</span><span class="w"> </span><span class="mi">138</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"matched_terms"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"top-selling"</span><span class="p">,</span><span class="w"> </span><span class="s2">"products"</span><span class="p">,</span><span class="w"> </span><span class="s2">"revenue"</span><span class="p">]</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"vector_chunks_used"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"retrieval_mode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"hybrid"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"context_preview"</span><span class="p">:</span><span class="w"> </span><span class="s2">"=== KNOWLEDGE GRAPH CONTEXT === ..."</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Because the LLM’s system prompt instructs it to base answers <strong>only</strong> on the provided context and cite specific entities and data points, the responses are grounded, auditable, and far less prone to hallucination.</p>
+
+<h3 id="the-frontend-graph-visualization--chat">The Frontend: Graph Visualization + Chat</h3>
+
+<p>The project includes a React 18 + TailwindCSS frontend with three panels:</p>
+<ul>
+  <li><strong>ChatPanel</strong>: a natural language query interface where you type BI questions and receive data-driven answers.</li>
+  <li><strong>GraphView</strong>: an interactive canvas-based graph visualization that renders the knowledge graph nodes and edges, letting you visually explore how entities connect.</li>
+  <li><strong>InsightsPanel</strong>: pre-computed charts and dashboards (quarterly revenue trends, top products, department performance, regional distribution) powered by Recharts.</li>
+</ul>
+
+<h3 id="conclusion">Conclusion</h3>
+
+<p>By combining the structural precision of a knowledge graph with the semantic flexibility of vector search, Hybrid RAG produces answers that are both factually grounded and narratively rich. The graph path ensures the LLM sees explicit relationships, who sold what, which department produced which product, where customers are located. The vector path ensures the LLM also sees the qualitative analysis, the quarterly reports, strategic memos, and case studies that provide context no structured schema can capture.</p>
+
+<p>I highly recommend cloning the <a href="https://github.com/prajapatin/business-intelligence-graphrag">Business Intelligence GraphRAG</a> repository and experimenting with your own corporate datasets. Swap in Neo4j for persistent graph storage, point it at your own CSV exports, or wire up Ollama for a fully local, private BI assistant.</p>
+
+<p>Please let me know if you liked this post or if you have any questions in the comments below!</p>
+
+    </div>
+
+    
+<hr>
+
+<aside id="comments" class="disqus">
+  <h3><i class="icon icon-comments-o"></i> Comments</h3>
+  <div id="disqus_thread"></div>
+  <script>
+    var disqus_config = function() {
+      this.page.url = 'https://nileshprajapati.net/blog/2026/hybrid-rag-for-business-intelligence/';
+      this.page.identifier = '/blog/2026/hybrid-rag-for-business-intelligence';
+    };
+    (function() {
+      var d = document,
+      s = d.createElement('script');
+      s.src = '//nileshprajapati.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+</aside>
+
+
+  </div>
+
+</article>
+
+<script>
+// Reading progress bar
+(function() {
+  var bar = document.getElementById('readingProgress');
+  if (!bar) return;
+  window.addEventListener('scroll', function() {
+    var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    var scrolled = (window.scrollY / docHeight) * 100;
+    bar.style.width = Math.min(scrolled, 100) + '%';
+  });
+})();
+</script>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <ul class="social">
+  <li><a href="https://github.com/prajapatin" target="_blank"><i class="icon icon-github"></i></a></li>
+  <li><a href="https://twitter.com/nilesh_be_it" target="_blank"><i class="icon icon-twitter"></i></a></li>
+  <li><a href="https://facebook.com/nilesh.be.it" target="_blank"><i class="icon icon-facebook"></i></a></li>
+  <li><a href="https://linkedin.com/in/nileshprajapati" target="_blank"><i class="icon icon-linkedin"></i></a></li>
+</ul>
+    <p class="txt-medium-gray">
+      <small>&copy; 2026 Nilesh Prajapati</small>
+    </p>
+  </div>
+</footer>
+
+
+
+  <!-- Back to top button -->
+  <button class="back-to-top" id="backToTop" aria-label="Back to top">
+    <i class="icon icon-circle-up"></i>
+  </button>
+
+  <script>
+  // Back to top
+  (function() {
+    var btn = document.getElementById('backToTop');
+    if (!btn) return;
+
+    window.addEventListener('scroll', function() {
+      if (window.scrollY > 400) {
+        btn.classList.add('visible');
+      } else {
+        btn.classList.remove('visible');
+      }
+    });
+
+    btn.addEventListener('click', function() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  })();
+
+  // Fade-in on scroll
+  (function() {
+    var els = document.querySelectorAll('.post, .card, .page');
+    if (!els.length) return;
+
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('fade-in');
+          entry.target.style.opacity = '';
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.05 });
+
+    els.forEach(function(el) {
+      var rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight) {
+        // Already in viewport — show immediately
+        el.classList.add('fade-in');
+      } else {
+        el.style.opacity = '0';
+        observer.observe(el);
+      }
+    });
+  })();
+  </script>
+</body>
+</html>
