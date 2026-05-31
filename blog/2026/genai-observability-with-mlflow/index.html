@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0047AB">
+
+<title>GenAI Observability with MLflow: From MLOps to LLMOps</title>
+<meta name="description" content="I have a long history with MLflow. Back in 2020, when I wrote about operationalizing ML model inferencing, MLflow Model Registry was a central component in t...">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/css/main.css">
+<link rel="canonical" href="https://nileshprajapati.net/blog/2026/genai-observability-with-mlflow/">
+<link rel="alternate" type="application/rss+xml" title="Nilesh Prajapati" href="https://nileshprajapati.net/feed.xml" />
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-52446115-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+</head>
+<body>
+  <header class="site-header">
+  <div class="container">
+    <input type="checkbox" id="toggleNavbar">
+    <h1 class="logo"><a href="/">Nilesh<span>Prajapati</span></a></h1>
+    <label for="toggleNavbar" role="button" class="toggle-navbar-button">
+      <i class="icon icon-menu"></i>
+      <i class="icon icon-cross"></i>
+    </label>
+    <nav class="navbar">
+      <ul>
+        <li><a href="/" title="Home">Home</a></li>
+        
+          <li><a href="/about" title="About">About</a></li>
+        
+          <li><a href="/blog" title="Blog">Blog</a></li>
+        
+        <li><a href="/feed.xml" target="_blank"><i class="icon icon-rss"></i></a></li>
+      </ul>
+    </nav>
+  </div>
+  <div class="reading-progress" id="readingProgress"></div>
+</header>
+
+
+<main class="main-container fade-in">
+  <div class="container">
+    <article role="article" class="post">
+
+  <div class="card">
+    <header class="post-header">
+      <h1 class="post-title">GenAI Observability with MLflow: From MLOps to LLMOps</h1>
+      <div class="post-meta">
+        <time>May 31, 2026</time>
+        <span class="meta-sep">&middot;</span><span>Nilesh Prajapati</span>
+        
+        <span class="meta-sep">&middot;</span>
+        <span>15 min read</span>
+      </div>
+    </header>
+    <div class="post-categories">
+      
+      
+      <a href="/categories/#AI" class="post-tag">AI</a>
+      &nbsp;
+      
+      <a href="/categories/#MLOps" class="post-tag">MLOps</a>
+      &nbsp;
+      
+      <a href="/categories/#LLMOps" class="post-tag">LLMOps</a>
+      &nbsp;
+      
+      <a href="/categories/#Python" class="post-tag">Python</a>
+      &nbsp;
+      
+      <a href="/categories/#Architecture" class="post-tag">Architecture</a>
+      
+      
+    </div>
+    <div class="post-content">
+      
+        <figure class="post-thumbnail ">
+          <img src="/images/mlflow-genai-observability.png" alt="GenAI Observability with MLflow: From MLOps to LLMOps">
+        </figure>
+      
+      <p>I have a long history with MLflow. Back in 2020, when I wrote about <a href="https://nileshprajapati.net/blog/2020/Operationalizing-ML-Model-Inferencing-with-an-engineering-approach/">operationalizing ML model inferencing</a>, MLflow Model Registry was a central component in the proposed architecture. The idea was straightforward: train your model in any framework, convert it to ONNX format, and store it in MLflow with proper version tracking so that inference environments could pull the right model at the right time. That architecture eliminated entire categories of MLOps complexity around packaging, containerization, and dependency management.</p>
+
+<p>Over the years, MLflow became my go-to tool for experiment tracking, model versioning, and managing the machine learning lifecycle. It did one thing exceptionally well: it gave engineering teams a unified interface to track, reproduce, and deploy ML models regardless of the framework they were trained in.</p>
+
+<p>But the world has moved on. We are now building systems powered by large language models, and the operational challenges look fundamentally different. The question I kept asking myself was whether MLflow could adapt to this new reality. Having spent time with its latest GenAI observability features, I can say with confidence that it has.</p>
+
+<h3 id="mlops-vs-llmops-why-the-rules-changed">MLOps vs LLMOps: Why the Rules Changed</h3>
+
+<p>Before diving into MLflow’s new capabilities, it is worth understanding why traditional MLOps practices are insufficient for LLM-powered applications. The two disciplines share the same lineage, but they solve very different problems.</p>
+
+<p><strong>What MLOps handles well:</strong></p>
+
+<ul>
+  <li><strong>Data versioning and lineage</strong>: Tracking which dataset version produced which model</li>
+  <li><strong>Experiment tracking</strong>: Logging hyperparameters, metrics, and artifacts across training runs</li>
+  <li><strong>Model registry</strong>: Versioning trained models with stage transitions (staging, production, archived)</li>
+  <li><strong>CI/CD pipelines</strong>: Automated retraining, validation, and deployment</li>
+  <li><strong>Reproducibility</strong>: Ensuring that a given commit, dataset, and configuration produce the same model</li>
+</ul>
+
+<p>These concerns revolve around deterministic, measurable outputs. You train a model, you measure its accuracy on a holdout set, and you promote it to production if the numbers look right. The feedback loop is well understood.</p>
+
+<p><strong>What LLMOps demands differently:</strong></p>
+
+<ul>
+  <li><strong>Prompt management</strong>: Prompts are the new “model weights.” They need versioning, A/B testing, and a registry just like trained models did</li>
+  <li><strong>Non-deterministic outputs</strong>: The same prompt can produce different outputs across invocations. Traditional accuracy metrics do not apply</li>
+  <li><strong>Tracing and observability</strong>: LLM applications involve chains of calls (retrieval, augmentation, generation, tool use). You need full trace visibility to debug failures</li>
+  <li><strong>Evaluation beyond metrics</strong>: Quality assessment requires LLM-as-a-Judge patterns, custom scoring functions, and human-in-the-loop review</li>
+  <li><strong>Cost and latency tracking</strong>: Every LLM call costs money and introduces latency. These operational metrics are first-class concerns</li>
+  <li><strong>Guardrails and safety</strong>: Output validation, toxicity checks, and hallucination detection are operational requirements, not afterthoughts</li>
+</ul>
+
+<p>The fundamental shift is this: in MLOps, the artifact is the model and the evaluation is numerical. In LLMOps, the artifacts are prompts, chains, and agent configurations, and the evaluation is largely qualitative. You cannot unit-test a conversation the way you unit-test a classification model.</p>
+
+<h3 id="mlflows-evolution-from-mlops-to-llmops">MLflow’s Evolution: From MLOps to LLMOps</h3>
+
+<p>What impressed me about MLflow’s approach is that it did not throw away its existing architecture to chase the GenAI trend. Instead, it extended its core abstractions to cover LLMOps concerns natively.</p>
+
+<p>Here is how the mapping looks:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>MLOps Capability</th>
+      <th>MLflow Feature</th>
+      <th>LLMOps Equivalent</th>
+      <th>MLflow GenAI Feature</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Experiment Tracking</td>
+      <td><code class="language-plaintext highlighter-rouge">mlflow.log_params()</code>, <code class="language-plaintext highlighter-rouge">mlflow.log_metrics()</code></td>
+      <td>Trace Observability</td>
+      <td><code class="language-plaintext highlighter-rouge">mlflow.openai.autolog()</code>, <code class="language-plaintext highlighter-rouge">@mlflow.trace</code></td>
+    </tr>
+    <tr>
+      <td>Model Registry</td>
+      <td><code class="language-plaintext highlighter-rouge">mlflow.register_model()</code></td>
+      <td>Prompt Registry</td>
+      <td><code class="language-plaintext highlighter-rouge">mlflow.genai.register_prompt()</code></td>
+    </tr>
+    <tr>
+      <td>Model Evaluation</td>
+      <td><code class="language-plaintext highlighter-rouge">mlflow.evaluate()</code> with accuracy/F1</td>
+      <td>LLM Evaluation</td>
+      <td><code class="language-plaintext highlighter-rouge">mlflow.genai.evaluate()</code> with scorers</td>
+    </tr>
+    <tr>
+      <td>Artifact Storage</td>
+      <td>Model artifacts in S3/GCS</td>
+      <td>Trace Storage</td>
+      <td>OpenTelemetry-compatible trace backend</td>
+    </tr>
+    <tr>
+      <td>Pipeline Tracking</td>
+      <td>Run lineage and parent runs</td>
+      <td>Session Tracking</td>
+      <td><code class="language-plaintext highlighter-rouge">mlflow.trace.user</code>, <code class="language-plaintext highlighter-rouge">mlflow.trace.session</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The continuity matters. Teams already using MLflow for traditional ML workloads do not need to adopt a completely new tool for their GenAI projects. The same server, the same UI, and the same mental model extend into the LLM domain.</p>
+
+<h3 id="hands-on-genai-observability-with-mlflow">Hands-On: GenAI Observability with MLflow</h3>
+
+<p>To demonstrate these capabilities end to end, I built a project that showcases MLflow’s tracing, evaluation, and prompt registry features through six progressive demos. The full source code is available on <a href="https://github.com/prajapatin/mlflow-genai-observability">GitHub</a>.</p>
+
+<h3 id="architecture-overview">Architecture Overview</h3>
+
+<p>The project runs a production-like MLflow setup using Docker Compose with three services:</p>
+
+<ul>
+  <li><strong>PostgreSQL</strong>: Backend store for experiment metadata, runs, and trace data</li>
+  <li><strong>RustFS</strong>: S3-compatible object storage for artifacts (a lightweight alternative to MinIO)</li>
+  <li><strong>MLflow Server</strong>: The tracking server with artifact proxying enabled</li>
+</ul>
+
+<p>On the application side, there is an abstract LLM provider layer that supports OpenAI, Groq, and Ollama, so the demos work with any of these backends without code changes.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">get_llm</span><span class="p">():</span>
+    <span class="n">provider</span> <span class="o">=</span> <span class="n">os</span><span class="p">.</span><span class="nf">getenv</span><span class="p">(</span><span class="sh">"</span><span class="s">LLM_PROVIDER</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">openai</span><span class="sh">"</span><span class="p">).</span><span class="nf">lower</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">provider</span> <span class="o">==</span> <span class="sh">"</span><span class="s">openai</span><span class="sh">"</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="n">langchain_openai</span> <span class="kn">import</span> <span class="n">ChatOpenAI</span>
+        <span class="k">return</span> <span class="nc">ChatOpenAI</span><span class="p">(</span><span class="n">temperature</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="sh">"</span><span class="s">gpt-4.1-mini</span><span class="sh">"</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="p">.</span><span class="nf">getenv</span><span class="p">(</span><span class="sh">"</span><span class="s">OPENAI_API_KEY</span><span class="sh">"</span><span class="p">))</span>
+
+    <span class="k">elif</span> <span class="n">provider</span> <span class="o">==</span> <span class="sh">"</span><span class="s">groq</span><span class="sh">"</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="n">langchain_groq</span> <span class="kn">import</span> <span class="n">ChatGroq</span>
+        <span class="k">return</span> <span class="nc">ChatGroq</span><span class="p">(</span><span class="n">temperature</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">model_name</span><span class="o">=</span><span class="sh">"</span><span class="s">llama3-8b-8192</span><span class="sh">"</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="p">.</span><span class="nf">getenv</span><span class="p">(</span><span class="sh">"</span><span class="s">GROQ_API_KEY</span><span class="sh">"</span><span class="p">))</span>
+
+    <span class="k">elif</span> <span class="n">provider</span> <span class="o">==</span> <span class="sh">"</span><span class="s">ollama</span><span class="sh">"</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="n">langchain_community.chat_models</span> <span class="kn">import</span> <span class="n">ChatOllama</span>
+        <span class="k">return</span> <span class="nc">ChatOllama</span><span class="p">(</span><span class="n">temperature</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">os</span><span class="p">.</span><span class="nf">getenv</span><span class="p">(</span><span class="sh">"</span><span class="s">OLLAMA_MODEL</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">llama3</span><span class="sh">"</span><span class="p">),</span>
+                          <span class="n">base_url</span><span class="o">=</span><span class="n">os</span><span class="p">.</span><span class="nf">getenv</span><span class="p">(</span><span class="sh">"</span><span class="s">OLLAMA_BASE_URL</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">http://localhost:11434</span><span class="sh">"</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>This abstraction keeps the observability code completely decoupled from the LLM provider choice.</p>
+
+<h3 id="demo-1-tracing-basics">Demo 1: Tracing Basics</h3>
+
+<p>The simplest way to get tracing in MLflow is through auto-instrumentation. A single call to <code class="language-plaintext highlighter-rouge">mlflow.openai.autolog()</code> automatically captures every LLM call, including input messages, output tokens, latency, and model parameters.</p>
+
+<p>For more control, the <code class="language-plaintext highlighter-rouge">@mlflow.trace</code> decorator lets you create custom spans:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@mlflow.trace</span><span class="p">(</span><span class="n">span_type</span><span class="o">=</span><span class="n">SpanType</span><span class="p">.</span><span class="n">CHAIN</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">qa_agent</span><span class="p">(</span><span class="n">question</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">llm</span> <span class="o">=</span> <span class="nf">get_llm</span><span class="p">()</span>
+    <span class="n">messages</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="sh">"</span><span class="s">system</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">You are a helpful assistant. Answer questions concisely and accurately.</span><span class="sh">"</span><span class="p">),</span>
+        <span class="p">(</span><span class="sh">"</span><span class="s">user</span><span class="sh">"</span><span class="p">,</span> <span class="n">question</span><span class="p">),</span>
+    <span class="p">]</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="p">.</span><span class="nf">invoke</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">response</span><span class="p">.</span><span class="n">content</span>
+</code></pre></div></div>
+
+<p>When you run this agent, MLflow records the entire call as a trace with a <code class="language-plaintext highlighter-rouge">CHAIN</code> span type. The MLflow UI shows the span hierarchy, input/output data, and timing information. This is the building block for all the other demos.</p>
+
+<p>The demo also shows tool-call tracing where the agent invokes a weather tool before answering, producing nested spans that visualize the full decision path.</p>
+
+<h3 id="demo-2-rag-agent-tracing">Demo 2: RAG Agent Tracing</h3>
+
+<p>Real-world LLM applications rarely involve a single LLM call. A RAG pipeline, for example, has distinct phases: retrieval, context formatting, and generation. MLflow tracing captures each phase as a nested span.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@mlflow.trace</span><span class="p">(</span><span class="n">span_type</span><span class="o">=</span><span class="n">SpanType</span><span class="p">.</span><span class="n">CHAIN</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">rag_agent</span><span class="p">(</span><span class="n">question</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">documents</span> <span class="o">=</span> <span class="nf">search_documents</span><span class="p">(</span><span class="n">question</span><span class="p">,</span> <span class="n">top_k</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">context</span> <span class="o">=</span> <span class="nf">format_context</span><span class="p">(</span><span class="n">documents</span><span class="p">)</span>
+    <span class="n">answer</span> <span class="o">=</span> <span class="nf">generate_answer</span><span class="p">(</span><span class="n">question</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">answer</span>
+</code></pre></div></div>
+
+<p>The retrieval and formatting functions are also decorated with <code class="language-plaintext highlighter-rouge">@mlflow.trace(span_type=SpanType.RETRIEVER)</code>, producing a trace hierarchy that looks like:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rag_agent (CHAIN)
+  -&gt; search_documents (RETRIEVER)
+  -&gt; format_context (RETRIEVER)
+  -&gt; generate_answer (CHAIN)
+     -&gt; LLM call
+</code></pre></div></div>
+
+<p>This level of visibility is critical for debugging RAG pipelines. When an answer is wrong, you can immediately see whether the retriever returned irrelevant documents or whether the LLM ignored the provided context.</p>
+
+<h3 id="demo-3-multi-turn-session-tracking">Demo 3: Multi-Turn Session Tracking</h3>
+
+<p>Conversational agents present a unique observability challenge: you need to correlate traces across multiple turns within the same session and across different users. MLflow handles this through trace metadata.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MultiTurnAgent</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">user_id</span> <span class="o">=</span> <span class="n">user_id</span> <span class="ow">or</span> <span class="sa">f</span><span class="sh">"</span><span class="s">user_</span><span class="si">{</span><span class="n">uuid</span><span class="p">.</span><span class="nf">uuid4</span><span class="p">().</span><span class="nb">hex</span><span class="p">[</span><span class="si">:</span><span class="mi">8</span><span class="p">]</span><span class="si">}</span><span class="sh">"</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="n">session_id</span> <span class="ow">or</span> <span class="sa">f</span><span class="sh">"</span><span class="s">session_</span><span class="si">{</span><span class="n">uuid</span><span class="p">.</span><span class="nf">uuid4</span><span class="p">().</span><span class="nb">hex</span><span class="p">[</span><span class="si">:</span><span class="mi">8</span><span class="p">]</span><span class="si">}</span><span class="sh">"</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">conversation_history</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">llm</span> <span class="o">=</span> <span class="nf">get_llm</span><span class="p">()</span>
+
+    <span class="nd">@mlflow.trace</span><span class="p">(</span><span class="n">span_type</span><span class="o">=</span><span class="n">SpanType</span><span class="p">.</span><span class="n">CHAIN</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">chat</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">mlflow</span><span class="p">.</span><span class="nf">update_current_trace</span><span class="p">(</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="p">{</span>
+                <span class="sh">"</span><span class="s">mlflow.trace.user</span><span class="sh">"</span><span class="p">:</span> <span class="n">self</span><span class="p">.</span><span class="n">user_id</span><span class="p">,</span>
+                <span class="sh">"</span><span class="s">mlflow.trace.session</span><span class="sh">"</span><span class="p">:</span> <span class="n">self</span><span class="p">.</span><span class="n">session_id</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">conversation_history</span><span class="p">.</span><span class="nf">append</span><span class="p">({</span><span class="sh">"</span><span class="s">role</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">user</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">content</span><span class="sh">"</span><span class="p">:</span> <span class="n">message</span><span class="p">})</span>
+        <span class="n">messages</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">_build_messages</span><span class="p">()</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">_call_llm</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">conversation_history</span><span class="p">.</span><span class="nf">append</span><span class="p">({</span><span class="sh">"</span><span class="s">role</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">assistant</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">content</span><span class="sh">"</span><span class="p">:</span> <span class="n">response</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">response</span>
+</code></pre></div></div>
+
+<p>In the MLflow UI, you can filter traces by session ID or user ID, which makes it straightforward to replay an entire conversation and identify where the agent’s reasoning went off track. This is something that traditional logging simply cannot provide with the same clarity.</p>
+
+<h3 id="demo-4-llm-evaluation-with-scorers">Demo 4: LLM Evaluation with Scorers</h3>
+
+<p>Evaluation is where LLMOps diverges most dramatically from MLOps. You cannot compute an F1 score on a free-text response. MLflow addresses this with two evaluation patterns: LLM-as-a-Judge scorers and custom function-based scorers.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">mlflow.genai</span> <span class="kn">import</span> <span class="n">scorer</span>
+<span class="kn">from</span> <span class="n">mlflow.genai.scorers</span> <span class="kn">import</span> <span class="n">Correctness</span><span class="p">,</span> <span class="n">Guidelines</span>
+
+<span class="nd">@scorer</span>
+<span class="k">def</span> <span class="nf">is_concise</span><span class="p">(</span><span class="n">outputs</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">return</span> <span class="nf">len</span><span class="p">(</span><span class="n">outputs</span><span class="p">.</span><span class="nf">split</span><span class="p">())</span> <span class="o">&lt;=</span> <span class="mi">50</span>
+
+<span class="nd">@scorer</span>
+<span class="k">def</span> <span class="nf">is_definitive</span><span class="p">(</span><span class="n">outputs</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="n">hedging_phrases</span> <span class="o">=</span> <span class="p">[</span><span class="sh">"</span><span class="s">i don</span><span class="sh">'</span><span class="s">t know</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">i</span><span class="sh">'</span><span class="s">m not sure</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">it depends</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">i cannot</span><span class="sh">"</span><span class="p">]</span>
+    <span class="k">return</span> <span class="ow">not</span> <span class="nf">any</span><span class="p">(</span><span class="n">phrase</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">.</span><span class="nf">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">phrase</span> <span class="ow">in</span> <span class="n">hedging_phrases</span><span class="p">)</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="n">mlflow</span><span class="p">.</span><span class="n">genai</span><span class="p">.</span><span class="nf">evaluate</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">eval_dataset</span><span class="p">,</span>
+    <span class="n">predict_fn</span><span class="o">=</span><span class="n">qa_predict_fn</span><span class="p">,</span>
+    <span class="n">scorers</span><span class="o">=</span><span class="p">[</span>
+        <span class="nc">Correctness</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="sa">f</span><span class="sh">"</span><span class="s">openai:/</span><span class="si">{</span><span class="n">judge_model</span><span class="si">}</span><span class="sh">"</span><span class="p">),</span>
+        <span class="nc">Guidelines</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sh">"</span><span class="s">is_english</span><span class="sh">"</span><span class="p">,</span> <span class="n">guidelines</span><span class="o">=</span><span class="sh">"</span><span class="s">The answer must be in English.</span><span class="sh">"</span><span class="p">,</span>
+                   <span class="n">model</span><span class="o">=</span><span class="sa">f</span><span class="sh">"</span><span class="s">openai:/</span><span class="si">{</span><span class="n">judge_model</span><span class="si">}</span><span class="sh">"</span><span class="p">),</span>
+        <span class="n">is_concise</span><span class="p">,</span>
+        <span class="n">is_definitive</span><span class="p">,</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">Correctness</code> scorer uses another LLM to judge whether the response matches the expected answer semantically, not just lexically. The <code class="language-plaintext highlighter-rouge">Guidelines</code> scorer checks adherence to arbitrary text-based rules. Custom scorers like <code class="language-plaintext highlighter-rouge">is_concise</code> and <code class="language-plaintext highlighter-rouge">is_definitive</code> are simple Python functions decorated with <code class="language-plaintext highlighter-rouge">@scorer</code>.</p>
+
+<p>This composable approach means you can build an evaluation suite that checks for correctness, tone, safety, conciseness, and domain-specific requirements all in one pass.</p>
+
+<h3 id="demo-5-prompt-registry">Demo 5: Prompt Registry</h3>
+
+<p>In traditional MLOps, the Model Registry is where you version, stage, and manage trained models. In LLMOps, prompts serve a similar role. MLflow’s Prompt Registry provides versioning, tagging, and commit messages for prompt templates.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">initial_template</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span><span class="sh">"</span><span class="s">role</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">system</span><span class="sh">"</span><span class="p">,</span>
+     <span class="sh">"</span><span class="s">content</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">You are a helpful assistant. Answer the user</span><span class="sh">'</span><span class="s">s question about  concisely.</span><span class="sh">"</span><span class="p">},</span>
+    <span class="p">{</span><span class="sh">"</span><span class="s">role</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">user</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">content</span><span class="sh">"</span><span class="p">:</span> <span class="sh">""</span><span class="p">},</span>
+<span class="p">]</span>
+
+<span class="n">prompt</span> <span class="o">=</span> <span class="n">mlflow</span><span class="p">.</span><span class="n">genai</span><span class="p">.</span><span class="nf">register_prompt</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="sh">"</span><span class="s">qa-prompt</span><span class="sh">"</span><span class="p">,</span>
+    <span class="n">template</span><span class="o">=</span><span class="n">initial_template</span><span class="p">,</span>
+    <span class="n">commit_message</span><span class="o">=</span><span class="sh">"</span><span class="s">Initial QA prompt template</span><span class="sh">"</span><span class="p">,</span>
+    <span class="n">tags</span><span class="o">=</span><span class="p">{</span><span class="sh">"</span><span class="s">task</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">question-answering</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">version_note</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">basic</span><span class="sh">"</span><span class="p">},</span>
+<span class="p">)</span>
+
+<span class="n">loaded_prompt</span> <span class="o">=</span> <span class="n">mlflow</span><span class="p">.</span><span class="n">genai</span><span class="p">.</span><span class="nf">load_prompt</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="s">prompts:/</span><span class="si">{</span><span class="n">prompt</span><span class="p">.</span><span class="n">name</span><span class="si">}</span><span class="s">/</span><span class="si">{</span><span class="n">prompt</span><span class="p">.</span><span class="n">version</span><span class="si">}</span><span class="sh">"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>When you iterate on a prompt, you register a new version with an updated template and commit message. The registry maintains the full history, so you can compare versions, roll back if a new prompt degrades quality, and trace exactly which prompt version produced which outputs. This is the same discipline we applied to model versioning in MLOps, now applied to prompts.</p>
+
+<h3 id="demo-6-full-end-to-end-pipeline">Demo 6: Full End-to-End Pipeline</h3>
+
+<p>The final demo ties everything together into a single pipeline that loads a prompt from the registry, retrieves documents from a knowledge base, generates an answer with the LLM, and evaluates the output with both built-in and custom scorers.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@mlflow.trace</span><span class="p">(</span><span class="n">span_type</span><span class="o">=</span><span class="n">SpanType</span><span class="p">.</span><span class="n">CHAIN</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">full_pipeline_agent</span><span class="p">(</span><span class="n">question</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">prompt</span> <span class="o">=</span> <span class="n">mlflow</span><span class="p">.</span><span class="n">genai</span><span class="p">.</span><span class="nf">load_prompt</span><span class="p">(</span><span class="sh">"</span><span class="s">prompts:/rag-qa-prompt/1</span><span class="sh">"</span><span class="p">)</span>
+    <span class="n">documents</span> <span class="o">=</span> <span class="nf">search_documents</span><span class="p">(</span><span class="n">question</span><span class="p">,</span> <span class="n">top_k</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">context</span> <span class="o">=</span> <span class="nf">format_context</span><span class="p">(</span><span class="n">documents</span><span class="p">)</span>
+    <span class="n">formatted_messages</span> <span class="o">=</span> <span class="nf">render_prompt_messages</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">,</span> <span class="n">question</span><span class="o">=</span><span class="n">question</span><span class="p">)</span>
+    <span class="n">llm</span> <span class="o">=</span> <span class="nf">get_llm</span><span class="p">()</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="p">.</span><span class="nf">invoke</span><span class="p">(</span>
+        <span class="p">[(</span><span class="n">msg</span><span class="p">[</span><span class="sh">"</span><span class="s">role</span><span class="sh">"</span><span class="p">],</span> <span class="n">msg</span><span class="p">[</span><span class="sh">"</span><span class="s">content</span><span class="sh">"</span><span class="p">])</span> <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">formatted_messages</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">response</span><span class="p">.</span><span class="n">content</span>
+</code></pre></div></div>
+
+<p>The evaluation phase runs this pipeline against a test dataset and scores the outputs with <code class="language-plaintext highlighter-rouge">Correctness</code>, a custom <code class="language-plaintext highlighter-rouge">uses_citations</code> scorer, and an <code class="language-plaintext highlighter-rouge">is_grounded</code> scorer that checks for hallucination indicators:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@scorer</span>
+<span class="k">def</span> <span class="nf">uses_citations</span><span class="p">(</span><span class="n">outputs</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="n">re</span>
+    <span class="k">return</span> <span class="nf">bool</span><span class="p">(</span><span class="n">re</span><span class="p">.</span><span class="nf">search</span><span class="p">(</span><span class="sa">r</span><span class="sh">"</span><span class="s">\[\d+\]</span><span class="sh">"</span><span class="p">,</span> <span class="n">outputs</span><span class="p">))</span>
+
+<span class="nd">@scorer</span>
+<span class="k">def</span> <span class="nf">is_grounded</span><span class="p">(</span><span class="n">outputs</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="n">hallucination_phrases</span> <span class="o">=</span> <span class="p">[</span><span class="sh">"</span><span class="s">as an ai</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">i don</span><span class="sh">'</span><span class="s">t have access</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">based on my training</span><span class="sh">"</span><span class="p">]</span>
+    <span class="k">return</span> <span class="ow">not</span> <span class="nf">any</span><span class="p">(</span><span class="n">phrase</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">.</span><span class="nf">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">phrase</span> <span class="ow">in</span> <span class="n">hallucination_phrases</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>In the MLflow UI, you get a unified view: traces showing the full span hierarchy from prompt loading through retrieval to generation, evaluation results with per-question scorer breakdowns, and the prompt registry with version history. This is what production-grade GenAI observability looks like.</p>
+
+<h3 id="key-takeaways">Key Takeaways</h3>
+
+<p>MLflow has successfully extended its platform from MLOps into LLMOps without losing its core identity. Here is what stands out:</p>
+
+<ul>
+  <li><strong>Tracing is a first-class citizen.</strong> Auto-instrumentation, manual decorators, and nested spans give you full visibility into complex LLM chains without invasive code changes.</li>
+  <li><strong>Evaluation is composable.</strong> The combination of LLM-as-a-Judge scorers and custom Python functions means you can build evaluation suites that match your specific quality requirements.</li>
+  <li><strong>Prompt Registry fills a real gap.</strong> Treating prompts with the same rigor as model versions is essential for any team iterating rapidly on LLM applications.</li>
+  <li><strong>Session and user tracking enable conversational debugging.</strong> Correlating traces across multi-turn conversations is a requirement for any production chatbot or agent.</li>
+  <li><strong>The unified platform matters.</strong> Teams already invested in MLflow for traditional ML do not need to adopt a separate observability stack for their GenAI workloads.</li>
+</ul>
+
+<p>The shift from MLOps to LLMOps is not just a tooling change, it is a mindset change. We are moving from deterministic, metric-driven evaluation to qualitative, multi-dimensional assessment. MLflow’s approach of extending familiar abstractions into this new domain makes the transition practical.</p>
+
+<hr />
+
+<p>You can download the complete source code from <a href="https://github.com/prajapatin/mlflow-genai-observability">GitHub</a>. The repository includes all six demos, the Docker Compose setup, and detailed instructions to run everything locally. Please let me know if you liked this article or have any questions, feedback, or suggestions. You can connect with me on <a href="https://linkedin.com/in/nileshprajapati">LinkedIn</a>.</p>
+
+    </div>
+
+    
+<hr>
+
+<aside id="comments" class="disqus">
+  <h3><i class="icon icon-comments-o"></i> Comments</h3>
+  <div id="disqus_thread"></div>
+  <script>
+    var disqus_config = function() {
+      this.page.url = 'https://nileshprajapati.net/blog/2026/genai-observability-with-mlflow/';
+      this.page.identifier = '/blog/2026/genai-observability-with-mlflow';
+    };
+    (function() {
+      var d = document,
+      s = d.createElement('script');
+      s.src = '//nileshprajapati.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+</aside>
+
+
+  </div>
+
+</article>
+
+<script>
+// Reading progress bar
+(function() {
+  var bar = document.getElementById('readingProgress');
+  if (!bar) return;
+  window.addEventListener('scroll', function() {
+    var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    var scrolled = (window.scrollY / docHeight) * 100;
+    bar.style.width = Math.min(scrolled, 100) + '%';
+  });
+})();
+</script>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <ul class="social">
+  <li><a href="https://github.com/prajapatin" target="_blank"><i class="icon icon-github"></i></a></li>
+  <li><a href="https://twitter.com/nilesh_be_it" target="_blank"><i class="icon icon-twitter"></i></a></li>
+  <li><a href="https://facebook.com/nilesh.be.it" target="_blank"><i class="icon icon-facebook"></i></a></li>
+  <li><a href="https://linkedin.com/in/nileshprajapati" target="_blank"><i class="icon icon-linkedin"></i></a></li>
+</ul>
+    <p class="txt-medium-gray">
+      <small>&copy; 2026 Nilesh Prajapati</small>
+    </p>
+  </div>
+</footer>
+
+
+
+  <!-- Back to top button -->
+  <button class="back-to-top" id="backToTop" aria-label="Back to top">
+    <i class="icon icon-circle-up"></i>
+  </button>
+
+  <script>
+  // Back to top
+  (function() {
+    var btn = document.getElementById('backToTop');
+    if (!btn) return;
+
+    window.addEventListener('scroll', function() {
+      if (window.scrollY > 400) {
+        btn.classList.add('visible');
+      } else {
+        btn.classList.remove('visible');
+      }
+    });
+
+    btn.addEventListener('click', function() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  })();
+
+  // Fade-in on scroll
+  (function() {
+    var els = document.querySelectorAll('.post, .card, .page');
+    if (!els.length) return;
+
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('fade-in');
+          entry.target.style.opacity = '';
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.05 });
+
+    els.forEach(function(el) {
+      var rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight) {
+        // Already in viewport — show immediately
+        el.classList.add('fade-in');
+      } else {
+        el.style.opacity = '0';
+        observer.observe(el);
+      }
+    });
+  })();
+  </script>
+</body>
+</html>
