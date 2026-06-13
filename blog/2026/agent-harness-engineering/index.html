@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0047AB">
+
+<title>Agent Harness Engineering: A Production-Grade Framework for Autonomous AI Agents</title>
+<meta name="description" content="Building an AI agent demo is easy. You wire an LLM to a few tools, run it in a notebook, and watch it reason its way through a task. It feels like magic. But...">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/css/main.css">
+<link rel="canonical" href="https://nileshprajapati.net/blog/2026/agent-harness-engineering/">
+<link rel="alternate" type="application/rss+xml" title="Nilesh Prajapati" href="https://nileshprajapati.net/feed.xml" />
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-52446115-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+</head>
+<body>
+  <header class="site-header">
+  <div class="container">
+    <input type="checkbox" id="toggleNavbar">
+    <h1 class="logo"><a href="/">Nilesh<span>Prajapati</span></a></h1>
+    <label for="toggleNavbar" role="button" class="toggle-navbar-button">
+      <i class="icon icon-menu"></i>
+      <i class="icon icon-cross"></i>
+    </label>
+    <nav class="navbar">
+      <ul>
+        <li><a href="/" title="Home">Home</a></li>
+        
+          <li><a href="/about" title="About">About</a></li>
+        
+          <li><a href="/blog" title="Blog">Blog</a></li>
+        
+        <li><a href="/feed.xml" target="_blank"><i class="icon icon-rss"></i></a></li>
+      </ul>
+    </nav>
+  </div>
+  <div class="reading-progress" id="readingProgress"></div>
+</header>
+
+
+<main class="main-container fade-in">
+  <div class="container">
+    <article role="article" class="post">
+
+  <div class="card">
+    <header class="post-header">
+      <h1 class="post-title">Agent Harness Engineering: A Production-Grade Framework for Autonomous AI Agents</h1>
+      <div class="post-meta">
+        <time>Jun 13, 2026</time>
+        <span class="meta-sep">&middot;</span><span>Nilesh Prajapati</span>
+        
+        <span class="meta-sep">&middot;</span>
+        <span>21 min read</span>
+      </div>
+    </header>
+    <div class="post-categories">
+      
+      
+      <a href="/categories/#AI" class="post-tag">AI</a>
+      &nbsp;
+      
+      <a href="/categories/#Agentic AI" class="post-tag">Agentic AI</a>
+      &nbsp;
+      
+      <a href="/categories/#LangGraph" class="post-tag">LangGraph</a>
+      &nbsp;
+      
+      <a href="/categories/#Python" class="post-tag">Python</a>
+      &nbsp;
+      
+      <a href="/categories/#Architecture" class="post-tag">Architecture</a>
+      
+      
+    </div>
+    <div class="post-content">
+      
+        <figure class="post-thumbnail ">
+          <img src="/images/agent-harness-engineering.png" alt="Agent Harness Engineering: A Production-Grade Framework for Autonomous AI Agents">
+        </figure>
+      
+      <p>Building an AI agent demo is easy. You wire an LLM to a few tools, run it in a notebook, and watch it reason its way through a task. It feels like magic. But the moment you try to move that agent into a production environment, everything falls apart. The agent hallucinates actions that corrupt your database. It leaks PII in its responses. It calls a destructive API without asking anyone. It fails silently at 2 AM, and you only find out when a customer complains. There is no trace of what went wrong, no way to replay the decision chain, and no mechanism to prevent the same failure from happening again.</p>
+
+<p>The missing piece is not a better model. It is engineering discipline around the model. The same way we do not deploy a raw database connection without connection pooling, retries, and monitoring, we should not deploy a raw LLM agent without guardrails, verification, memory management, and observability. I call this layer <strong>Agent Harness Engineering</strong>, and I built a <a href="https://github.com/prajapatin/agent-harness-engineering">production-grade Python framework</a> to demonstrate what it looks like in practice.</p>
+
+<h3 id="what-is-agent-harness-engineering">What is Agent Harness Engineering?</h3>
+
+<p>Most agent frameworks today focus on the happy path: define tools, write a system prompt, and let the LLM figure out the rest. This works for demos but ignores the entire category of problems that emerge in production:</p>
+
+<ul>
+  <li><strong>Safety</strong>: What happens when a user tries prompt injection? What if the LLM generates toxic or PII-laden output?</li>
+  <li><strong>Reliability</strong>: What if the LLM produces a low-confidence response? Who verifies the output before it reaches the user?</li>
+  <li><strong>Accountability</strong>: What if the agent wants to execute a high-stakes action like scheduling emergency maintenance or deleting a record? Should it just do it?</li>
+  <li><strong>Memory</strong>: Does the agent remember what happened in previous conversations? Can it retrieve domain knowledge to ground its responses?</li>
+  <li><strong>Observability</strong>: Can you trace every decision the agent made, measure its cost, and evaluate its output quality at scale?</li>
+</ul>
+
+<p>Agent Harness Engineering is the practice of wrapping an autonomous agent in a structured pipeline that addresses all of these concerns. The agent itself, the LLM reasoning over tools, is just one node in a larger graph. Around it, you build input validation, context retrieval, output safety checks, self-critique verification, human approval gates, and full-stack tracing.</p>
+
+<h3 id="architecture-overview">Architecture Overview</h3>
+
+<p>The framework is built on LangGraph, which gives us a stateful, graph-based execution model where each concern maps to a distinct node:</p>
+
+<p>The execution flow is linear with conditional branches: every user message passes through the Input Guard, retrieves relevant context from long-term memory, goes to the LLM Agent node, optionally invokes tools (with human approval if needed), passes through the Output Guard, and finally enters a Verification Loop that can either approve the response or retry the generation. The Memory Layer and Observability Layer sit beneath the entire pipeline, available to every node.</p>
+
+<p>Here is how the graph is constructed in code:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">_build_graph</span><span class="p">(</span><span class="n">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="n">workflow</span> <span class="o">=</span> <span class="nc">StateGraph</span><span class="p">(</span><span class="n">AgentState</span><span class="p">)</span>
+
+    <span class="c1"># Add nodes
+</span>    <span class="n">workflow</span><span class="p">.</span><span class="nf">add_node</span><span class="p">(</span><span class="sh">"</span><span class="s">input_guard</span><span class="sh">"</span><span class="p">,</span> <span class="n">self</span><span class="p">.</span><span class="n">_input_guard_node</span><span class="p">)</span>
+    <span class="n">workflow</span><span class="p">.</span><span class="nf">add_node</span><span class="p">(</span><span class="sh">"</span><span class="s">retrieve_context</span><span class="sh">"</span><span class="p">,</span> <span class="n">self</span><span class="p">.</span><span class="n">_retrieve_context_node</span><span class="p">)</span>
+    <span class="n">workflow</span><span class="p">.</span><span class="nf">add_node</span><span class="p">(</span><span class="sh">"</span><span class="s">agent</span><span class="sh">"</span><span class="p">,</span> <span class="n">self</span><span class="p">.</span><span class="n">_agent_node</span><span class="p">)</span>
+    <span class="n">workflow</span><span class="p">.</span><span class="nf">add_node</span><span class="p">(</span><span class="sh">"</span><span class="s">approval_gate</span><span class="sh">"</span><span class="p">,</span> <span class="n">self</span><span class="p">.</span><span class="n">_approval_gate_node</span><span class="p">)</span>
+    <span class="n">workflow</span><span class="p">.</span><span class="nf">add_node</span><span class="p">(</span><span class="sh">"</span><span class="s">tools</span><span class="sh">"</span><span class="p">,</span> <span class="n">self</span><span class="p">.</span><span class="nf">_create_tool_node</span><span class="p">())</span>
+    <span class="n">workflow</span><span class="p">.</span><span class="nf">add_node</span><span class="p">(</span><span class="sh">"</span><span class="s">output_guard</span><span class="sh">"</span><span class="p">,</span> <span class="n">self</span><span class="p">.</span><span class="n">_output_guard_node</span><span class="p">)</span>
+    <span class="n">workflow</span><span class="p">.</span><span class="nf">add_node</span><span class="p">(</span><span class="sh">"</span><span class="s">verification</span><span class="sh">"</span><span class="p">,</span> <span class="n">self</span><span class="p">.</span><span class="n">_verification_node</span><span class="p">)</span>
+
+    <span class="c1"># Set entry point
+</span>    <span class="n">workflow</span><span class="p">.</span><span class="nf">set_entry_point</span><span class="p">(</span><span class="sh">"</span><span class="s">input_guard</span><span class="sh">"</span><span class="p">)</span>
+
+    <span class="c1"># Define edges
+</span>    <span class="n">workflow</span><span class="p">.</span><span class="nf">add_edge</span><span class="p">(</span><span class="sh">"</span><span class="s">input_guard</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">retrieve_context</span><span class="sh">"</span><span class="p">)</span>
+    <span class="n">workflow</span><span class="p">.</span><span class="nf">add_edge</span><span class="p">(</span><span class="sh">"</span><span class="s">retrieve_context</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">agent</span><span class="sh">"</span><span class="p">)</span>
+
+    <span class="c1"># Conditional: after agent, either call tools or go to output guard
+</span>    <span class="n">workflow</span><span class="p">.</span><span class="nf">add_conditional_edges</span><span class="p">(</span>
+        <span class="sh">"</span><span class="s">agent</span><span class="sh">"</span><span class="p">,</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">_should_use_tools</span><span class="p">,</span>
+        <span class="p">{</span><span class="sh">"</span><span class="s">approval_gate</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">approval_gate</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">output_guard</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">output_guard</span><span class="sh">"</span><span class="p">},</span>
+    <span class="p">)</span>
+
+    <span class="c1"># After approval gate, either proceed to tools or block
+</span>    <span class="n">workflow</span><span class="p">.</span><span class="nf">add_conditional_edges</span><span class="p">(</span>
+        <span class="sh">"</span><span class="s">approval_gate</span><span class="sh">"</span><span class="p">,</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">_approval_decision</span><span class="p">,</span>
+        <span class="p">{</span><span class="sh">"</span><span class="s">tools</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">tools</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">output_guard</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">output_guard</span><span class="sh">"</span><span class="p">},</span>
+    <span class="p">)</span>
+
+    <span class="n">workflow</span><span class="p">.</span><span class="nf">add_edge</span><span class="p">(</span><span class="sh">"</span><span class="s">tools</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">agent</span><span class="sh">"</span><span class="p">)</span>
+    <span class="n">workflow</span><span class="p">.</span><span class="nf">add_edge</span><span class="p">(</span><span class="sh">"</span><span class="s">output_guard</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">verification</span><span class="sh">"</span><span class="p">)</span>
+
+    <span class="c1"># After verification, either retry or finish
+</span>    <span class="n">workflow</span><span class="p">.</span><span class="nf">add_conditional_edges</span><span class="p">(</span>
+        <span class="sh">"</span><span class="s">verification</span><span class="sh">"</span><span class="p">,</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">_should_retry</span><span class="p">,</span>
+        <span class="p">{</span><span class="sh">"</span><span class="s">retry</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">agent</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">end</span><span class="sh">"</span><span class="p">:</span> <span class="n">END</span><span class="p">},</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">workflow</span><span class="p">.</span><span class="nf">compile</span><span class="p">(</span><span class="n">checkpointer</span><span class="o">=</span><span class="n">self</span><span class="p">.</span><span class="n">short_term_memory</span><span class="p">.</span><span class="n">saver</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Every node is a dedicated responsibility. No single function tries to do everything. This is the core principle of harness engineering: decompose the agent lifecycle into independently testable, independently configurable stages.</p>
+
+<h3 id="tool-orchestration">Tool Orchestration</h3>
+
+<p>Tools are the agent’s hands. In production, you need more than just a Python function with a docstring. You need validated inputs, execution logging, and a registry that supports dynamic tool discovery and approval gates.</p>
+
+<p>The framework defines a <code class="language-plaintext highlighter-rouge">HarnessTool</code> abstract base class that enforces Pydantic-validated inputs:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">ToolInput</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="sh">"""</span><span class="s">Base schema for tool inputs. Subclass this for each tool.</span><span class="sh">"""</span>
+    <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">HarnessTool</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sh">"</span><span class="s">base_tool</span><span class="sh">"</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sh">"</span><span class="s">A base harness tool.</span><span class="sh">"</span>
+    <span class="n">input_schema</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">ToolInput</span><span class="p">]</span> <span class="o">=</span> <span class="n">ToolInput</span>
+    <span class="n">requires_approval</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="bp">...</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">logger</span><span class="p">.</span><span class="nf">info</span><span class="p">(</span><span class="sh">"</span><span class="s">Executing tool </span><span class="sh">'</span><span class="s">%s</span><span class="sh">'</span><span class="s"> with inputs: %s</span><span class="sh">"</span><span class="p">,</span> <span class="n">self</span><span class="p">.</span><span class="n">name</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">_call_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">validated</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">input_schema</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="o">**</span><span class="n">validated</span><span class="p">.</span><span class="nf">model_dump</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">def</span> <span class="nf">to_langchain_tool</span><span class="p">(</span><span class="n">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StructuredTool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">StructuredTool</span><span class="p">.</span><span class="nf">from_function</span><span class="p">(</span>
+            <span class="n">func</span><span class="o">=</span><span class="n">self</span><span class="p">.</span><span class="n">run</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">self</span><span class="p">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">self</span><span class="p">.</span><span class="n">description</span><span class="p">,</span>
+            <span class="n">args_schema</span><span class="o">=</span><span class="n">self</span><span class="p">.</span><span class="n">input_schema</span><span class="p">,</span>
+        <span class="p">)</span>
+</code></pre></div></div>
+
+<p>Every tool subclasses <code class="language-plaintext highlighter-rouge">HarnessTool</code>, defines its own <code class="language-plaintext highlighter-rouge">ToolInput</code> schema, and implements <code class="language-plaintext highlighter-rouge">execute()</code>. The <code class="language-plaintext highlighter-rouge">run()</code> method handles validation and logging automatically. The <code class="language-plaintext highlighter-rouge">requires_approval</code> flag marks tools that should go through human-in-the-loop before execution, a critical feature for production agents that can schedule maintenance, send alerts, or modify system state.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">ToolRegistry</code> provides a central catalog that supports runtime registration, lookup, and bulk conversion to LangChain tools:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">ToolRegistry</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">tool</span><span class="p">:</span> <span class="n">HarnessTool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">_tools</span><span class="p">[</span><span class="n">tool</span><span class="p">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">tool</span>
+
+    <span class="k">def</span> <span class="nf">to_langchain_tools</span><span class="p">(</span><span class="n">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">StructuredTool</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">tool</span><span class="p">.</span><span class="nf">to_langchain_tool</span><span class="p">()</span> <span class="k">for</span> <span class="n">tool</span> <span class="ow">in</span> <span class="n">self</span><span class="p">.</span><span class="n">_tools</span><span class="p">.</span><span class="nf">values</span><span class="p">()]</span>
+
+    <span class="k">def</span> <span class="nf">get_tools_requiring_approval</span><span class="p">(</span><span class="n">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">HarnessTool</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">self</span><span class="p">.</span><span class="n">_tools</span><span class="p">.</span><span class="nf">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">t</span><span class="p">.</span><span class="n">requires_approval</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>This design means adding a new tool to the agent is a matter of subclassing, implementing, and registering. No changes to the agent graph, no changes to the pipeline.</p>
+
+<h3 id="multi-provider-llm-support">Multi-Provider LLM Support</h3>
+
+<p>Production systems cannot be locked to a single LLM vendor. The framework uses LiteLLM to provide a unified interface across 100+ models. You switch providers by changing an environment variable:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># OpenAI</span>
+<span class="nv">LLM_PROVIDER</span><span class="o">=</span>openai
+<span class="nv">OPENAI_API_KEY</span><span class="o">=</span>sk-your-key
+
+<span class="c"># Anthropic</span>
+<span class="nv">LLM_PROVIDER</span><span class="o">=</span>anthropic
+<span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span>sk-ant-your-key
+
+<span class="c"># Groq (fast inference)</span>
+<span class="nv">LLM_PROVIDER</span><span class="o">=</span>groq
+<span class="nv">GROQ_API_KEY</span><span class="o">=</span>gsk_your-key
+
+<span class="c"># Local Ollama</span>
+<span class="nv">LLM_PROVIDER</span><span class="o">=</span>ollama
+<span class="nv">OLLAMA_MODEL</span><span class="o">=</span>llama3.1
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">LLMProvider</code> class reads the configuration and returns a LangChain-compatible chat model. The rest of the framework never touches provider-specific code. This is the same BYOK (Bring Your Own Key) pattern I have used in previous projects like the <a href="https://nileshprajapati.net/blog/2026/scalable-distributed-langgraph-on-kubernetes/">Scalable Distributed LangGraph</a> system, and it continues to prove its value.</p>
+
+<h3 id="memory-short-term-and-long-term">Memory: Short-Term and Long-Term</h3>
+
+<p>Memory management is one of the most underappreciated aspects of agent engineering. I wrote extensively about this in my post on <a href="https://nileshprajapati.net/blog/2026/ai-agent-long-term-memory-with-hindsight/">persistent memory with Hindsight</a>, and this framework implements both tiers natively.</p>
+
+<p><strong>Short-term memory</strong> is handled by a SQLite-backed LangGraph checkpointer. Every conversation turn is persisted, so the agent can resume a thread across sessions without losing context. The checkpointer is wired directly into the compiled graph via <code class="language-plaintext highlighter-rouge">workflow.compile(checkpointer=self.short_term_memory.saver)</code>.</p>
+
+<p><strong>Long-term memory</strong> is semantic. The <code class="language-plaintext highlighter-rouge">LongTermMemory</code> class wraps ChromaDB to provide vector-based storage and retrieval:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">LongTermMemory</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">store</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">doc_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">doc_id</span> <span class="o">=</span> <span class="n">doc_id</span> <span class="ow">or</span> <span class="nf">str</span><span class="p">(</span><span class="n">uuid</span><span class="p">.</span><span class="nf">uuid4</span><span class="p">())</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">collection</span><span class="p">.</span><span class="nf">upsert</span><span class="p">(</span><span class="n">documents</span><span class="o">=</span><span class="p">[</span><span class="n">text</span><span class="p">],</span> <span class="n">metadatas</span><span class="o">=</span><span class="p">[</span><span class="n">metadata</span><span class="p">],</span> <span class="n">ids</span><span class="o">=</span><span class="p">[</span><span class="n">doc_id</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">doc_id</span>
+
+    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">query_text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">n_results</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="n">collection</span><span class="p">.</span><span class="nf">query</span><span class="p">(</span><span class="n">query_texts</span><span class="o">=</span><span class="p">[</span><span class="n">query_text</span><span class="p">],</span> <span class="n">n_results</span><span class="o">=</span><span class="n">n_results</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="p">{</span><span class="sh">"</span><span class="s">id</span><span class="sh">"</span><span class="p">:</span> <span class="n">results</span><span class="p">[</span><span class="sh">"</span><span class="s">ids</span><span class="sh">"</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="sh">"</span><span class="s">document</span><span class="sh">"</span><span class="p">:</span> <span class="n">results</span><span class="p">[</span><span class="sh">"</span><span class="s">documents</span><span class="sh">"</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">],</span>
+             <span class="sh">"</span><span class="s">distance</span><span class="sh">"</span><span class="p">:</span> <span class="n">results</span><span class="p">[</span><span class="sh">"</span><span class="s">distances</span><span class="sh">"</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">]}</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="nf">len</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="sh">"</span><span class="s">ids</span><span class="sh">"</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="p">]</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">retrieve_context</code> node in the agent graph automatically queries long-term memory before every LLM invocation, injecting relevant prior knowledge as a system message. Additionally, every successful conversation exchange is stored back into ChromaDB, so the agent’s knowledge base grows organically over time.</p>
+
+<h3 id="input-and-output-guardrails">Input and Output Guardrails</h3>
+
+<p>Guardrails are the safety net that separates a demo from a production system. The framework implements a policy-based engine where each <code class="language-plaintext highlighter-rouge">SafetyPolicy</code> defines patterns to match and an action to take: <code class="language-plaintext highlighter-rouge">BLOCK</code>, <code class="language-plaintext highlighter-rouge">WARN</code>, or <code class="language-plaintext highlighter-rouge">REDACT</code>.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">InputGuard</code> runs before the LLM sees any user input:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">InputGuard</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">validate_and_sanitize</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">user_input</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">PolicyViolation</span><span class="p">]]:</span>
+        <span class="n">is_safe</span><span class="p">,</span> <span class="n">violations</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">check</span><span class="p">(</span><span class="n">user_input</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_safe</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span><span class="p">,</span> <span class="n">user_input</span><span class="p">,</span> <span class="n">violations</span>
+        <span class="n">sanitized</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">sanitize</span><span class="p">(</span><span class="n">user_input</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">True</span><span class="p">,</span> <span class="n">sanitized</span><span class="p">,</span> <span class="n">violations</span>
+</code></pre></div></div>
+
+<p>It checks for prompt injection patterns, PII (credit card numbers, SSNs, email addresses), and other policy violations. If a <code class="language-plaintext highlighter-rouge">BLOCK</code> violation is detected, the message never reaches the LLM. If a <code class="language-plaintext highlighter-rouge">REDACT</code> policy matches, the sensitive content is replaced with <code class="language-plaintext highlighter-rouge">[REDACTED]</code> before processing.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">OutputGuard</code> applies the same policy engine to the LLM’s response. This catches cases where the model itself generates PII, toxic content, or responses that exceed length limits. If the output is unsafe, the guard replaces it with a safety message:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">OutputGuard</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">validate_and_sanitize</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">output</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">PolicyViolation</span><span class="p">]]:</span>
+        <span class="n">is_safe</span><span class="p">,</span> <span class="n">violations</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">check</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_safe</span><span class="p">:</span>
+            <span class="n">blocked_reasons</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span><span class="p">.</span><span class="n">description</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">violations</span> <span class="k">if</span> <span class="n">v</span><span class="p">.</span><span class="n">action</span> <span class="o">==</span> <span class="n">PolicyAction</span><span class="p">.</span><span class="n">BLOCK</span><span class="p">]</span>
+            <span class="n">blocked_msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sh">"</span><span class="s">I cannot provide this response due to safety policy violations: </span><span class="sh">"</span>
+                <span class="o">+</span> <span class="sh">"</span><span class="s">; </span><span class="sh">"</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="n">blocked_reasons</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span><span class="p">,</span> <span class="n">blocked_msg</span><span class="p">,</span> <span class="n">violations</span>
+        <span class="n">sanitized</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">sanitize</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">True</span><span class="p">,</span> <span class="n">sanitized</span><span class="p">,</span> <span class="n">violations</span>
+</code></pre></div></div>
+
+<p>Both guards are Pydantic-based and fully configurable. You can define custom policies, adjust patterns, and toggle guards on or off per environment.</p>
+
+<h3 id="verification-loops-self-critique-and-confidence-gating">Verification Loops: Self-Critique and Confidence Gating</h3>
+
+<p>Even after passing the output guard, the agent’s response goes through a verification loop. This is where the framework uses the LLM to critique its own output, a pattern that catches logical errors, incomplete answers, and hallucinations that a pattern-matching guard cannot detect.</p>
+
+<p>The self-critique prompt evaluates the response on four dimensions: accuracy, completeness, safety, and coherence:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">SELF_CRITIQUE_PROMPT</span> <span class="o">=</span> <span class="sh">"""</span><span class="s">You are a verification agent. Your job is to review the following
+AI-generated response and assess its quality.
+
+Original user request: {user_request}
+AI response to verify: {response}
+
+Evaluate the response on these criteria:
+1. **Accuracy**: Is the response factually correct and relevant?
+2. **Completeness**: Does it fully address the user</span><span class="sh">'</span><span class="s">s request?
+3. **Safety**: Does it contain any harmful, biased, or inappropriate content?
+4. **Coherence**: Is it well-structured and easy to understand?
+
+Respond in this exact format:
+PASSED: true/false
+CONFIDENCE: 0.0-1.0
+REASON: &lt;brief explanation&gt;
+</span><span class="sh">"""</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">VerificationLoop</code> parses this structured response and applies confidence gating. If the confidence score falls below the configured threshold (default 0.7), the response is either retried with exponential backoff or flagged for human review:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">async</span> <span class="k">def</span> <span class="nf">verify_and_gate</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_request</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">VerificationResult</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">self</span><span class="p">.</span><span class="nf">self_critique</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">user_request</span><span class="p">)</span>
+    <span class="n">should_proceed</span> <span class="o">=</span> <span class="n">result</span><span class="p">.</span><span class="n">passed</span> <span class="ow">and</span> <span class="n">result</span><span class="p">.</span><span class="n">confidence</span> <span class="o">&gt;=</span> <span class="n">self</span><span class="p">.</span><span class="n">confidence_threshold</span>
+    <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="n">should_proceed</span>
+</code></pre></div></div>
+
+<p>The retry mechanism is bounded. After three failed verification attempts, the agent stops retrying and delivers the best available response. This prevents infinite loops while still giving the agent multiple chances to produce quality output.</p>
+
+<h3 id="human-in-the-loop-approval-gates-for-high-stakes-actions">Human-in-the-Loop: Approval Gates for High-Stakes Actions</h3>
+
+<p>Some tool calls should never execute without human oversight. When the agent proposes an action on a tool marked with <code class="language-plaintext highlighter-rouge">requires_approval=True</code>, the execution graph routes through an approval gate node instead of proceeding directly to the tools node.</p>
+
+<p>The approval gate creates a pending request that is exposed through the API:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">async</span> <span class="k">def</span> <span class="nf">_approval_gate_node</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">AgentState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="n">approval_tools</span> <span class="o">=</span> <span class="p">{</span><span class="n">t</span><span class="p">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">self</span><span class="p">.</span><span class="n">tool_registry</span><span class="p">.</span><span class="nf">get_tools_requiring_approval</span><span class="p">()}</span>
+
+    <span class="n">needs_approval</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">tc</span> <span class="ow">in</span> <span class="n">last_message</span><span class="p">.</span><span class="n">tool_calls</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">tc</span><span class="p">[</span><span class="sh">"</span><span class="s">name</span><span class="sh">"</span><span class="p">]</span> <span class="ow">in</span> <span class="n">approval_tools</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">self</span><span class="p">.</span><span class="n">human_in_loop</span><span class="p">.</span><span class="nf">has_recent_approval</span><span class="p">(</span><span class="n">tc</span><span class="p">[</span><span class="sh">"</span><span class="s">name</span><span class="sh">"</span><span class="p">]):</span>
+                <span class="n">needs_approval</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">tc</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">tc</span> <span class="ow">in</span> <span class="n">needs_approval</span><span class="p">:</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">human_in_loop</span><span class="p">.</span><span class="nf">create_request</span><span class="p">(</span>
+            <span class="n">action_type</span><span class="o">=</span><span class="n">tc</span><span class="p">[</span><span class="sh">"</span><span class="s">name</span><span class="sh">"</span><span class="p">],</span>
+            <span class="n">description</span><span class="o">=</span><span class="sa">f</span><span class="sh">"</span><span class="s">Tool </span><span class="sh">'</span><span class="si">{</span><span class="n">tc</span><span class="p">[</span><span class="sh">'</span><span class="s">name</span><span class="sh">'</span><span class="p">]</span><span class="si">}</span><span class="sh">'</span><span class="s"> requires human approval.</span><span class="sh">"</span><span class="p">,</span>
+            <span class="n">details</span><span class="o">=</span><span class="n">tc</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="sh">"</span><span class="s">args</span><span class="sh">"</span><span class="p">,</span> <span class="p">{}),</span>
+            <span class="n">thread_id</span><span class="o">=</span><span class="n">self</span><span class="p">.</span><span class="n">_current_thread_id</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="sh">"</span><span class="s">awaiting_human_approval</span><span class="sh">"</span><span class="p">:</span> <span class="bp">True</span><span class="p">}</span>
+</code></pre></div></div>
+
+<p>The agent pauses, informs the user that approval is required, and waits. Once the operator approves (or rejects) via the API or the React dashboard, the agent resumes execution on the same thread with full context continuity. This is especially critical in scenarios like emergency maintenance scheduling, where an autonomous action could have real-world physical consequences.</p>
+
+<h3 id="observability-langfuse-tracing-and-llm-as-a-judge">Observability: LangFuse Tracing and LLM-as-a-Judge</h3>
+
+<p>You cannot improve what you cannot measure. The framework integrates LangFuse for end-to-end observability, providing tracing, cost tracking, prompt management, and automated evaluation.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">HarnessTracer</code> class wraps the LangFuse SDK and provides three key capabilities:</p>
+
+<p><strong>1. Automatic Tracing</strong>: Every agent chat is wrapped in an observation context that captures all LLM calls, tool invocations, and decision points under a single trace grouped by session:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">with</span> <span class="n">self</span><span class="p">.</span><span class="n">tracer</span><span class="p">.</span><span class="nf">observation_context</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="sh">"</span><span class="s">agent-chat</span><span class="sh">"</span><span class="p">,</span>
+    <span class="n">session_id</span><span class="o">=</span><span class="n">thread_id</span><span class="p">,</span>
+    <span class="nb">input</span><span class="o">=</span><span class="p">{</span><span class="sh">"</span><span class="s">message</span><span class="sh">"</span><span class="p">:</span> <span class="n">message</span><span class="p">,</span> <span class="sh">"</span><span class="s">thread_id</span><span class="sh">"</span><span class="p">:</span> <span class="n">thread_id</span><span class="p">},</span>
+<span class="p">):</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">self</span><span class="p">.</span><span class="n">_graph</span><span class="p">.</span><span class="nf">ainvoke</span><span class="p">(</span><span class="n">input_state</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><strong>2. Prompt Management</strong>: System prompts are versioned in LangFuse. On every agent initialization, the current prompt is synced to the Langfuse prompt registry, so you have a full audit trail of which prompt version produced which outputs.</p>
+
+<p><strong>3. LLM-as-a-Judge Evaluations</strong>: The framework automatically registers evaluation rules in LangFuse that score every agent response on helpfulness, relevance, hallucination, and toxicity using a judge LLM. Scores appear on each trace within seconds and are aggregated in the LangFuse dashboard:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Rule</th>
+      <th>Score Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Auto: Helpfulness</td>
+      <td>Numeric (0-1)</td>
+      <td>Does the response help the user?</td>
+    </tr>
+    <tr>
+      <td>Auto: Relevance</td>
+      <td>Numeric (0-1)</td>
+      <td>Is the response relevant to the query?</td>
+    </tr>
+    <tr>
+      <td>Auto: Hallucination</td>
+      <td>Numeric (0-1)</td>
+      <td>Does it contain fabricated facts?</td>
+    </tr>
+    <tr>
+      <td>Auto: Toxicity</td>
+      <td>Numeric (0-1)</td>
+      <td>Is the response toxic or harmful?</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>You can also push custom scores programmatically:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">agent</span><span class="p">.</span><span class="n">tracer</span><span class="p">.</span><span class="nf">score_trace</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="sh">"</span><span class="s">helpfulness</span><span class="sh">"</span><span class="p">,</span>
+    <span class="n">value</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span>
+    <span class="n">comment</span><span class="o">=</span><span class="sh">"</span><span class="s">Response directly addressed the user</span><span class="sh">'</span><span class="s">s question with actionable steps.</span><span class="sh">"</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div></div>
+
+<p>This combination of automatic and custom scoring gives you a continuous quality signal across your entire agent fleet.</p>
+
+<h3 id="the-smart-factory-demo">The Smart Factory Demo</h3>
+
+<p>To demonstrate all of these capabilities working together, the framework ships with a Smart Factory IoT Monitor demo. It simulates a factory with 4 machines, each equipped with 4 sensors (temperature, vibration, pressure, humidity). An AI agent monitors the factory using the full harness pipeline:</p>
+
+<ol>
+  <li><strong>Reads sensor data</strong>: Queries live sensor values from the simulator</li>
+  <li><strong>Detects anomalies</strong>: Compares readings against normal and critical thresholds</li>
+  <li><strong>Sends alerts</strong>: Notifies operators of warnings and critical issues</li>
+  <li><strong>Schedules maintenance</strong>: Proposes preventive or corrective maintenance, with human approval required for emergencies</li>
+</ol>
+
+<p>The demo includes a FastAPI backend exposing REST and WebSocket endpoints, and a React + Vite + TailwindCSS dashboard for real-time monitoring. The API surface covers the full agent lifecycle:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Method</th>
+      <th>Endpoint</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>POST</td>
+      <td><code class="language-plaintext highlighter-rouge">/api/chat</code></td>
+      <td>Chat with the factory agent</td>
+    </tr>
+    <tr>
+      <td>POST</td>
+      <td><code class="language-plaintext highlighter-rouge">/api/monitor</code></td>
+      <td>Trigger a monitoring cycle</td>
+    </tr>
+    <tr>
+      <td>GET</td>
+      <td><code class="language-plaintext highlighter-rouge">/api/sensors</code></td>
+      <td>Current sensor readings</td>
+    </tr>
+    <tr>
+      <td>WS</td>
+      <td><code class="language-plaintext highlighter-rouge">/ws/sensors</code></td>
+      <td>Live sensor data stream</td>
+    </tr>
+    <tr>
+      <td>GET</td>
+      <td><code class="language-plaintext highlighter-rouge">/api/alerts</code></td>
+      <td>Active alerts</td>
+    </tr>
+    <tr>
+      <td>GET</td>
+      <td><code class="language-plaintext highlighter-rouge">/api/approvals</code></td>
+      <td>Pending human approvals</td>
+    </tr>
+    <tr>
+      <td>POST</td>
+      <td><code class="language-plaintext highlighter-rouge">/api/approvals/{id}</code></td>
+      <td>Approve or reject an action</td>
+    </tr>
+    <tr>
+      <td>GET</td>
+      <td><code class="language-plaintext highlighter-rouge">/api/memory</code></td>
+      <td>Long-term memory stats</td>
+    </tr>
+    <tr>
+      <td>POST</td>
+      <td><code class="language-plaintext highlighter-rouge">/api/memory/search</code></td>
+      <td>Semantic search over memory</td>
+    </tr>
+    <tr>
+      <td>GET</td>
+      <td><code class="language-plaintext highlighter-rouge">/api/threads</code></td>
+      <td>List conversation threads</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The maintenance scheduling tool is marked with <code class="language-plaintext highlighter-rouge">requires_approval=True</code>, so when the agent detects a critical anomaly and proposes emergency maintenance, the action is routed through the approval gate. The operator sees the pending request in the dashboard, reviews the details, and approves or rejects it. Only then does the agent proceed.</p>
+
+<p>Running the demo is straightforward:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Start Redis and LangFuse</span>
+docker compose up <span class="nt">-d</span>
+
+<span class="c"># Start the API server</span>
+uv run uvicorn demo.smart_factory.app:app <span class="nt">--host</span> 0.0.0.0 <span class="nt">--port</span> 8000 <span class="nt">--reload</span>
+
+<span class="c"># Start the React dashboard</span>
+<span class="nb">cd </span>demo/smart_factory/frontend
+npm <span class="nb">install</span> <span class="o">&amp;&amp;</span> npm run dev
+</code></pre></div></div>
+
+<h3 id="using-the-framework-in-your-own-projects">Using the Framework in Your Own Projects</h3>
+
+<p>The harness is designed to be reusable beyond the demo. Here is a minimal example of building a custom agent with the framework:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="n">asyncio</span>
+<span class="kn">from</span> <span class="n">harness.core.config</span> <span class="kn">import</span> <span class="n">HarnessConfig</span>
+<span class="kn">from</span> <span class="n">harness.core.agent</span> <span class="kn">import</span> <span class="n">HarnessAgent</span>
+<span class="kn">from</span> <span class="n">harness.tools.base</span> <span class="kn">import</span> <span class="n">HarnessTool</span><span class="p">,</span> <span class="n">ToolInput</span>
+<span class="kn">from</span> <span class="n">harness.tools.registry</span> <span class="kn">import</span> <span class="n">ToolRegistry</span>
+
+
+<span class="k">class</span> <span class="nc">GreetInput</span><span class="p">(</span><span class="n">ToolInput</span><span class="p">):</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sh">"</span><span class="s">World</span><span class="sh">"</span>
+
+<span class="k">class</span> <span class="nc">GreetTool</span><span class="p">(</span><span class="n">HarnessTool</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="sh">"</span><span class="s">greet</span><span class="sh">"</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="sh">"</span><span class="s">Greets someone by name.</span><span class="sh">"</span>
+    <span class="n">input_schema</span> <span class="o">=</span> <span class="n">GreetInput</span>
+    <span class="n">requires_approval</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sh">"</span><span class="s">World</span><span class="sh">"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="sh">"</span><span class="s">Hello, </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s">!</span><span class="sh">"</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="nc">HarnessConfig</span><span class="p">()</span>
+    <span class="n">registry</span> <span class="o">=</span> <span class="nc">ToolRegistry</span><span class="p">()</span>
+    <span class="n">registry</span><span class="p">.</span><span class="nf">register</span><span class="p">(</span><span class="nc">GreetTool</span><span class="p">())</span>
+
+    <span class="n">agent</span> <span class="o">=</span> <span class="nc">HarnessAgent</span><span class="p">(</span>
+        <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+        <span class="n">system_prompt</span><span class="o">=</span><span class="sh">"</span><span class="s">You are a helpful assistant with greeting capabilities.</span><span class="sh">"</span><span class="p">,</span>
+        <span class="n">tool_registry</span><span class="o">=</span><span class="n">registry</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">await</span> <span class="n">agent</span><span class="p">.</span><span class="nf">initialize</span><span class="p">()</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="p">.</span><span class="nf">chat</span><span class="p">(</span><span class="sh">"</span><span class="s">Say hello to Alice!</span><span class="sh">"</span><span class="p">)</span>
+    <span class="nf">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="k">await</span> <span class="n">agent</span><span class="p">.</span><span class="nf">shutdown</span><span class="p">()</span>
+
+<span class="n">asyncio</span><span class="p">.</span><span class="nf">run</span><span class="p">(</span><span class="nf">main</span><span class="p">())</span>
+</code></pre></div></div>
+
+<p>With that single <code class="language-plaintext highlighter-rouge">HarnessAgent</code>, you get input guardrails, output guardrails, self-critique verification, short-term conversation memory, long-term semantic memory, and LangFuse tracing, all without writing a single line of infrastructure code.</p>
+
+<h3 id="key-takeaways">Key Takeaways</h3>
+
+<ul>
+  <li><strong>The agent is not the product; the harness is.</strong> The LLM reasoning node is just one stage in a multi-stage pipeline. The guardrails, verification, memory, and observability layers are what make it production-worthy.</li>
+  <li><strong>Guardrails must be bidirectional.</strong> Validating inputs catches prompt injection and PII leakage before the LLM sees them. Validating outputs catches hallucinations and safety violations before the user sees them.</li>
+  <li><strong>Self-critique adds a meaningful quality layer.</strong> Having the LLM review its own output with structured evaluation criteria catches errors that pattern-matching alone cannot detect.</li>
+  <li><strong>Human-in-the-loop is not optional for high-stakes actions.</strong> Any tool that can modify real-world state should require explicit human approval. The approval gate pattern keeps the agent autonomous for safe actions while gating dangerous ones.</li>
+  <li><strong>Observability is a production requirement, not a nice-to-have.</strong> Full tracing, cost tracking, and automated LLM-as-a-Judge evaluations give you the feedback loop needed to improve agent quality continuously.</li>
+  <li><strong>Provider agnosticism protects your investment.</strong> Using LiteLLM to abstract across OpenAI, Anthropic, Groq, and Ollama means you can switch models without touching your application code.</li>
+</ul>
+
+<hr />
+
+<p>You can download the complete source code from <a href="https://github.com/prajapatin/agent-harness-engineering">GitHub</a>. The repository includes the full harness framework, the Smart Factory demo with a React dashboard, Docker Compose setup for Redis and LangFuse, and a comprehensive test suite. Please let me know if you liked this article or have any questions, feedback, or suggestions. You can connect with me on <a href="https://linkedin.com/in/nileshprajapati">LinkedIn</a>.</p>
+
+    </div>
+
+    
+<hr>
+
+<aside id="comments" class="disqus">
+  <h3><i class="icon icon-comments-o"></i> Comments</h3>
+  <div id="disqus_thread"></div>
+  <script>
+    var disqus_config = function() {
+      this.page.url = 'https://nileshprajapati.net/blog/2026/agent-harness-engineering/';
+      this.page.identifier = '/blog/2026/agent-harness-engineering';
+    };
+    (function() {
+      var d = document,
+      s = d.createElement('script');
+      s.src = '//nileshprajapati.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+</aside>
+
+
+  </div>
+
+</article>
+
+<script>
+// Reading progress bar
+(function() {
+  var bar = document.getElementById('readingProgress');
+  if (!bar) return;
+  window.addEventListener('scroll', function() {
+    var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    var scrolled = (window.scrollY / docHeight) * 100;
+    bar.style.width = Math.min(scrolled, 100) + '%';
+  });
+})();
+</script>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <ul class="social">
+  <li><a href="https://github.com/prajapatin" target="_blank"><i class="icon icon-github"></i></a></li>
+  <li><a href="https://twitter.com/nilesh_be_it" target="_blank"><i class="icon icon-twitter"></i></a></li>
+  <li><a href="https://facebook.com/nilesh.be.it" target="_blank"><i class="icon icon-facebook"></i></a></li>
+  <li><a href="https://linkedin.com/in/nileshprajapati" target="_blank"><i class="icon icon-linkedin"></i></a></li>
+</ul>
+    <p class="txt-medium-gray">
+      <small>&copy; 2026 Nilesh Prajapati</small>
+    </p>
+  </div>
+</footer>
+
+
+
+  <!-- Back to top button -->
+  <button class="back-to-top" id="backToTop" aria-label="Back to top">
+    <i class="icon icon-circle-up"></i>
+  </button>
+
+  <script>
+  // Back to top
+  (function() {
+    var btn = document.getElementById('backToTop');
+    if (!btn) return;
+
+    window.addEventListener('scroll', function() {
+      if (window.scrollY > 400) {
+        btn.classList.add('visible');
+      } else {
+        btn.classList.remove('visible');
+      }
+    });
+
+    btn.addEventListener('click', function() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  })();
+
+  // Fade-in on scroll
+  (function() {
+    var els = document.querySelectorAll('.post, .card, .page');
+    if (!els.length) return;
+
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('fade-in');
+          entry.target.style.opacity = '';
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.05 });
+
+    els.forEach(function(el) {
+      var rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight) {
+        // Already in viewport — show immediately
+        el.classList.add('fade-in');
+      } else {
+        el.style.opacity = '0';
+        observer.observe(el);
+      }
+    });
+  })();
+  </script>
+
+  <!-- Lightbox overlay for zoomable images -->
+  <style>
+    #imageLightbox {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 9999;
+      cursor: zoom-out;
+    }
+    #imageLightbox.active {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #imageLightbox img {
+      max-width: 92vw !important;
+      max-height: 92vh !important;
+      width: auto !important;
+      height: auto !important;
+      border-radius: 6px !important;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.5) !important;
+      margin: 0 !important;
+      border: none !important;
+      display: block !important;
+      background: transparent !important;
+      transform: none !important;
+    }
+  </style>
+  <div id="imageLightbox"></div>
+  <script>
+  (function() {
+    var overlay = document.getElementById('imageLightbox');
+    if (!overlay) return;
+
+    var isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    if (isTouch) return;
+
+    document.querySelectorAll('.post-content img').forEach(function(img) {
+      img.style.cursor = 'zoom-in';
+      img.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var newImg = document.createElement('img');
+        newImg.src = this.src;
+        newImg.alt = this.alt;
+        overlay.innerHTML = '';
+        overlay.appendChild(newImg);
+        overlay.classList.add('active');
+      });
+    });
+
+    overlay.addEventListener('click', function() {
+      overlay.classList.remove('active');
+      overlay.innerHTML = '';
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && overlay.classList.contains('active')) {
+        overlay.classList.remove('active');
+        overlay.innerHTML = '';
+      }
+    });
+  })();
+  </script>
+</body>
+</html>

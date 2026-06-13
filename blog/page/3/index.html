@@ -58,6 +58,31 @@
   
     <article class="post">
   <figure class="post-thumbnail ">
+    <a href="/blog/2026/scalable-distributed-langgraph-on-kubernetes/">
+      
+        <img src="/images/scalable-distributed-langgraph.png" alt="Building a Scalable Distributed LangGraph on Kubernetes">
+      
+    </a>
+  </figure>
+  <div class="post-content">
+    <header class="post-header">
+      <h1 class="post-title">
+        <a class="post-link" href="/blog/2026/scalable-distributed-langgraph-on-kubernetes/">Building a Scalable Distributed LangGraph on Kubernetes</a>
+      </h1>
+      <div class="post-meta">
+        <time>Apr 9, 2026</time>
+        
+        <span class="meta-sep">&middot;</span>
+        <span>4 min read</span>
+      </div>
+    </header>
+    <p><a href="/blog/2026/scalable-distributed-langgraph-on-kubernetes/" title="Permalink to: Building a Scalable Distributed LangGraph on Kubernetes">Scaling AI agent workflows from a single Python script on your laptop to a highly available, enterprise-grade distributed system is one of the biggest challenges in production AI. Native LangGraph... <span class="read-more">[read more]</span></a></p>
+  </div>
+</article>
+
+  
+    <article class="post">
+  <figure class="post-thumbnail ">
     <a href="/blog/2026/security-operations-center-with-agentic-AI/">
       
         <img src="/images/security-operations-center-with-agentic-AI.png" alt="Building an Autonomous SOC with Agentic AI and GitHub Copilot SDK">
@@ -102,31 +127,6 @@
       </div>
     </header>
     <p><a href="/blog/2026/building-LLM-powered-data-analyst/" title="Permalink to: Building an LLM-powered Data Analyst cum Data Scientist">If you have ever wished you could talk to your pandas DataFrame in natural language, create_pandas_dataframe_agent from langchain_experimental.agents.agent_toolkits.pandas.base is exactly what you need. In this post we will build an... <span class="read-more">[read more]</span></a></p>
-  </div>
-</article>
-
-  
-    <article class="post">
-  <figure class="post-thumbnail ">
-    <a href="/blog/2020/Operationalizing-ML-Model-Inferencing-with-an-engineering-approach/">
-      
-        <img src="/images/OperationalizeMLModel.png" alt="Operationalizing the Machine Learning model inferencing with an engineering approach">
-      
-    </a>
-  </figure>
-  <div class="post-content">
-    <header class="post-header">
-      <h1 class="post-title">
-        <a class="post-link" href="/blog/2020/Operationalizing-ML-Model-Inferencing-with-an-engineering-approach/">Operationalizing the Machine Learning model inferencing with an engineering approach</a>
-      </h1>
-      <div class="post-meta">
-        <time>Aug 18, 2020</time>
-        
-        <span class="meta-sep">&middot;</span>
-        <span>5 min read</span>
-      </div>
-    </header>
-    <p><a href="/blog/2020/Operationalizing-ML-Model-Inferencing-with-an-engineering-approach/" title="Permalink to: Operationalizing the Machine Learning model inferencing with an engineering approach">What is a machine learning model inferencing? Once you train a machine learning model to solve specific business problems, you need to think about how you would be consuming that... <span class="read-more">[read more]</span></a></p>
   </div>
 </article>
 
@@ -216,6 +216,75 @@
       } else {
         el.style.opacity = '0';
         observer.observe(el);
+      }
+    });
+  })();
+  </script>
+
+  <!-- Lightbox overlay for zoomable images -->
+  <style>
+    #imageLightbox {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 9999;
+      cursor: zoom-out;
+    }
+    #imageLightbox.active {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #imageLightbox img {
+      max-width: 92vw !important;
+      max-height: 92vh !important;
+      width: auto !important;
+      height: auto !important;
+      border-radius: 6px !important;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.5) !important;
+      margin: 0 !important;
+      border: none !important;
+      display: block !important;
+      background: transparent !important;
+      transform: none !important;
+    }
+  </style>
+  <div id="imageLightbox"></div>
+  <script>
+  (function() {
+    var overlay = document.getElementById('imageLightbox');
+    if (!overlay) return;
+
+    var isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    if (isTouch) return;
+
+    document.querySelectorAll('.post-content img').forEach(function(img) {
+      img.style.cursor = 'zoom-in';
+      img.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var newImg = document.createElement('img');
+        newImg.src = this.src;
+        newImg.alt = this.alt;
+        overlay.innerHTML = '';
+        overlay.appendChild(newImg);
+        overlay.classList.add('active');
+      });
+    });
+
+    overlay.addEventListener('click', function() {
+      overlay.classList.remove('active');
+      overlay.innerHTML = '';
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && overlay.classList.contains('active')) {
+        overlay.classList.remove('active');
+        overlay.innerHTML = '';
       }
     });
   })();

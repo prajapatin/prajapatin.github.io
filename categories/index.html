@@ -86,6 +86,10 @@
     <a name="Architecture"></a>
     
     <article class="archive-item">
+      <h4><a href="/blog/2026/agent-harness-engineering/">Agent Harness Engineering: A Production-Grade Framework for Autonomous AI Agents</a></h4>
+    </article>
+    
+    <article class="archive-item">
       <h4><a href="/blog/2026/genai-observability-with-mlflow/">GenAI Observability with MLflow: From MLOps to LLMOps</a></h4>
     </article>
     
@@ -342,6 +346,10 @@
     <a name="AI"></a>
     
     <article class="archive-item">
+      <h4><a href="/blog/2026/agent-harness-engineering/">Agent Harness Engineering: A Production-Grade Framework for Autonomous AI Agents</a></h4>
+    </article>
+    
+    <article class="archive-item">
       <h4><a href="/blog/2026/genai-observability-with-mlflow/">GenAI Observability with MLflow: From MLOps to LLMOps</a></h4>
     </article>
     
@@ -416,6 +424,10 @@
     <a name="Python"></a>
     
     <article class="archive-item">
+      <h4><a href="/blog/2026/agent-harness-engineering/">Agent Harness Engineering: A Production-Grade Framework for Autonomous AI Agents</a></h4>
+    </article>
+    
+    <article class="archive-item">
       <h4><a href="/blog/2026/genai-observability-with-mlflow/">GenAI Observability with MLflow: From MLOps to LLMOps</a></h4>
     </article>
     
@@ -468,6 +480,10 @@
     <a name="Agentic AI"></a>
     
     <article class="archive-item">
+      <h4><a href="/blog/2026/agent-harness-engineering/">Agent Harness Engineering: A Production-Grade Framework for Autonomous AI Agents</a></h4>
+    </article>
+    
+    <article class="archive-item">
       <h4><a href="/blog/2026/mastering-context-engineering/">Mastering Context Engineering: The Architect's Guide to Scalable AI Agents</a></h4>
     </article>
     
@@ -488,6 +504,10 @@
     
     <h3 class="category-head">LangGraph</h3>
     <a name="LangGraph"></a>
+    
+    <article class="archive-item">
+      <h4><a href="/blog/2026/agent-harness-engineering/">Agent Harness Engineering: A Production-Grade Framework for Autonomous AI Agents</a></h4>
+    </article>
     
     <article class="archive-item">
       <h4><a href="/blog/2026/ai-agent-long-term-memory-with-hindsight/">Persistent Memory for Agentic Systems with Hindsight</a></h4>
@@ -640,6 +660,75 @@
       } else {
         el.style.opacity = '0';
         observer.observe(el);
+      }
+    });
+  })();
+  </script>
+
+  <!-- Lightbox overlay for zoomable images -->
+  <style>
+    #imageLightbox {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 9999;
+      cursor: zoom-out;
+    }
+    #imageLightbox.active {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #imageLightbox img {
+      max-width: 92vw !important;
+      max-height: 92vh !important;
+      width: auto !important;
+      height: auto !important;
+      border-radius: 6px !important;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.5) !important;
+      margin: 0 !important;
+      border: none !important;
+      display: block !important;
+      background: transparent !important;
+      transform: none !important;
+    }
+  </style>
+  <div id="imageLightbox"></div>
+  <script>
+  (function() {
+    var overlay = document.getElementById('imageLightbox');
+    if (!overlay) return;
+
+    var isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    if (isTouch) return;
+
+    document.querySelectorAll('.post-content img').forEach(function(img) {
+      img.style.cursor = 'zoom-in';
+      img.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var newImg = document.createElement('img');
+        newImg.src = this.src;
+        newImg.alt = this.alt;
+        overlay.innerHTML = '';
+        overlay.appendChild(newImg);
+        overlay.classList.add('active');
+      });
+    });
+
+    overlay.addEventListener('click', function() {
+      overlay.classList.remove('active');
+      overlay.innerHTML = '';
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && overlay.classList.contains('active')) {
+        overlay.classList.remove('active');
+        overlay.innerHTML = '';
       }
     });
   })();
