@@ -129,7 +129,7 @@
 <p>Using the <code class="language-plaintext highlighter-rouge">trl</code> library (Supervised Fine-tuning Trainer) and <code class="language-plaintext highlighter-rouge">peft</code> (Parameter-Efficient Fine-Tuning), we train our adapters on a small JSONL dataset consisting of e-commerce queries.</p>
 
 <p>For the customer adapter, a training example looks like this:</p>
-<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="nl">"instruction"</span><span class="p">:</span><span class="w"> </span><span class="s2">"What is the status of my order?"</span><span class="p">,</span><span class="w"> </span><span class="nl">"input"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Order #12345"</span><span class="p">,</span><span class="w"> </span><span class="nl">"output"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Hey there! 😊 I just checked on your order #12345 and great news — it's been shipped!"</span><span class="p">}</span><span class="w">
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="nl">"instruction"</span><span class="p">:</span><span class="w"> </span><span class="s2">"What is the status of my order?"</span><span class="p">,</span><span class="w"> </span><span class="nl">"input"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Order #12345"</span><span class="p">,</span><span class="w"> </span><span class="nl">"output"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Hey there! 😊 I just checked on your order #12345 and great news, it's been shipped!"</span><span class="p">}</span><span class="w">
 </span></code></pre></div></div>
 
 <p>For the partner adapter, the exact same instruction looks like this:</p>
@@ -289,7 +289,7 @@
     els.forEach(function(el) {
       var rect = el.getBoundingClientRect();
       if (rect.top < window.innerHeight) {
-        // Already in viewport — show immediately
+        // Already in viewport, show immediately
         el.classList.add('fade-in');
       } else {
         el.style.opacity = '0';

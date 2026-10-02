@@ -227,7 +227,7 @@ Structured context:
 </span><span class="n">combined_context</span> <span class="o">=</span> <span class="sa">f</span><span class="sh">"</span><span class="si">{</span><span class="n">graph_context</span><span class="si">}</span><span class="se">\n\n</span><span class="si">{</span><span class="n">vector_context</span><span class="si">}</span><span class="sh">"</span>
 </code></pre></div></div>
 
-<p>The graph retriever extracts meaningful search terms from the query (filtering out stop words), matches them against graph nodes, and performs a breadth-first traversal up to <code class="language-plaintext highlighter-rouge">max_depth</code> hops to pull in the surrounding neighborhood. The <code class="language-plaintext highlighter-rouge">ContextBuilder</code> then serializes this subgraph into structured text — entities grouped by type, relationships grouped by relation — that the LLM can reason over.</p>
+<p>The graph retriever extracts meaningful search terms from the query (filtering out stop words), matches them against graph nodes, and performs a breadth-first traversal up to <code class="language-plaintext highlighter-rouge">max_depth</code> hops to pull in the surrounding neighborhood. The <code class="language-plaintext highlighter-rouge">ContextBuilder</code> then serializes this subgraph into structured text, entities grouped by type, relationships grouped by relation that the LLM can reason over.</p>
 
 <p>The vector retriever embeds the raw query and retrieves the top-K most similar report chunks from ChromaDB, formatting them with source metadata and relevance scores.</p>
 
@@ -444,7 +444,7 @@ adoption in the North America region...
     els.forEach(function(el) {
       var rect = el.getBoundingClientRect();
       if (rect.top < window.innerHeight) {
-        // Already in viewport — show immediately
+        // Already in viewport, show immediately
         el.classList.add('fade-in');
       } else {
         el.style.opacity = '0';
